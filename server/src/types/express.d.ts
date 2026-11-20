@@ -5,6 +5,7 @@ declare global {
     interface Request {
       auth?: AuthenticatedUser
       cookies?: Record<string, string>
+      id?: string
     }
   }
 }

@@ -1,4 +1,6 @@
-import express, { type Express, type NextFunction, type Request, type Response } from 'express'
+import express, { type Express } from 'express'
+import { errorHandler } from './middleware/error-handler.js'
+import { requestLogger } from './middleware/request-logger.js'
 import { authRouter } from './modules/auth/index.js'
 import { userRouter } from './modules/users/index.js'
 
@@ -6,31 +8,50 @@ export const createApp = (): Express => {
   const app = express()
 
   app.disable('x-powered-by')
+
+  // Structured HTTP request logging
+  app.use(requestLogger)
+
   app.use(express.json({ limit: '1mb' }))
   app.use(express.urlencoded({ extended: false }))
+
+  // CORS headers
   app.use((req, res, next) => {
     const origin = req.header('origin')
     const clientOrigin = process.env.CLIENT_ORIGIN ?? 'http://localhost:5173'
-    if (origin === clientOrigin) {
-      res.setHeader('Access-Control-Allow-Origin', origin)
+    if (origin === clientOrigin || !origin) {
+      if (origin) {
+        res.setHeader('Access-Control-Allow-Origin', origin)
+      }
       res.setHeader('Access-Control-Allow-Credentials', 'true')
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Device-Id, X-Device-Name')
+      res.setHeader(
+        'Access-Control-Allow-Headers',
+        'Content-Type, Authorization, X-Device-Id, X-Device-Name, X-Request-Id'
+      )
       res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS')
     }
     if (req.method === 'OPTIONS') return res.sendStatus(204)
     next()
   })
 
+  // Health check endpoint
   app.get('/health', (_req, res) => res.status(200).json({ status: 'ok' }))
+
+  // API Modules
   app.use('/api/auth', authRouter)
   app.use('/api/users', userRouter)
 
-  app.use((_req, res) => res.status(404).json({ error: 'NOT_FOUND', message: 'Route not found.' }))
-
-  app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
-    console.error(error)
-    res.status(500).json({ error: 'INTERNAL_SERVER_ERROR', message: 'An unexpected error occurred.' })
+  // 404 Route Not Found
+  app.use((req, res) => {
+    res.status(404).json({
+      error: 'NOT_FOUND',
+      message: `Cannot ${req.method} ${req.originalUrl}`,
+      ...(req.id ? { requestId: req.id } : {}),
+    })
   })
+
+  // Centralized Error Handler
+  app.use(errorHandler)
 
   return app
 }
