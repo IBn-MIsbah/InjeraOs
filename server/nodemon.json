@@ -1,0 +1,8 @@
+{
+  "watch": ["src", "prisma/schema.prisma", "prisma7.config.ts"],
+  "ext": "ts,json,prisma",
+  "ignore": ["dist", "node_modules", "src/generated"],
+  "exec": "tsx src/server.ts",
+  "signal": "SIGTERM",
+  "delay": "250"
+}

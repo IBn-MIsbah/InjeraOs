@@ -1,0 +1,1233 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Injera Business Manager. Database columns use snake_case
+// Prisma fields use camelCase.
+// Financial and quantity values intentionally use Decimal, never Float.
+
+enum Calendar {
+  GREGORIAN
+  ETHIOPIAN
+}
+
+enum BusinessStatus {
+  ACTIVE
+  SUSPENDED
+  CLOSED
+}
+
+enum ActiveStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum MembershipStatus {
+  INVITED
+  ACTIVE
+  SUSPENDED
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  TEMPORARY
+  CONTRACT
+}
+
+enum EmployeeStatus {
+  ACTIVE
+  INACTIVE
+  TERMINATED
+}
+
+enum ShiftType {
+  DAY
+  NIGHT
+  CUSTOM
+}
+
+enum AssignmentStatus {
+  SCHEDULED
+  CONFIRMED
+  CANCELLED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  LEAVE
+  HALF_DAY
+}
+
+enum CompensationType {
+  HOURLY
+  DAILY
+  PER_SHIFT
+  MONTHLY
+}
+
+enum AttributionMethod {
+  INDIVIDUAL_COUNT
+  SUPERVISOR_ALLOCATION
+}
+
+enum Dimension {
+  MASS
+  VOLUME
+  COUNT
+  OTHER
+}
+
+enum PaymentStatus {
+  UNPAID
+  PARTIAL
+  PAID
+}
+
+enum DocumentStatus {
+  DRAFT
+  RECEIVED
+  COMPLETED
+  CANCELLED
+}
+
+enum LotStatus {
+  AVAILABLE
+  DEPLETED
+  BLOCKED
+  EXPIRED
+}
+
+enum MaterialMovementType {
+  PURCHASE_RECEIPT
+  PRODUCTION_CONSUMPTION
+  BLEND_INPUT
+  BLEND_OUTPUT
+  ADJUSTMENT_IN
+  ADJUSTMENT_OUT
+  TRANSFER_IN
+  TRANSFER_OUT
+  REVERSAL
+}
+
+enum ProductionStatus {
+  DRAFT
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum BatchAssignmentRole {
+  BAKER
+  LABOURER
+  SUPERVISOR
+  OTHER
+}
+
+enum RejectionReason {
+  BURNT
+  TORN_DAMAGED
+  INCORRECT_THICKNESS
+  INCORRECT_SIZE
+  CONTAMINATION
+  OTHER
+}
+
+enum OverheadCategory {
+  LABOUR
+  FUEL
+  FIREWOOD
+  ELECTRICITY
+  WATER
+  PACKAGING
+  OTHER
+}
+
+enum OverheadAllocationType {
+  DIRECT_BATCH
+  DAILY_SHARED
+}
+
+enum AllocationMethod {
+  PRODUCTION_QUANTITY
+  PRODUCTION_TIME
+  DIRECT_MATERIAL_COST
+  MANUAL_PERCENTAGE
+}
+
+enum LabourCostStatus {
+  UNALLOCATED
+  ALLOCATED
+  FINALIZED
+}
+
+enum FinishedMovementType {
+  PRODUCTION_IN
+  SALE_OUT
+  DAMAGE_OUT
+  SPOILAGE_OUT
+  ADJUSTMENT_IN
+  ADJUSTMENT_OUT
+  TRANSFER_IN
+  TRANSFER_OUT
+  REVERSAL
+}
+
+enum CustomerType {
+  INDIVIDUAL
+  GROCERY_SHOP
+  RESTAURANT
+  HOTEL
+  WHOLESALER
+  OTHER
+}
+
+enum SaleStatus {
+  DRAFT
+  COMPLETED
+  CANCELLED
+  RETURNED
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  MOBILE_MONEY
+  OTHER
+}
+
+enum PaymentRecordStatus {
+  PENDING
+  COMPLETED
+  REVERSED
+  CANCELLED
+}
+
+enum LedgerTransactionType {
+  SALE
+  PAYMENT
+  ADJUSTMENT
+  REVERSAL
+}
+
+enum DeliveryStatus {
+  PENDING
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+}
+
+enum ExpenseCategoryType {
+  OPERATING
+  ADMINISTRATIVE
+  MARKETING
+  TRANSPORT
+  MAINTENANCE
+  OTHER
+}
+
+enum ExpenseStatus {
+  DRAFT
+  RECORDED
+  CANCELLED
+}
+
+enum DeviceStatus {
+  ACTIVE
+  REVOKED
+}
+
+enum SyncStatus {
+  PENDING
+  PROCESSING
+  PROCESSED
+  FAILED
+  CONFLICT
+}
+
+enum ConflictStatus {
+  OPEN
+  RESOLVED
+  REJECTED
+}
+
+enum AuditSource {
+  WEB
+  MOBILE
+  OFFLINE_SYNC
+  SYSTEM
+}
+
+model Business {
+  id           String         @id @default(uuid()) @db.Uuid
+  name         String         @db.VarChar(200)
+  legalName    String?        @db.VarChar(200)
+  phone        String?        @db.VarChar(30)
+  email        String?        @db.VarChar(255)
+  address      String?
+  currency     String         @default("ETB") @db.VarChar(3)
+  timezone     String         @db.VarChar(100)
+  dateCalendar Calendar       @default(GREGORIAN)
+  status       BusinessStatus @default(ACTIVE)
+  createdAt    DateTime       @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime       @updatedAt @db.Timestamptz(6)
+
+  @@map("businesses")
+}
+
+model Branch {
+  id         String       @id @default(uuid()) @db.Uuid
+  businessId String       @db.Uuid
+  name       String       @db.VarChar(150)
+  code       String       @db.VarChar(50)
+  address    String?
+  phone      String?      @db.VarChar(30)
+  isMain     Boolean      @default(false)
+  status     ActiveStatus @default(ACTIVE)
+  createdAt  DateTime     @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime     @updatedAt @db.Timestamptz(6)
+
+  @@unique([businessId, code])
+  @@index([businessId, status])
+  @@map("branches")
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String   @db.VarChar(150)
+  email        String   @unique @db.VarChar(255)
+  phone        String?  @db.VarChar(30)
+  passwordHash String?  @map("password_hash") @db.VarChar(255)
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
+
+  @@map("users")
+}
+
+model BusinessMembership {
+  id         String           @id @default(uuid()) @db.Uuid
+  businessId String           @db.Uuid
+  userId     String           @db.Uuid
+  roleId     String           @db.Uuid
+  status     MembershipStatus @default(INVITED)
+  createdAt  DateTime         @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime         @updatedAt @db.Timestamptz(6)
+
+  @@unique([businessId, userId])
+  @@index([businessId, status])
+  @@map("business_memberships")
+}
+
+model Role {
+  id          String  @id @default(uuid()) @db.Uuid
+  businessId  String? @db.Uuid
+  name        String  @db.VarChar(100)
+  description String?
+  isSystem    Boolean @default(false)
+
+  @@unique([businessId, name])
+  @@map("roles")
+}
+
+model Permission {
+  id          String  @id @default(uuid()) @db.Uuid
+  code        String  @unique @db.VarChar(100)
+  description String?
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  id           String @id @default(uuid()) @db.Uuid
+  roleId       String @db.Uuid
+  permissionId String @db.Uuid
+
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model MembershipBranchAccess {
+  id           String @id @default(uuid()) @db.Uuid
+  membershipId String @db.Uuid
+  branchId     String @db.Uuid
+
+  @@unique([membershipId, branchId])
+  @@map("membership_branch_access")
+}
+
+model Department {
+  id          String  @id @default(uuid()) @db.Uuid
+  businessId  String  @db.Uuid
+  name        String  @db.VarChar(100)
+  description String?
+  isActive    Boolean @default(true)
+
+  @@unique([businessId, name])
+  @@map("departments")
+}
+
+model JobPosition {
+  id           String  @id @default(uuid()) @db.Uuid
+  businessId   String  @db.Uuid
+  name         String  @db.VarChar(100)
+  departmentId String? @db.Uuid
+  description  String?
+  isActive     Boolean @default(true)
+
+  @@unique([businessId, name])
+  @@map("job_positions")
+}
+
+model Employee {
+  id              String         @id @default(uuid()) @db.Uuid
+  businessId      String         @db.Uuid
+  branchId        String         @db.Uuid
+  userId          String?        @db.Uuid
+  employeeNumber  String         @db.VarChar(50)
+  firstName       String         @db.VarChar(100)
+  lastName        String         @db.VarChar(100)
+  phone           String?        @db.VarChar(30)
+  address         String?
+  positionId      String         @db.Uuid
+  employmentType  EmploymentType
+  hireDate        DateTime       @db.Date
+  terminationDate DateTime?      @db.Date
+  status          EmployeeStatus @default(ACTIVE)
+  createdAt       DateTime       @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime       @updatedAt @db.Timestamptz(6)
+
+  @@unique([businessId, employeeNumber])
+  @@index([businessId, status])
+  @@index([branchId, status])
+  @@map("employees")
+}
+
+model Shift {
+  id              String    @id @default(uuid()) @db.Uuid
+  businessId      String    @db.Uuid
+  branchId        String    @db.Uuid
+  name            String    @db.VarChar(100)
+  shiftType       ShiftType
+  startTime       DateTime  @db.Time(6)
+  endTime         DateTime  @db.Time(6)
+  crossesMidnight Boolean
+  breakMinutes    Int       @default(0)
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@map("shifts")
+}
+
+model ShiftAssignment {
+  id             String           @id @default(uuid()) @db.Uuid
+  businessId     String           @db.Uuid
+  branchId       String           @db.Uuid
+  employeeId     String           @db.Uuid
+  shiftId        String           @db.Uuid
+  scheduledStart DateTime         @db.Timestamptz(6)
+  scheduledEnd   DateTime         @db.Timestamptz(6)
+  assignedById   String?          @db.Uuid
+  status         AssignmentStatus @default(SCHEDULED)
+  createdAt      DateTime         @default(now()) @db.Timestamptz(6)
+
+  @@index([businessId, employeeId, scheduledStart])
+  @@map("shift_assignments")
+}
+
+model AttendanceRecord {
+  id                String           @id @default(uuid()) @db.Uuid
+  businessId        String           @db.Uuid
+  branchId          String           @db.Uuid
+  employeeId        String           @db.Uuid
+  shiftAssignmentId String?          @db.Uuid
+  operationalDate   DateTime         @db.Date
+  clockIn           DateTime?        @db.Timestamptz(6)
+  clockOut          DateTime?        @db.Timestamptz(6)
+  breakMinutes      Int              @default(0)
+  overtimeMinutes   Int              @default(0)
+  status            AttendanceStatus
+  notes             String?
+  recordedById      String?          @db.Uuid
+  createdAt         DateTime         @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime         @updatedAt @db.Timestamptz(6)
+
+  @@index([businessId, employeeId, operationalDate])
+  @@map("attendance_records")
+}
+
+model EmployeeCompensation {
+  id               String           @id @default(uuid()) @db.Uuid
+  businessId       String           @db.Uuid
+  employeeId       String           @db.Uuid
+  compensationType CompensationType
+  rate             Decimal          @db.Decimal(18, 4)
+  effectiveFrom    DateTime         @db.Date
+  effectiveTo      DateTime?        @db.Date
+  createdAt        DateTime         @default(now()) @db.Timestamptz(6)
+
+  @@index([businessId, employeeId, effectiveFrom])
+  @@map("employee_compensations")
+}
+
+model LeaveRecord {
+  id           String   @id @default(uuid()) @db.Uuid
+  businessId   String   @db.Uuid
+  employeeId   String   @db.Uuid
+  leaveType    String   @db.VarChar(50)
+  startDate    DateTime @db.Date
+  endDate      DateTime @db.Date
+  reason       String?
+  status       String   @db.VarChar(30)
+  approvedById String?  @db.Uuid
+
+  @@map("leave_records")
+}
+
+model MaterialCategory {
+  id          String  @id @default(uuid()) @db.Uuid
+  businessId  String  @db.Uuid
+  name        String  @db.VarChar(100)
+  description String?
+  isActive    Boolean @default(true)
+
+  @@unique([businessId, name])
+  @@map("material_categories")
+}
+
+model UnitOfMeasure {
+  id         String    @id @default(uuid()) @db.Uuid
+  businessId String    @db.Uuid
+  name       String    @db.VarChar(50)
+  symbol     String    @db.VarChar(20)
+  dimension  Dimension
+  isBaseUnit Boolean   @default(false)
+
+  @@unique([businessId, symbol])
+  @@map("units_of_measure")
+}
+
+model Material {
+  id            String   @id @default(uuid()) @db.Uuid
+  businessId    String   @db.Uuid
+  categoryId    String   @db.Uuid
+  name          String   @db.VarChar(150)
+  defaultUnitId String   @db.Uuid
+  minimumStock  Decimal  @default(0) @db.Decimal(18, 4)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now()) @db.Timestamptz(6)
+
+  @@unique([businessId, name])
+  @@index([businessId, isActive])
+  @@map("materials")
+}
+
+model MaterialVariety {
+  id          String  @id @default(uuid()) @db.Uuid
+  businessId  String  @db.Uuid
+  materialId  String  @db.Uuid
+  name        String  @db.VarChar(100)
+  description String?
+  isActive    Boolean @default(true)
+
+  @@unique([materialId, name])
+  @@map("material_varieties")
+}
+
+model Supplier {
+  id            String       @id @default(uuid()) @db.Uuid
+  businessId    String       @db.Uuid
+  name          String       @db.VarChar(150)
+  phone         String?      @db.VarChar(30)
+  address       String?
+  contactPerson String?      @db.VarChar(150)
+  status        ActiveStatus @default(ACTIVE)
+  createdAt     DateTime     @default(now()) @db.Timestamptz(6)
+
+  @@map("suppliers")
+}
+
+model Purchase {
+  id              String         @id @default(uuid()) @db.Uuid
+  businessId      String         @db.Uuid
+  branchId        String         @db.Uuid
+  supplierId      String         @db.Uuid
+  purchaseNumber  String         @db.VarChar(50)
+  purchaseDate    DateTime       @db.Timestamptz(6)
+  totalAmount     Decimal        @db.Decimal(18, 4)
+  acquisitionCost Decimal        @default(0) @db.Decimal(18, 4)
+  paymentStatus   PaymentStatus  @default(UNPAID)
+  status          DocumentStatus @default(DRAFT)
+  createdById     String         @db.Uuid
+  createdAt       DateTime       @default(now()) @db.Timestamptz(6)
+
+  @@unique([businessId, purchaseNumber])
+  @@map("purchases")
+}
+
+model PurchaseItem {
+  id                       String  @id @default(uuid()) @db.Uuid
+  businessId               String  @db.Uuid
+  purchaseId               String  @db.Uuid
+  materialId               String  @db.Uuid
+  varietyId                String? @db.Uuid
+  grossQuantity            Decimal @db.Decimal(18, 4)
+  tareQuantity             Decimal @default(0) @db.Decimal(18, 4)
+  unusableQuantity         Decimal @default(0) @db.Decimal(18, 4)
+  usableQuantity           Decimal @db.Decimal(18, 4)
+  unitId                   String  @db.Uuid
+  purchaseCost             Decimal @db.Decimal(18, 4)
+  allocatedAcquisitionCost Decimal @default(0) @db.Decimal(18, 4)
+  unitCost                 Decimal @db.Decimal(18, 4)
+
+  @@map("purchase_items")
+}
+
+model MaterialLot {
+  id                   String    @id @default(uuid()) @db.Uuid
+  businessId           String    @db.Uuid
+  branchId             String    @db.Uuid
+  materialId           String    @db.Uuid
+  varietyId            String?   @db.Uuid
+  purchaseItemId       String?   @unique @db.Uuid
+  blendOperationId     String?   @db.Uuid
+  lotNumber            String    @db.VarChar(100)
+  originalQuantity     Decimal   @db.Decimal(18, 4)
+  remainingQuantity    Decimal   @db.Decimal(18, 4)
+  unitId               String    @db.Uuid
+  totalAcquisitionCost Decimal   @db.Decimal(18, 4)
+  unitCost             Decimal   @db.Decimal(18, 4)
+  receivedAt           DateTime  @db.Timestamptz(6)
+  expiryDate           DateTime? @db.Date
+  status               LotStatus @default(AVAILABLE)
+
+  @@unique([businessId, lotNumber])
+  @@index([businessId, materialId, status])
+  @@map("material_lots")
+}
+
+model MaterialLotMovement {
+  id               String               @id @default(uuid()) @db.Uuid
+  businessId       String               @db.Uuid
+  materialLotId    String               @db.Uuid
+  movementType     MaterialMovementType
+  quantity         Decimal              @db.Decimal(18, 4)
+  unitCostSnapshot Decimal              @db.Decimal(18, 4)
+  totalCost        Decimal              @db.Decimal(18, 4)
+  referenceType    String               @db.VarChar(50)
+  referenceId      String               @db.Uuid
+  occurredAt       DateTime             @default(now()) @db.Timestamptz(6)
+  createdById      String               @db.Uuid
+
+  @@index([businessId, materialLotId, occurredAt])
+  @@map("material_lot_movements")
+}
+
+model FinishedProduct {
+  id                  String  @id @default(uuid()) @db.Uuid
+  businessId          String  @db.Uuid
+  name                String  @db.VarChar(150)
+  productCode         String  @db.VarChar(50)
+  size                String? @db.VarChar(100)
+  unitId              String  @db.Uuid
+  defaultSellingPrice Decimal @db.Decimal(18, 4)
+  isActive            Boolean @default(true)
+
+  @@unique([businessId, productCode])
+  @@map("finished_products")
+}
+
+model Recipe {
+  id          String       @id @default(uuid()) @db.Uuid
+  businessId  String       @db.Uuid
+  branchId    String?      @db.Uuid
+  name        String       @db.VarChar(150)
+  productId   String       @db.Uuid
+  description String?
+  status      ActiveStatus @default(ACTIVE)
+  createdAt   DateTime     @default(now()) @db.Timestamptz(6)
+
+  @@map("recipes")
+}
+
+model RecipeVersion {
+  id                     String   @id @default(uuid()) @db.Uuid
+  businessId             String   @db.Uuid
+  recipeId               String   @db.Uuid
+  versionNumber          Int
+  referenceBatchQuantity Decimal  @db.Decimal(18, 4)
+  expectedYield          Decimal  @db.Decimal(18, 4)
+  instructions           String?
+  effectiveFrom          DateTime @db.Date
+  createdById            String   @db.Uuid
+  createdAt              DateTime @default(now()) @db.Timestamptz(6)
+
+  @@unique([recipeId, versionNumber])
+  @@map("recipe_versions")
+}
+
+model RecipeIngredient {
+  id               String  @id @default(uuid()) @db.Uuid
+  businessId       String  @db.Uuid
+  recipeVersionId  String  @db.Uuid
+  materialId       String  @db.Uuid
+  varietyId        String? @db.Uuid
+  expectedQuantity Decimal @db.Decimal(18, 4)
+  unitId           String  @db.Uuid
+  notes            String?
+
+  @@map("recipe_ingredients")
+}
+
+model BlendOperation {
+  id              String         @id @default(uuid()) @db.Uuid
+  businessId      String         @db.Uuid
+  branchId        String         @db.Uuid
+  operationNumber String         @db.VarChar(50)
+  operationDate   DateTime       @db.Timestamptz(6)
+  outputQuantity  Decimal        @db.Decimal(18, 4)
+  processingLoss  Decimal        @default(0) @db.Decimal(18, 4)
+  processingCost  Decimal        @default(0) @db.Decimal(18, 4)
+  status          DocumentStatus @default(DRAFT)
+  createdById     String         @db.Uuid
+
+  @@unique([businessId, operationNumber])
+  @@map("blend_operations")
+}
+
+model BlendInput {
+  id               String  @id @default(uuid()) @db.Uuid
+  businessId       String  @db.Uuid
+  blendOperationId String  @db.Uuid
+  materialLotId    String  @db.Uuid
+  quantityConsumed Decimal @db.Decimal(18, 4)
+  unitCostSnapshot Decimal @db.Decimal(18, 4)
+  totalCost        Decimal @db.Decimal(18, 4)
+
+  @@map("blend_inputs")
+}
+
+model BlendOutput {
+  id               String  @id @default(uuid()) @db.Uuid
+  businessId       String  @db.Uuid
+  blendOperationId String  @db.Uuid
+  materialLotId    String  @db.Uuid
+  outputQuantity   Decimal @db.Decimal(18, 4)
+  totalCost        Decimal @db.Decimal(18, 4)
+  unitCost         Decimal @db.Decimal(18, 4)
+
+  @@map("blend_outputs")
+}
+
+model ProductionSession {
+  id                String           @id @default(uuid()) @db.Uuid
+  businessId        String           @db.Uuid
+  branchId          String           @db.Uuid
+  sessionNumber     String           @db.VarChar(50)
+  operationalDate   DateTime         @db.Date
+  startTime         DateTime         @db.Timestamptz(6)
+  endTime           DateTime?        @db.Timestamptz(6)
+  shiftAssignmentId String?          @db.Uuid
+  supervisorId      String           @db.Uuid
+  status            ProductionStatus @default(DRAFT)
+  notes             String?
+  createdAt         DateTime         @default(now()) @db.Timestamptz(6)
+
+  @@unique([businessId, sessionNumber])
+  @@index([businessId, operationalDate])
+  @@map("production_sessions")
+}
+
+model ProductionBatch {
+  id                  String           @id @default(uuid()) @db.Uuid
+  businessId          String           @db.Uuid
+  productionSessionId String           @db.Uuid
+  recipeId            String           @db.Uuid
+  recipeVersionId     String           @db.Uuid
+  batchNumber         String           @db.VarChar(50)
+  plannedQuantity     Decimal          @db.Decimal(18, 4)
+  actualOutput        Decimal          @default(0) @db.Decimal(18, 4)
+  acceptedOutput      Decimal          @default(0) @db.Decimal(18, 4)
+  rejectedOutput      Decimal          @default(0) @db.Decimal(18, 4)
+  startTime           DateTime?        @db.Timestamptz(6)
+  endTime             DateTime?        @db.Timestamptz(6)
+  status              ProductionStatus @default(DRAFT)
+  finalizedAt         DateTime?        @db.Timestamptz(6)
+  finalizedById       String?          @db.Uuid
+
+  @@unique([businessId, batchNumber])
+  @@index([businessId, status])
+  @@map("production_batches")
+}
+
+model BatchEmployeeAssignment {
+  id                String              @id @default(uuid()) @db.Uuid
+  businessId        String              @db.Uuid
+  productionBatchId String              @db.Uuid
+  employeeId        String              @db.Uuid
+  assignmentRole    BatchAssignmentRole
+  assignedStart     DateTime            @db.Timestamptz(6)
+  assignedEnd       DateTime?           @db.Timestamptz(6)
+  notes             String?
+
+  @@unique([productionBatchId, employeeId])
+  @@map("batch_employee_assignments")
+}
+
+model MaterialConsumption {
+  id                String   @id @default(uuid()) @db.Uuid
+  businessId        String   @db.Uuid
+  productionBatchId String   @db.Uuid
+  materialLotId     String   @db.Uuid
+  actualQuantity    Decimal  @db.Decimal(18, 4)
+  unitId            String   @db.Uuid
+  unitCostSnapshot  Decimal  @db.Decimal(18, 4)
+  totalCost         Decimal  @db.Decimal(18, 4)
+  consumedAt        DateTime @db.Timestamptz(6)
+
+  @@map("material_consumptions")
+}
+
+model ProductionOutput {
+  id                String           @id @default(uuid()) @db.Uuid
+  businessId        String           @db.Uuid
+  productionBatchId String           @db.Uuid
+  productId         String           @db.Uuid
+  totalQuantity     Int
+  acceptedQuantity  Int
+  rejectedQuantity  Int
+  allocationMethod  AllocationMethod
+  allocatedCost     Decimal          @db.Decimal(18, 4)
+  unitCost          Decimal          @db.Decimal(18, 4)
+
+  @@map("production_outputs")
+}
+
+model RejectionRecord {
+  id                 String          @id @default(uuid()) @db.Uuid
+  businessId         String          @db.Uuid
+  productionBatchId  String          @db.Uuid
+  productionOutputId String?         @db.Uuid
+  employeeId         String?         @db.Uuid
+  reason             RejectionReason
+  quantity           Int
+  notes              String?
+  evidenceReference  String?
+  recordedAt         DateTime        @default(now()) @db.Timestamptz(6)
+
+  @@map("rejection_records")
+}
+
+model BakerProductionRecord {
+  id                  String            @id @default(uuid()) @db.Uuid
+  businessId          String            @db.Uuid
+  branchId            String            @db.Uuid
+  employeeId          String            @db.Uuid
+  productionSessionId String            @db.Uuid
+  productionBatchId   String            @db.Uuid
+  shiftAssignmentId   String?           @db.Uuid
+  productId           String            @db.Uuid
+  operationalDate     DateTime          @db.Date
+  totalProduced       Int
+  acceptedQuantity    Int
+  rejectedQuantity    Int
+  attributionMethod   AttributionMethod
+  recordedById        String?           @db.Uuid
+  approvedById        String?           @db.Uuid
+  notes               String?
+  createdAt           DateTime          @default(now()) @db.Timestamptz(6)
+
+  @@index([businessId, employeeId, operationalDate])
+  @@index([businessId, productionBatchId])
+  @@map("baker_production_records")
+}
+
+model OverheadRecord {
+  id                String                 @id @default(uuid()) @db.Uuid
+  businessId        String                 @db.Uuid
+  branchId          String                 @db.Uuid
+  productionBatchId String?                @db.Uuid
+  operationalDate   DateTime               @db.Date
+  category          OverheadCategory
+  amount            Decimal                @db.Decimal(18, 4)
+  paymentMethod     String?                @db.VarChar(50)
+  allocationType    OverheadAllocationType
+  description       String?
+  sourceReference   String?                @db.VarChar(150)
+  createdById       String                 @db.Uuid
+
+  @@map("overhead_records")
+}
+
+model OverheadAllocation {
+  id                   String           @id @default(uuid()) @db.Uuid
+  businessId           String           @db.Uuid
+  overheadRecordId     String           @db.Uuid
+  productionBatchId    String           @db.Uuid
+  allocationMethod     AllocationMethod
+  allocationPercentage Decimal          @db.Decimal(7, 4)
+  allocatedAmount      Decimal          @db.Decimal(18, 4)
+  createdAt            DateTime         @default(now()) @db.Timestamptz(6)
+
+  @@map("overhead_allocations")
+}
+
+model LabourCostRecord {
+  id                       String           @id @default(uuid()) @db.Uuid
+  businessId               String           @db.Uuid
+  branchId                 String           @db.Uuid
+  employeeId               String           @db.Uuid
+  attendanceRecordId       String?          @db.Uuid
+  operationalDate          DateTime         @db.Date
+  workedMinutes            Int
+  compensationTypeSnapshot CompensationType
+  rateSnapshot             Decimal          @db.Decimal(18, 4)
+  totalLabourCost          Decimal          @db.Decimal(18, 4)
+  status                   LabourCostStatus @default(UNALLOCATED)
+
+  @@map("labour_cost_records")
+}
+
+model LabourAllocation {
+  id                 String           @id @default(uuid()) @db.Uuid
+  businessId         String           @db.Uuid
+  labourCostRecordId String           @db.Uuid
+  productionBatchId  String           @db.Uuid
+  allocatedMinutes   Int
+  allocatedAmount    Decimal          @db.Decimal(18, 4)
+  allocationMethod   AllocationMethod
+  createdAt          DateTime         @default(now()) @db.Timestamptz(6)
+
+  @@map("labour_allocations")
+}
+
+model ProductionCostRecord {
+  id                     String    @id @default(uuid()) @db.Uuid
+  businessId             String    @db.Uuid
+  productionBatchId      String    @db.Uuid
+  materialCost           Decimal   @db.Decimal(18, 4)
+  directOverheadCost     Decimal   @db.Decimal(18, 4)
+  allocatedDailyOverhead Decimal   @db.Decimal(18, 4)
+  allocatedLabourCost    Decimal   @db.Decimal(18, 4)
+  totalBatchCost         Decimal   @db.Decimal(18, 4)
+  acceptedQuantity       Int
+  costPerAcceptedUnit    Decimal?  @db.Decimal(18, 4)
+  calculationVersion     Int
+  calculatedAt           DateTime  @default(now()) @db.Timestamptz(6)
+  finalizedAt            DateTime? @db.Timestamptz(6)
+
+  @@unique([productionBatchId, calculationVersion])
+  @@map("production_cost_records")
+}
+
+model StockLocation {
+  id          String  @id @default(uuid()) @db.Uuid
+  businessId  String  @db.Uuid
+  branchId    String  @db.Uuid
+  name        String  @db.VarChar(100)
+  description String?
+  isActive    Boolean @default(true)
+
+  @@unique([branchId, name])
+  @@map("stock_locations")
+}
+
+model FinishedInventoryLot {
+  id                 String    @id @default(uuid()) @db.Uuid
+  businessId         String    @db.Uuid
+  branchId           String    @db.Uuid
+  productId          String    @db.Uuid
+  productionBatchId  String    @db.Uuid
+  productionOutputId String    @db.Uuid
+  stockLocationId    String    @db.Uuid
+  productionDate     DateTime  @db.Timestamptz(6)
+  expiryAt           DateTime? @db.Timestamptz(6)
+  originalQuantity   Int
+  remainingQuantity  Int
+  unitCost           Decimal   @db.Decimal(18, 4)
+  status             LotStatus @default(AVAILABLE)
+
+  @@index([businessId, productId, status])
+  @@map("finished_inventory_lots")
+}
+
+model FinishedStockMovement {
+  id                     String               @id @default(uuid()) @db.Uuid
+  businessId             String               @db.Uuid
+  finishedInventoryLotId String               @db.Uuid
+  movementType           FinishedMovementType
+  quantity               Int
+  referenceType          String               @db.VarChar(50)
+  referenceId            String               @db.Uuid
+  occurredAt             DateTime             @default(now()) @db.Timestamptz(6)
+  createdById            String               @db.Uuid
+
+  @@index([businessId, finishedInventoryLotId, occurredAt])
+  @@map("finished_stock_movements")
+}
+
+model Customer {
+  id           String       @id @default(uuid()) @db.Uuid
+  businessId   String       @db.Uuid
+  name         String       @db.VarChar(150)
+  phone        String?      @db.VarChar(30)
+  address      String?
+  customerType CustomerType
+  creditLimit  Decimal?     @db.Decimal(18, 4)
+  status       ActiveStatus @default(ACTIVE)
+  createdAt    DateTime     @default(now()) @db.Timestamptz(6)
+
+  @@index([businessId, status])
+  @@map("customers")
+}
+
+model Sale {
+  id            String        @id @default(uuid()) @db.Uuid
+  businessId    String        @db.Uuid
+  branchId      String        @db.Uuid
+  customerId    String?       @db.Uuid
+  saleNumber    String        @db.VarChar(50)
+  saleDate      DateTime      @db.Timestamptz(6)
+  subtotal      Decimal       @db.Decimal(18, 4)
+  discount      Decimal       @default(0) @db.Decimal(18, 4)
+  totalAmount   Decimal       @db.Decimal(18, 4)
+  paymentStatus PaymentStatus @default(UNPAID)
+  saleStatus    SaleStatus    @default(DRAFT)
+  createdById   String        @db.Uuid
+
+  @@unique([businessId, saleNumber])
+  @@index([businessId, saleDate])
+  @@map("sales")
+}
+
+model SaleItem {
+  id               String  @id @default(uuid()) @db.Uuid
+  businessId       String  @db.Uuid
+  saleId           String  @db.Uuid
+  productId        String  @db.Uuid
+  quantity         Int
+  unitPrice        Decimal @db.Decimal(18, 4)
+  discount         Decimal @default(0) @db.Decimal(18, 4)
+  totalAmount      Decimal @db.Decimal(18, 4)
+  unitCostSnapshot Decimal @db.Decimal(18, 4)
+  totalCOGS        Decimal @db.Decimal(18, 4)
+
+  @@map("sale_items")
+}
+
+model SaleInventoryAllocation {
+  id                     String  @id @default(uuid()) @db.Uuid
+  businessId             String  @db.Uuid
+  saleItemId             String  @db.Uuid
+  finishedInventoryLotId String  @db.Uuid
+  quantity               Int
+  unitCostSnapshot       Decimal @db.Decimal(18, 4)
+  totalCost              Decimal @db.Decimal(18, 4)
+
+  @@map("sale_inventory_allocations")
+}
+
+model Payment {
+  id              String              @id @default(uuid()) @db.Uuid
+  businessId      String              @db.Uuid
+  customerId      String?             @db.Uuid
+  saleId          String?             @db.Uuid
+  amount          Decimal             @db.Decimal(18, 4)
+  paymentMethod   PaymentMethod
+  paymentDate     DateTime            @db.Timestamptz(6)
+  referenceNumber String?             @db.VarChar(100)
+  receivedById    String              @db.Uuid
+  status          PaymentRecordStatus @default(COMPLETED)
+
+  @@map("payments")
+}
+
+model CustomerLedgerEntry {
+  id              String                @id @default(uuid()) @db.Uuid
+  businessId      String                @db.Uuid
+  customerId      String                @db.Uuid
+  transactionType LedgerTransactionType
+  referenceType   String                @db.VarChar(50)
+  referenceId     String                @db.Uuid
+  debit           Decimal               @default(0) @db.Decimal(18, 4)
+  credit          Decimal               @default(0) @db.Decimal(18, 4)
+  transactionDate DateTime              @db.Timestamptz(6)
+  description     String?
+  createdById     String                @db.Uuid
+
+  @@index([businessId, customerId, transactionDate])
+  @@map("customer_ledger_entries")
+}
+
+model Delivery {
+  id                 String         @id @default(uuid()) @db.Uuid
+  businessId         String         @db.Uuid
+  branchId           String         @db.Uuid
+  customerId         String         @db.Uuid
+  saleId             String?        @db.Uuid
+  deliveryEmployeeId String         @db.Uuid
+  deliveryDate       DateTime       @db.Timestamptz(6)
+  status             DeliveryStatus @default(PENDING)
+  notes              String?
+
+  @@map("deliveries")
+}
+
+model DeliveryItem {
+  id                String @id @default(uuid()) @db.Uuid
+  businessId        String @db.Uuid
+  deliveryId        String @db.Uuid
+  productId         String @db.Uuid
+  quantity          Int
+  deliveredQuantity Int    @default(0)
+
+  @@map("delivery_items")
+}
+
+model ExpenseCategory {
+  id           String              @id @default(uuid()) @db.Uuid
+  businessId   String              @db.Uuid
+  name         String              @db.VarChar(100)
+  categoryType ExpenseCategoryType
+  isActive     Boolean             @default(true)
+
+  @@unique([businessId, name])
+  @@map("expense_categories")
+}
+
+model Expense {
+  id              String        @id @default(uuid()) @db.Uuid
+  businessId      String        @db.Uuid
+  branchId        String        @db.Uuid
+  categoryId      String        @db.Uuid
+  amount          Decimal       @db.Decimal(18, 4)
+  expenseDate     DateTime      @db.Timestamptz(6)
+  paymentMethod   PaymentMethod
+  description     String?
+  referenceNumber String?       @db.VarChar(100)
+  createdById     String        @db.Uuid
+  status          ExpenseStatus @default(RECORDED)
+
+  @@index([businessId, expenseDate])
+  @@map("expenses")
+}
+
+model DashboardLayout {
+  id         String   @id @default(uuid()) @db.Uuid
+  businessId String   @db.Uuid
+  userId     String   @db.Uuid
+  name       String   @db.VarChar(100)
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
+
+  @@map("dashboard_layouts")
+}
+
+model DashboardWidget {
+  id                String   @id @default(uuid()) @db.Uuid
+  dashboardLayoutId String   @db.Uuid
+  widgetType        String   @db.VarChar(100)
+  title             String   @db.VarChar(150)
+  positionX         Int
+  positionY         Int
+  width             Int
+  height            Int
+  configuration     Json
+  createdAt         DateTime @default(now()) @db.Timestamptz(6)
+
+  @@map("dashboard_widgets")
+}
+
+model Device {
+  id         String       @id @default(uuid()) @db.Uuid
+  businessId String       @db.Uuid
+  deviceName String       @db.VarChar(150)
+  deviceKey  String       @db.VarChar(128)
+  userId     String       @db.Uuid
+  lastSeenAt DateTime?    @db.Timestamptz(6)
+  status     DeviceStatus @default(ACTIVE)
+
+  @@unique([businessId, userId, deviceKey])
+  @@map("devices")
+}
+
+model AuthSession {
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @db.Uuid
+  businessId       String    @db.Uuid
+  deviceId         String    @db.Uuid
+  tokenFamilyId    String    @db.Uuid
+  refreshTokenHash String    @db.VarChar(64)
+  role             String?   @db.VarChar(100)
+  permissions      Json
+  ipAddress        String?   @db.VarChar(45)
+  userAgent        String?   @db.VarChar(500)
+  expiresAt        DateTime  @db.Timestamptz(6)
+  lastUsedAt       DateTime  @default(now()) @db.Timestamptz(6)
+  revokedAt        DateTime? @db.Timestamptz(6)
+  revokeReason     String?   @db.VarChar(100)
+  createdAt        DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@index([businessId, userId, revokedAt])
+  @@index([deviceId, revokedAt])
+  @@map("auth_sessions")
+}
+
+model SyncOperation {
+  id                String     @id @default(uuid()) @db.Uuid
+  businessId        String     @db.Uuid
+  deviceId          String     @db.Uuid
+  actorId           String     @db.Uuid
+  idempotencyKey    String     @db.VarChar(150)
+  operationType     String     @db.VarChar(100)
+  schemaVersion     Int
+  payload           Json
+  clientTimestamp   DateTime   @db.Timestamptz(6)
+  operationalDate   DateTime?  @db.Date
+  syncStatus        SyncStatus @default(PENDING)
+  serverProcessedAt DateTime?  @db.Timestamptz(6)
+  errorDetails      Json?
+
+  @@unique([businessId, idempotencyKey])
+  @@map("sync_operations")
+}
+
+model SyncConflict {
+  id              String         @id @default(uuid()) @db.Uuid
+  businessId      String         @db.Uuid
+  syncOperationId String         @db.Uuid
+  conflictType    String         @db.VarChar(100)
+  description     String?
+  serverState     Json
+  submittedState  Json
+  status          ConflictStatus @default(OPEN)
+  resolution      Json?
+  resolvedById    String?        @db.Uuid
+  resolvedAt      DateTime?      @db.Timestamptz(6)
+
+  @@map("sync_conflicts")
+}
+
+model AuditLog {
+  id         String      @id @default(uuid()) @db.Uuid
+  businessId String      @db.Uuid
+  actorId    String?     @db.Uuid
+  action     String      @db.VarChar(100)
+  entityType String      @db.VarChar(100)
+  entityId   String      @db.Uuid
+  beforeData Json?
+  afterData  Json?
+  reason     String?
+  source     AuditSource
+  occurredAt DateTime    @default(now()) @db.Timestamptz(6)
+
+  @@index([businessId, entityType, entityId])
+  @@map("audit_logs")
+}
