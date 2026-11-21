@@ -8,6 +8,7 @@ import { userRouter } from './modules/users/index.js'
 import { workforceRouter } from './modules/workforce/index.js'
 import { materialsRouter } from './modules/materials/index.js'
 import { recipesRouter } from './modules/recipes/index.js'
+import { productionRouter } from './modules/production/index.js'
 
 export const createApp = (): Express => {
   const app = express()
@@ -51,6 +52,7 @@ export const createApp = (): Express => {
   app.use('/api/workforce', workforceRouter)
   app.use('/api/materials', materialsRouter)
   app.use('/api/recipes', recipesRouter)
+  app.use('/api/production', productionRouter)
 
   // 404 Route Not Found
   app.use((req, res) => {
