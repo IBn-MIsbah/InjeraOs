@@ -468,7 +468,7 @@ export const workforceApi = {
   async createEmployee(data: {
     firstName: string
     lastName: string
-    employeeNumber: string
+    employeeNumber?: string
     branchId: string
     positionId: string
     employmentType: 'FULL_TIME' | 'PART_TIME' | 'TEMPORARY' | 'CONTRACT'

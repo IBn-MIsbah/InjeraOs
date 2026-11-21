@@ -34,7 +34,7 @@ export const createPositionSchema = z.object({
 export const createEmployeeSchema = z.object({
   firstName: requiredString('First name', 2, 100),
   lastName: requiredString('Last name', 2, 100),
-  employeeNumber: requiredString('Employee identifier number', 1, 50),
+  employeeNumber: z.string().trim().max(50).optional(),
   branchId: uuidSchema,
   positionId: uuidSchema,
   employmentType: z.enum(['FULL_TIME', 'PART_TIME', 'TEMPORARY', 'CONTRACT']),

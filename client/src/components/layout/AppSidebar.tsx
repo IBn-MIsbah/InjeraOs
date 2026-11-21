@@ -24,14 +24,12 @@ import {
   Globe2,
   LayoutDashboard,
   LogIn,
-  LogOut,
   Receipt,
   RefreshCw,
   ShieldCheck,
   ShoppingCart,
   Store,
   TrendingUp,
-  User,
   UserCheck,
   UserPlus,
   Users,
@@ -63,7 +61,6 @@ interface AppSidebarProps {
   auth: AuthContextResponse | null
   authView: 'landing' | 'login' | 'register'
   onSelectAuthView: (view: 'landing' | 'login' | 'register') => void
-  onLogout: () => void
 }
 
 export function AppSidebar({
@@ -72,7 +69,6 @@ export function AppSidebar({
   auth,
   authView,
   onSelectAuthView,
-  onLogout,
 }: AppSidebarProps) {
   const [isOnline, setIsOnline] = useState(
     typeof navigator !== 'undefined' ? navigator.onLine : true
@@ -131,7 +127,7 @@ export function AppSidebar({
       </SidebarHeader>
 
       {/* Sidebar Content: Grouped Navigation */}
-      <SidebarContent className="px-2 py-2">
+      <SidebarContent className="px-2 py-1.5 overflow-y-auto">
         {auth ? (
           <>
             {/* Group 1: Operations */}
@@ -408,83 +404,24 @@ export function AppSidebar({
         </SidebarGroup>
       </SidebarContent>
 
-      {/* Sidebar Footer: User Details & Logout */}
-      <SidebarFooter className="border-t border-sidebar-border p-2">
-        {auth ? (
-          <div className="flex flex-col gap-2">
-            {/* User profile clickable item */}
-            <div
-              onClick={() => onSelectTab('profile')}
-              className={`flex items-center justify-between rounded-lg p-2 transition-all cursor-pointer group-data-[collapsible=icon]:hidden ${
-                activeTab === 'profile'
-                  ? 'bg-forest/15 border border-forest/30 dark:bg-oat/15'
-                  : 'bg-sidebar-accent/50 hover:bg-sidebar-accent border border-sidebar-border'
-              }`}
-              title="Manage profile & account settings"
-            >
-              <div className="flex items-center gap-2 min-w-0">
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-forest text-oat text-[11px] font-bold shrink-0">
-                  {auth.user.name ? auth.user.name[0].toUpperCase() : 'U'}
-                </div>
-                <div className="flex min-w-0 flex-col">
-                  <span className="truncate text-xs font-semibold text-sidebar-foreground">
-                    {auth.user.name}
-                  </span>
-                  <span className="truncate text-[10px] text-muted-foreground">
-                    {auth.user.email}
-                  </span>
-                </div>
-              </div>
-              <span className="rounded-full bg-sidebar-primary/20 px-1.5 py-0.5 text-[9px] font-bold text-sidebar-primary uppercase">
-                {auth.role ?? 'MEMBER'}
-              </span>
+      {/* Sidebar Footer: Compact Status Indicator */}
+      <SidebarFooter className="border-t border-sidebar-border px-3 py-2.5">
+        <div className="flex items-center justify-between text-[11px] text-muted-foreground group-data-[collapsible=icon]:justify-center">
+          {isOnline ? (
+            <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block animate-pulse" />
+              <span className="group-data-[collapsible=icon]:hidden font-medium">Online</span>
             </div>
-
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={activeTab === 'profile'}
-                  onClick={() => onSelectTab('profile')}
-                  tooltip="My Profile & Security"
-                  className="cursor-pointer gap-2.5 text-xs"
-                >
-                  <User className="h-4 w-4" />
-                  <span>My Profile</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-
-            <div className="flex items-center justify-between gap-1 pt-1 border-t border-sidebar-border/50 group-data-[collapsible=icon]:justify-center">
-              <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground group-data-[collapsible=icon]:hidden">
-                {isOnline ? (
-                  <>
-                    <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block animate-pulse" />
-                    <span>Sync Online</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="h-2 w-2 rounded-full bg-amber-500 inline-block" />
-                    <span>Offline ({pendingCount})</span>
-                  </>
-                )}
-              </div>
-
-              <SidebarMenuButton
-                onClick={onLogout}
-                tooltip="Sign out of InjeraOS"
-                className="cursor-pointer gap-2 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive group-data-[collapsible=icon]:w-8"
-              >
-                <LogOut className="h-4 w-4" />
-                <span className="group-data-[collapsible=icon]:hidden font-medium">Sign Out</span>
-              </SidebarMenuButton>
+          ) : (
+            <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+              <span className="h-2 w-2 rounded-full bg-amber-500 inline-block" />
+              <span className="group-data-[collapsible=icon]:hidden font-medium">Offline ({pendingCount})</span>
             </div>
-          </div>
-        ) : (
-          <div className="flex items-center gap-1 text-[10px] text-muted-foreground p-1">
-            <ShieldCheck className="h-3 w-3 text-emerald-500" />
-            <span className="group-data-[collapsible=icon]:hidden">HttpOnly Security Active</span>
-          </div>
-        )}
+          )}
+          <span className="text-[10px] text-muted-foreground group-data-[collapsible=icon]:hidden font-mono">
+            KD InjeraOS
+          </span>
+        </div>
       </SidebarFooter>
     </Sidebar>
   )

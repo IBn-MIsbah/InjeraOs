@@ -204,21 +204,43 @@ workforceRouter.post(
     const businessId = req.auth!.businessId
     const input = req.body as CreateEmployeeInput
 
-    // Verify employeeNumber uniqueness within business
-    const existing = await prisma.employee.findUnique({
-      where: {
-        businessId_employeeNumber: {
-          businessId,
-          employeeNumber: input.employeeNumber,
+    // Determine or auto-generate employeeNumber
+    let assignedEmployeeNumber = input.employeeNumber?.trim()
+    if (!assignedEmployeeNumber) {
+      const count = await prisma.employee.count({ where: { businessId } })
+      let candidateNum = count + 1
+      let candidate = `EMP-${String(candidateNum).padStart(4, '0')}`
+      while (
+        await prisma.employee.findUnique({
+          where: {
+            businessId_employeeNumber: {
+              businessId,
+              employeeNumber: candidate,
+            },
+          },
+        })
+      ) {
+        candidateNum++
+        candidate = `EMP-${String(candidateNum).padStart(4, '0')}`
+      }
+      assignedEmployeeNumber = candidate
+    } else {
+      // Verify employeeNumber uniqueness within business
+      const existing = await prisma.employee.findUnique({
+        where: {
+          businessId_employeeNumber: {
+            businessId,
+            employeeNumber: assignedEmployeeNumber,
+          },
         },
-      },
-    })
-
-    if (existing) {
-      return res.status(409).json({
-        error: 'CONFLICT',
-        message: `Employee number "${input.employeeNumber}" is already in use in this bakery.`,
       })
+
+      if (existing) {
+        return res.status(409).json({
+          error: 'CONFLICT',
+          message: `Employee number "${assignedEmployeeNumber}" is already in use in this bakery.`,
+        })
+      }
     }
 
     // Verify branch belongs to business
@@ -243,7 +265,7 @@ workforceRouter.post(
           businessId,
           branchId: input.branchId,
           positionId: input.positionId,
-          employeeNumber: input.employeeNumber,
+          employeeNumber: assignedEmployeeNumber,
           firstName: input.firstName,
           lastName: input.lastName,
           employmentType: input.employmentType,

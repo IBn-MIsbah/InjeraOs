@@ -242,4 +242,32 @@ test('Milestone 2: Employee and Workforce Foundation Suite', async (t) => {
     })
     assert.equal(patchB.status, 404)
   })
+
+  await t.test('10. Auto-assign employee number by system when omitted', async () => {
+    // Register branch for Tenant B
+    const branchBRes = await agentB.post('/api/branches', {
+      name: 'Bole Hub',
+      code: 'BOLE-01',
+      isMain: true,
+    })
+    assert.equal(branchBRes.status, 201)
+
+    // Register position for Tenant B
+    const posBRes = await agentB.post('/api/workforce/positions', {
+      name: 'Shift Supervisor',
+    })
+    assert.equal(posBRes.status, 201)
+
+    // Register employee without employeeNumber
+    const empAutoRes = await agentB.post('/api/workforce/employees', {
+      firstName: 'Solomon',
+      lastName: 'Girma',
+      branchId: branchBRes.body.data.id,
+      positionId: posBRes.body.data.id,
+      employmentType: 'FULL_TIME',
+      hireDate: '2026-03-01',
+    })
+    assert.equal(empAutoRes.status, 201)
+    assert.match(empAutoRes.body.data.employeeNumber, /^EMP-\d{4}$/)
+  })
 })

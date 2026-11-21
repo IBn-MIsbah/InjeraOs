@@ -27,7 +27,8 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar'
 import { Separator } from '@/components/ui/separator'
-import { Loader2, ShieldCheck, WifiOff } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Loader2, LogOut, ShieldCheck, WifiOff } from 'lucide-react'
 import { toast } from 'sonner'
 
 export function App() {
@@ -165,7 +166,6 @@ export function App() {
         auth={auth}
         authView={authView}
         onSelectAuthView={setAuthView}
-        onLogout={handleLogout}
       />
 
       <SidebarInset className="min-h-screen flex flex-col bg-background">
@@ -197,21 +197,47 @@ export function App() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className="hidden items-center gap-1 text-[11px] text-muted-foreground sm:inline-flex">
+          <div className="flex items-center gap-2">
+            <span className="hidden items-center gap-1 text-[11px] text-muted-foreground md:inline-flex mr-1">
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-              <span>HttpOnly Cookies</span>
+              <span>HttpOnly Active</span>
             </span>
 
             {auth && (
-              <button
-                type="button"
-                onClick={() => setActiveTab('profile')}
-                className="rounded-full border border-border bg-muted/60 px-2.5 py-0.5 text-xs font-medium text-foreground hover:bg-muted cursor-pointer transition-colors"
-                title="Manage user profile"
-              >
-                {auth.user.email}
-              </button>
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setActiveTab('profile')}
+                  className={`h-8 gap-2 px-2.5 rounded-full text-xs transition-colors cursor-pointer border shadow-2xs ${
+                    activeTab === 'profile'
+                      ? 'border-forest/50 bg-forest/10 text-forest dark:border-oat/40 dark:bg-oat/15 dark:text-oat'
+                      : 'border-border/80 bg-background hover:bg-muted/60 text-foreground'
+                  }`}
+                  title="My Profile & Security Settings"
+                >
+                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-forest text-oat text-[10px] font-bold">
+                    {auth.user.name ? auth.user.name[0].toUpperCase() : 'U'}
+                  </div>
+                  <span className="font-semibold hidden sm:inline max-w-[130px] truncate">
+                    {auth.user.name || auth.user.email}
+                  </span>
+                  <span className="rounded bg-forest/10 px-1.5 py-0.2 text-[9px] font-bold text-forest dark:bg-oat/15 dark:text-oat uppercase">
+                    {auth.role ?? 'MEMBER'}
+                  </span>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="h-8 px-2.5 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive gap-1.5 cursor-pointer rounded-full"
+                  title="Sign out of InjeraOS"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline font-medium">Sign Out</span>
+                </Button>
+              </>
             )}
           </div>
         </header>

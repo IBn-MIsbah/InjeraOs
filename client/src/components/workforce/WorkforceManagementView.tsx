@@ -98,7 +98,6 @@ export function WorkforceManagementView() {
     defaultValues: {
       firstName: '',
       lastName: '',
-      employeeNumber: '',
       branchId: '',
       positionId: '',
       employmentType: 'FULL_TIME',
@@ -534,19 +533,20 @@ export function WorkforceManagementView() {
 
                       <div className="space-y-1.5 sm:col-span-2">
                         <label className="text-xs font-medium text-foreground">
-                          Employee Number / ID <span className="text-destructive">*</span>
+                          Employee Number / ID
                         </label>
-                        <Input
-                          {...empForm.register('employeeNumber')}
-                          placeholder="e.g. EMP-001"
-                        />
-                        {empForm.formState.errors.employeeNumber ? (
-                          <p className="text-xs text-destructive">{empForm.formState.errors.employeeNumber.message}</p>
-                        ) : (
-                          <p className="text-[11px] text-muted-foreground">
-                            Unique badge code used for timecards and shift logs.
-                          </p>
-                        )}
+                        <div className="flex items-center justify-between rounded-lg border border-border/80 bg-muted/40 px-3 py-2 text-xs text-muted-foreground font-mono">
+                          <span className="flex items-center gap-2">
+                            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                            Auto-assigned by system upon registration
+                          </span>
+                          <span className="rounded bg-forest/10 px-2 py-0.5 text-[10px] font-bold text-forest dark:bg-oat/15 dark:text-oat uppercase tracking-wide">
+                            Auto ID (EMP-XXXX)
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground">
+                          Unique badge code generated automatically by the platform for shift logs & attendance.
+                        </p>
                       </div>
                     </div>
                   </div>

@@ -57,7 +57,7 @@ export const createPositionSchema = z.object({
 export const createEmployeeSchema = z.object({
   firstName: z.string().trim().min(2).max(100),
   lastName: z.string().trim().min(2).max(100),
-  employeeNumber: z.string().trim().min(1).max(50),
+  employeeNumber: z.string().trim().min(1).max(50).optional(),
   branchId: z.string().uuid(),
   positionId: z.string().uuid(),
   employmentType: employmentTypeEnum.default('FULL_TIME'),

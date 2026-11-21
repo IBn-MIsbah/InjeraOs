@@ -2,18 +2,14 @@ import { useCallback, useEffect, useState } from 'react'
 import axios from 'axios'
 import {
   authApi,
-  rolesApi,
   reportsApi,
   dashboardsApi,
   type ActiveSession,
   type AuthContextResponse,
-  type PermissionEntity,
-  type RoleEntity,
   type DashboardSummaryResult,
   type DashboardLayoutEntity,
   type DashboardWidgetEntity,
 } from '@/lib/api'
-import { ROLE_OPTIONS } from '@/types/enums'
 import {
   Card,
   CardContent,
@@ -35,7 +31,6 @@ import {
   Eye,
   EyeOff,
   Flame,
-  Key,
   Laptop,
   Layout,
   Loader2,
@@ -43,7 +38,6 @@ import {
   RefreshCw,
   Settings2,
   Shield,
-  ShieldCheck,
   Smartphone,
   Trash2,
   TrendingUp,
@@ -72,9 +66,6 @@ export function DemoDashboard({ auth, onLogout, onNavigateTab }: DemoDashboardPr
   const [rotationStatus, setRotationStatus] = useState<string | null>(null)
   const [isRotating, setIsRotating] = useState(false)
   const [revokingId, setRevokingId] = useState<string | null>(null)
-  const [roles, setRoles] = useState<RoleEntity[]>([])
-  const [loadingRoles, setLoadingRoles] = useState(true)
-  const [selectedRoleName, setSelectedRoleName] = useState<string>('OWNER')
 
   // Live Summary Metrics
   const [summary, setSummary] = useState<DashboardSummaryResult | null>(null)
@@ -128,21 +119,6 @@ export function DemoDashboard({ auth, onLogout, onNavigateTab }: DemoDashboardPr
         if (!ignore) setSessions(data)
       })
       .catch((err) => console.error('Failed to load active sessions:', err))
-
-    void rolesApi
-      .getRoles()
-      .then((data) => {
-        if (!ignore) {
-          setRoles(data)
-          if (data.length > 0) {
-            setSelectedRoleName(auth.role ?? data[0].name)
-          }
-        }
-      })
-      .catch((err) => console.error('Failed to load roles:', err))
-      .finally(() => {
-        if (!ignore) setLoadingRoles(false)
-      })
 
     void dashboardsApi
       .getLayouts()
@@ -1063,137 +1039,6 @@ export function DemoDashboard({ auth, onLogout, onNavigateTab }: DemoDashboardPr
           </div>
         </div>
       )}
-
-      {/* Bakery Roles & Permission Matrix Section */}
-      <Card className="border-border">
-        <CardHeader className="flex flex-col gap-1 pb-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <Shield className="h-4 w-4 text-forest dark:text-oat" />
-              <CardTitle className="text-sm font-bold">
-                Bakery Roles & Permission Matrix
-              </CardTitle>
-            </div>
-            <CardDescription className="text-xs">
-              Standard template and business roles configured with granular permissions across baking, sales, and inventory stations.
-            </CardDescription>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {onNavigateTab && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onNavigateTab('roles')}
-                className="text-xs h-7 gap-1.5 border-forest/30 text-forest dark:text-oat hover:bg-forest/5"
-              >
-                <ShieldCheck className="h-3.5 w-3.5" />
-                <span>Configure Custom Roles</span>
-              </Button>
-            )}
-            <span className="text-[11px] text-muted-foreground font-mono">
-              {roles.length} roles defined
-            </span>
-          </div>
-        </CardHeader>
-
-        <CardContent>
-          {loadingRoles ? (
-            <div className="flex items-center justify-center py-8 text-xs text-muted-foreground">
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Loading bakery roles and permissions…
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {/* Role selection tabs */}
-              <div className="flex flex-wrap gap-1.5 border-b border-border/60 pb-3">
-                {roles.map((r) => {
-                  const isSelected = r.name === selectedRoleName
-                  const opt = ROLE_OPTIONS.find((o) => o.value === r.name)
-                  return (
-                    <button
-                      key={r.id}
-                      type="button"
-                      onClick={() => setSelectedRoleName(r.name)}
-                      className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
-                        isSelected
-                          ? 'bg-forest text-oat shadow-xs'
-                          : 'bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground'
-                      }`}
-                    >
-                      <Key className="h-3 w-3" />
-                      <span>{opt?.label ?? r.name}</span>
-                      <span
-                        className={`rounded-full px-1.5 py-0.2 text-[10px] ${
-                          isSelected ? 'bg-oat/20 text-oat' : 'bg-background text-muted-foreground'
-                        }`}
-                      >
-                        {r.permissions.length}
-                      </span>
-                    </button>
-                  )
-                })}
-              </div>
-
-              {/* Selected role details and permissions */}
-              {(() => {
-                const activeRole = roles.find((r) => r.name === selectedRoleName) ?? roles[0]
-                if (!activeRole) return null
-                const opt = ROLE_OPTIONS.find((o) => o.value === activeRole.name)
-
-                return (
-                  <div className="rounded-lg border border-border bg-muted/20 p-4 space-y-3">
-                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                      <div>
-                        <h4 className="text-sm font-semibold text-foreground">
-                          {opt?.label ?? activeRole.name}
-                        </h4>
-                        <p className="text-xs text-muted-foreground">
-                          {activeRole.description ?? opt?.description}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        {activeRole.isSystem && (
-                          <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                            Standard system role
-                          </span>
-                        )}
-                        {auth.role === activeRole.name && (
-                          <span className="rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-2 py-0.5 text-[10px] font-medium">
-                            Your active role
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="border-t border-border/60 pt-3">
-                      <p className="text-xs font-semibold text-foreground mb-2">
-                        Assigned Capabilities ({activeRole.permissions.length}):
-                      </p>
-                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                        {activeRole.permissions.map((p: PermissionEntity) => (
-                          <div
-                            key={p.id}
-                            className="flex flex-col justify-between rounded-md border border-border bg-card p-2 text-xs"
-                          >
-                            <code className="font-mono text-[11px] font-semibold text-forest dark:text-oat">
-                              {p.code}
-                            </code>
-                            <span className="mt-0.5 text-[11px] text-muted-foreground">
-                              {p.description ?? 'System granted permission'}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )
-              })()}
-            </div>
-          )}
-        </CardContent>
-      </Card>
     </div>
   )
 }
