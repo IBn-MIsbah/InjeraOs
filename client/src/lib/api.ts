@@ -61,6 +61,12 @@ import type {
   FinishedStockMovementEntity,
   RawMaterialStockSummary,
   LotReconciliationReport,
+  CustomerEntity,
+  SaleEntity,
+  PaymentEntity,
+  CustomerLedgerEntryEntity,
+  CustomerStatementReport,
+  DeliveryEntity,
 } from '@/types'
 import type {
   LoginInput,
@@ -71,6 +77,13 @@ import type {
   RecordFinishedAdjustmentInput,
   TransferFinishedStockInput,
   RecordRawAdjustmentInput,
+  CreateCustomerInput,
+  UpdateCustomerInput,
+  CreateSaleInput,
+  RecordPaymentInput,
+  RecordLedgerAdjustmentInput,
+  CreateDeliveryInput,
+  UpdateDeliveryStatusInput,
 } from '@/schemas'
 
 // Re-export types for backward compatibility
@@ -1217,6 +1230,109 @@ export const inventoryApi = {
     return res.data.data
   },
 }
+
+export const salesApi = {
+  // Customers
+  async getCustomers(params?: { customerType?: string; status?: string; search?: string }) {
+    const res = await api.get<{ data: CustomerEntity[] }>('/sales/customers', { params })
+    return res.data.data
+  },
+
+  async createCustomer(data: CreateCustomerInput) {
+    const res = await api.post<{ message: string; data: CustomerEntity }>('/sales/customers', data)
+    return res.data
+  },
+
+  async getCustomer(id: string) {
+    const res = await api.get<{ data: CustomerEntity }>(`/sales/customers/${id}`)
+    return res.data.data
+  },
+
+  async updateCustomer(id: string, data: UpdateCustomerInput) {
+    const res = await api.patch<{ message: string; data: CustomerEntity }>(`/sales/customers/${id}`, data)
+    return res.data
+  },
+
+  async getCustomerStatement(id: string, params?: { startDate?: string; endDate?: string }) {
+    const res = await api.get<{ data: CustomerStatementReport }>(`/sales/customers/${id}/statement`, { params })
+    return res.data.data
+  },
+
+  async recordLedgerAdjustment(customerId: string, data: RecordLedgerAdjustmentInput) {
+    const res = await api.post<{ message: string; data: CustomerLedgerEntryEntity }>(
+      `/sales/customers/${customerId}/ledger-adjustment`,
+      data
+    )
+    return res.data
+  },
+
+  // Sales Orders & POS
+  async getSales(params?: {
+    branchId?: string
+    customerId?: string
+    paymentStatus?: string
+    saleStatus?: string
+    startDate?: string
+    endDate?: string
+  }) {
+    const res = await api.get<{ data: SaleEntity[] }>('/sales', { params })
+    return res.data.data
+  },
+
+  async createSale(data: CreateSaleInput) {
+    const res = await api.post<{ message: string; data: SaleEntity }>('/sales', data)
+    return res.data
+  },
+
+  async getSale(id: string) {
+    const res = await api.get<{ data: SaleEntity }>(`/sales/${id}`)
+    return res.data.data
+  },
+
+  async cancelSale(id: string, reason?: string) {
+    const res = await api.post<{ message: string; data: SaleEntity }>(`/sales/${id}/cancel`, { reason })
+    return res.data
+  },
+
+  // Payments
+  async getPayments(params?: { customerId?: string; saleId?: string; startDate?: string; endDate?: string }) {
+    const res = await api.get<{ data: PaymentEntity[] }>('/sales/payments', { params })
+    return res.data.data
+  },
+
+  async recordPayment(data: RecordPaymentInput) {
+    const res = await api.post<{ message: string; data: PaymentEntity }>('/sales/payments', data)
+    return res.data
+  },
+
+  // Deliveries
+  async getDeliveries(params?: {
+    branchId?: string
+    customerId?: string
+    deliveryEmployeeId?: string
+    status?: string
+    deliveryDate?: string
+  }) {
+    const res = await api.get<{ data: DeliveryEntity[] }>('/sales/deliveries', { params })
+    return res.data.data
+  },
+
+  async createDelivery(data: CreateDeliveryInput) {
+    const res = await api.post<{ message: string; data: DeliveryEntity }>('/sales/deliveries', data)
+    return res.data
+  },
+
+  async getDelivery(id: string) {
+    const res = await api.get<{ data: DeliveryEntity }>(`/sales/deliveries/${id}`)
+    return res.data.data
+  },
+
+  async updateDeliveryStatus(id: string, data: UpdateDeliveryStatusInput) {
+    const res = await api.patch<{ message: string; data: DeliveryEntity }>(`/sales/deliveries/${id}/status`, data)
+    return res.data
+  },
+}
+
 
 
 

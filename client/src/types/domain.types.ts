@@ -469,79 +469,128 @@ export interface CustomerEntity {
   id: string
   businessId: string
   name: string
-  customerType: CustomerType
   phone?: string | null
-  email?: string | null
   address?: string | null
-  creditLimit: number
-  paymentTermsDays: number
-  tinNumber?: string | null
-  outstandingBalance?: number
-  isActive: boolean
+  customerType: CustomerType
+  creditLimit: number | null
+  status: 'ACTIVE' | 'INACTIVE'
+  derivedBalance?: number
+  isOverCreditLimit?: boolean
+  salesCount?: number
   createdAt: string
+}
+
+export interface SaleInventoryAllocationEntity {
+  id: string
+  saleItemId: string
+  finishedInventoryLotId: string
+  quantity: number
+  unitCostSnapshot: number
+  totalCost: number
 }
 
 export interface SaleItemEntity {
   id: string
   saleId: string
   productId: string
-  product?: FinishedProductEntity
+  productName?: string
+  productCode?: string
+  productSize?: string | null
   quantity: number
   unitPrice: number
-  discountAmount: number
-  lineTotal: number
+  discount: number
+  totalAmount: number
+  unitCostSnapshot: number
+  totalCOGS: number
+  allocations?: SaleInventoryAllocationEntity[]
+}
+
+export interface PaymentEntity {
+  id: string
+  businessId: string
+  customerId?: string | null
+  customerName?: string | null
+  saleId?: string | null
+  saleNumber?: string | null
+  amount: number
+  paymentMethod: PaymentMethod
+  paymentDate: string
+  referenceNumber?: string | null
+  receivedById: string
+  status: 'PENDING' | 'COMPLETED' | 'REVERSED' | 'CANCELLED'
 }
 
 export interface SaleEntity {
   id: string
   businessId: string
   branchId: string
-  branch?: BranchEntity
+  branchName?: string
   customerId?: string | null
-  customer?: CustomerEntity | null
-  receiptNumber: string
+  customerName?: string | null
+  customerPhone?: string | null
+  saleNumber: string
   saleDate: string
-  status: SaleStatus
-  paymentStatus: PaymentStatus
   subtotal: number
-  discountAmount: number
-  taxAmount: number
+  discount: number
   totalAmount: number
-  paidAmount: number
-  balanceDue: number
-  notes?: string | null
+  paymentStatus: PaymentStatus
+  saleStatus: SaleStatus
   items?: SaleItemEntity[]
-  createdAt: string
+  payments?: PaymentEntity[]
+  totalCOGS?: number
+  grossProfit?: number
+  grossMarginPercent?: number
+  createdById: string
 }
 
-export interface PaymentEntity {
+export type LedgerTransactionType = 'SALE' | 'PAYMENT' | 'ADJUSTMENT' | 'REVERSAL'
+
+export interface CustomerLedgerEntryEntity {
   id: string
   businessId: string
-  branchId: string
-  saleId?: string | null
-  customerId?: string | null
-  customer?: CustomerEntity | null
-  amount: number
-  paymentDate: string
-  paymentMethod: PaymentMethod
-  referenceNumber?: string | null
-  notes?: string | null
-  createdAt: string
+  customerId: string
+  transactionType: LedgerTransactionType
+  referenceType: string
+  referenceId: string
+  debit: number
+  credit: number
+  runningBalance?: number
+  transactionDate: string
+  description?: string | null
+  createdById: string
+}
+
+export interface CustomerStatementReport {
+  customer: CustomerEntity & { currentBalance: number }
+  entries: CustomerLedgerEntryEntity[]
+}
+
+export interface DeliveryItemEntity {
+  id: string
+  deliveryId: string
+  productId: string
+  productName?: string
+  productCode?: string
+  quantity: number
+  deliveredQuantity: number
 }
 
 export interface DeliveryEntity {
   id: string
   businessId: string
-  saleId: string
+  branchId: string
+  branchName?: string
+  customerId: string
+  customerName?: string
+  customerPhone?: string | null
+  deliveryAddress?: string | null
+  saleId?: string | null
+  deliveryEmployeeId: string
+  driverName?: string
+  deliveryDate: string
   status: DeliveryStatus
-  driverName?: string | null
-  driverPhone?: string | null
-  deliveryAddress: string
-  recipientPhone?: string | null
-  recipientName?: string | null
-  scheduledDate: string
-  completedAt?: string | null
   notes?: string | null
+  items?: DeliveryItemEntity[]
 }
 
 export interface ExpenseCategoryEntity {
