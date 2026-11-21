@@ -2,6 +2,7 @@ import express, { type Express } from 'express'
 import { errorHandler } from './middleware/error-handler.js'
 import { requestLogger } from './middleware/request-logger.js'
 import { authRouter } from './modules/auth/index.js'
+import { branchRouter, businessRouter } from './modules/business/index.js'
 import { roleRouter } from './modules/roles/index.js'
 import { userRouter } from './modules/users/index.js'
 
@@ -42,6 +43,8 @@ export const createApp = (): Express => {
   app.use('/api/auth', authRouter)
   app.use('/api/users', userRouter)
   app.use('/api/roles', roleRouter)
+  app.use('/api/business', businessRouter)
+  app.use('/api/branches', branchRouter)
 
   // 404 Route Not Found
   app.use((req, res) => {
