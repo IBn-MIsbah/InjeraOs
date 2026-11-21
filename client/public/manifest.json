@@ -1,0 +1,17 @@
+{
+  "name": "InjeraOS Bakery Commerce Platform",
+  "short_name": "InjeraOS",
+  "description": "Multi-tenant offline-first commerce & operational platform for injera bakeries",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

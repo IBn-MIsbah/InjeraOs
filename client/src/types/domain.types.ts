@@ -1099,5 +1099,57 @@ export interface DashboardLayoutEntity {
   updatedAt: string
 }
 
+// Milestone 10: Offline PWA & Synchronization Engine Types
+export type SyncStatus = 'PENDING' | 'PROCESSING' | 'PROCESSED' | 'FAILED' | 'CONFLICT'
+export type ConflictStatus = 'OPEN' | 'RESOLVED' | 'REJECTED'
+
+export interface SyncOperationEnvelopeEntity {
+  id: string
+  deviceId: string
+  actorId?: string
+  idempotencyKey: string
+  operationType: string
+  schemaVersion: number
+  payload: Record<string, unknown>
+  clientTimestamp: string
+  operationalDate?: string | null
+  syncStatus: SyncStatus
+  serverProcessedAt?: string | null
+  errorDetails?: Record<string, unknown> | null
+  createdAt?: string
+}
+
+export interface SyncConflictEntity {
+  id: string
+  businessId: string
+  syncOperationId: string
+  conflictType: string
+  description?: string | null
+  serverState: Record<string, unknown>
+  submittedState: Record<string, unknown>
+  status: ConflictStatus
+  resolution?: Record<string, unknown> | null
+  resolvedById?: string | null
+  resolvedAt?: string | null
+}
+
+export interface SyncBatchResult {
+  total: number
+  processed: number
+  conflicts: number
+  failed: number
+  results: {
+    idempotencyKey: string
+    operationType: string
+    status: SyncStatus
+    idempotent?: boolean
+    operationId: string
+    conflictId?: string
+    message?: string
+    data?: Record<string, unknown>
+  }[]
+}
+
+
 
 

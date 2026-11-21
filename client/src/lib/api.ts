@@ -77,6 +77,11 @@ import type {
   DashboardSummaryResult,
   DashboardWidgetEntity,
   DashboardLayoutEntity,
+  SyncOperationEnvelopeEntity,
+  SyncConflictEntity,
+  SyncBatchResult,
+  SyncStatus,
+  ConflictStatus,
 } from '@/types'
 import type {
   LoginInput,
@@ -101,6 +106,8 @@ import type {
   ReportFilterInput,
   CreateDashboardLayoutInput,
   UpdateDashboardLayoutInput,
+  SyncBatchInput,
+  ResolveConflictInput,
 } from '@/schemas'
 
 // Re-export types for backward compatibility
@@ -182,6 +189,11 @@ export type {
   DashboardSummaryResult,
   DashboardWidgetEntity,
   DashboardLayoutEntity,
+  SyncOperationEnvelopeEntity,
+  SyncConflictEntity,
+  SyncBatchResult,
+  SyncStatus,
+  ConflictStatus,
 }
 
 // In-memory device identifier per browser tab session (no localStorage used)
@@ -1451,6 +1463,37 @@ export const dashboardsApi = {
     return res.data
   },
 }
+
+export const syncApi = {
+  async syncBatch(data: SyncBatchInput) {
+    const res = await api.post<{ message: string; data: SyncBatchResult }>('/sync/batch', data)
+    return res.data.data
+  },
+
+  async getSyncStatus(params?: {
+    deviceId?: string
+    idempotencyKeys?: string
+    status?: string
+    limit?: number
+  }) {
+    const res = await api.get<{ data: SyncOperationEnvelopeEntity[] }>('/sync/status', { params })
+    return res.data.data
+  },
+
+  async getConflicts(params?: { status?: string; limit?: number }) {
+    const res = await api.get<{ data: SyncConflictEntity[] }>('/sync/conflicts', { params })
+    return res.data.data
+  },
+
+  async resolveConflict(conflictId: string, data: ResolveConflictInput) {
+    const res = await api.post<{ message: string; data: Record<string, unknown> }>(
+      `/sync/conflicts/${conflictId}/resolve`,
+      data
+    )
+    return res.data
+  },
+}
+
 
 
 
