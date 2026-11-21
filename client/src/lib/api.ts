@@ -44,6 +44,18 @@ import type {
   ProductionBatchEntity,
   BakerProductivitySummary,
   BatchReconciliationReport,
+  CompensationType,
+  OverheadCategory,
+  OverheadAllocationType,
+  LabourCostStatus,
+  EmployeeCompensationEntity,
+  OverheadRecordEntity,
+  OverheadAllocationEntity,
+  LabourCostRecordEntity,
+  LabourAllocationEntity,
+  ProductionCostRecordEntity,
+  BatchCostingDetail,
+  UnitCostTrendItem,
 } from '@/types'
 import type { LoginInput, RegisterInput } from '@/schemas'
 
@@ -93,6 +105,18 @@ export type {
   ProductionBatchEntity,
   BakerProductivitySummary,
   BatchReconciliationReport,
+  CompensationType,
+  OverheadCategory,
+  OverheadAllocationType,
+  LabourCostStatus,
+  EmployeeCompensationEntity,
+  OverheadRecordEntity,
+  OverheadAllocationEntity,
+  LabourCostRecordEntity,
+  LabourAllocationEntity,
+  ProductionCostRecordEntity,
+  BatchCostingDetail,
+  UnitCostTrendItem,
 }
 
 // In-memory device identifier per browser tab session (no localStorage used)
@@ -956,6 +980,144 @@ export const productionApi = {
     return res.data.data
   },
 }
+
+export const costingApi = {
+  // Compensation
+  async getCompensations(params?: { employeeId?: string; activeOnly?: boolean }) {
+    const res = await api.get<{ data: EmployeeCompensationEntity[] }>('/costing/compensations', { params })
+    return res.data.data
+  },
+
+  async createCompensation(data: {
+    employeeId: string
+    compensationType: CompensationType
+    baseRate: number
+    pieceRatePerInjera?: number | null
+    effectiveFrom: string
+    notes?: string | null
+  }) {
+    const res = await api.post<{ data: EmployeeCompensationEntity }>('/costing/compensations', data)
+    return res.data.data
+  },
+
+  // Overheads
+  async getOverheads(params?: {
+    branchId?: string
+    productionBatchId?: string
+    allocationType?: OverheadAllocationType
+    startDate?: string
+    endDate?: string
+  }) {
+    const res = await api.get<{ data: OverheadRecordEntity[] }>('/costing/overheads', { params })
+    return res.data.data
+  },
+
+  async createOverhead(data: {
+    branchId: string
+    productionBatchId?: string | null
+    operationalDate: string
+    category: OverheadCategory
+    amount: number
+    paymentMethod?: string | null
+    allocationType: OverheadAllocationType
+    description?: string | null
+    sourceReference?: string | null
+  }) {
+    const res = await api.post<{ data: OverheadRecordEntity }>('/costing/overheads', data)
+    return res.data.data
+  },
+
+  async allocateOverhead(
+    id: string,
+    data: {
+      allocations: {
+        productionBatchId: string
+        allocatedAmount: number
+        allocationBasis?: string
+      }[]
+    }
+  ) {
+    const res = await api.post<{ message: string; data: OverheadRecordEntity }>(
+      `/costing/overheads/${id}/allocate`,
+      data
+    )
+    return res.data
+  },
+
+  // Labour Costs
+  async getLabourCosts(params?: {
+    branchId?: string
+    employeeId?: string
+    status?: LabourCostStatus
+    startDate?: string
+    endDate?: string
+  }) {
+    const res = await api.get<{ data: LabourCostRecordEntity[] }>('/costing/labour-costs', { params })
+    return res.data.data
+  },
+
+  async createLabourCost(data: {
+    branchId: string
+    employeeId: string
+    attendanceRecordId?: string | null
+    operationalDate: string
+    workedMinutes: number
+    compensationTypeSnapshot: CompensationType
+    rateSnapshot: number
+    totalLabourCost: number
+  }) {
+    const res = await api.post<{ data: LabourCostRecordEntity }>('/costing/labour-costs', data)
+    return res.data.data
+  },
+
+  async allocateLabourCost(
+    id: string,
+    data: {
+      allocations: {
+        productionBatchId: string
+        allocatedCost: number
+        allocationBasis?: string
+      }[]
+    }
+  ) {
+    const res = await api.post<{ message: string; data: LabourCostRecordEntity }>(
+      `/costing/labour-costs/${id}/allocate`,
+      data
+    )
+    return res.data
+  },
+
+  // Batch Costing & Absorption
+  async getBatchCosting(batchId: string) {
+    const res = await api.get<{ data: BatchCostingDetail }>(`/costing/batches/${batchId}`)
+    return res.data.data
+  },
+
+  async calculateBatchCost(batchId: string) {
+    const res = await api.post<{ message: string; data: ProductionCostRecordEntity }>(
+      `/costing/batches/${batchId}/calculate`
+    )
+    return res.data
+  },
+
+  async finalizeBatchCost(batchId: string) {
+    const res = await api.post<{ message: string; data: ProductionCostRecordEntity }>(
+      `/costing/batches/${batchId}/finalize`
+    )
+    return res.data
+  },
+
+  // Reports
+  async getUnitCostTrends(params?: {
+    recipeId?: string
+    startDate?: string
+    endDate?: string
+  }) {
+    const res = await api.get<{ data: UnitCostTrendItem[] }>('/costing/reports/unit-cost-trends', { params })
+    return res.data.data
+  },
+}
+
 
 
 

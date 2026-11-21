@@ -680,3 +680,170 @@ export interface HeadcountReport {
     TEMPORARY: number
   }
 }
+
+// ==========================================
+// Milestone 6: Costing & Labour Cost Types
+// ==========================================
+
+export type CompensationType = 'HOURLY' | 'MONTHLY_SALARY' | 'PIECE_RATE'
+export type OverheadCategory = 'ELECTRICITY' | 'WATER' | 'FIREWOOD' | 'FUEL' | 'PACKAGING' | 'LABOUR' | 'OTHER'
+export type OverheadAllocationType = 'DIRECT_BATCH' | 'DAILY_SHARED'
+export type LabourCostStatus = 'UNALLOCATED' | 'ALLOCATED' | 'FINALIZED'
+
+export interface EmployeeCompensationEntity {
+  id: string
+  businessId: string
+  employeeId: string
+  employeeName?: string
+  employeeNumber?: string
+  compensationType: CompensationType
+  baseRate: number
+  pieceRatePerInjera?: number | null
+  effectiveFrom: string
+  effectiveTo?: string | null
+  notes?: string | null
+  createdAt: string
+}
+
+export interface OverheadAllocationEntity {
+  id: string
+  businessId: string
+  overheadRecordId: string
+  productionBatchId: string
+  batchNumber?: string
+  allocatedAmount: number
+  allocationBasis: string
+  createdAt: string
+}
+
+export interface OverheadRecordEntity {
+  id: string
+  businessId: string
+  branchId: string
+  branchName?: string
+  productionBatchId?: string | null
+  batchNumber?: string | null
+  operationalDate: string
+  category: OverheadCategory
+  amount: number
+  paymentMethod?: PaymentMethod | null
+  allocationType: OverheadAllocationType
+  description?: string | null
+  sourceReference?: string | null
+  createdById?: string | null
+  createdAt: string
+  allocations?: OverheadAllocationEntity[]
+  allocatedAmount?: number
+  remainingUnallocated?: number
+}
+
+export interface LabourAllocationEntity {
+  id: string
+  businessId: string
+  labourCostRecordId: string
+  productionBatchId: string
+  batchNumber?: string
+  allocatedCost: number
+  allocationBasis: string
+  createdAt: string
+}
+
+export interface LabourCostRecordEntity {
+  id: string
+  businessId: string
+  branchId: string
+  branchName?: string
+  employeeId: string
+  employeeName?: string
+  employeeNumber?: string
+  attendanceRecordId?: string | null
+  operationalDate: string
+  workedMinutes: number
+  compensationTypeSnapshot: CompensationType
+  rateSnapshot: number
+  totalLabourCost: number
+  status: LabourCostStatus
+  createdAt: string
+  allocations?: LabourAllocationEntity[]
+  allocatedCost?: number
+  remainingUnallocated?: number
+}
+
+export interface ProductionCostRecordEntity {
+  id: string
+  businessId: string
+  productionBatchId: string
+  batchNumber?: string
+  rawMaterialCost: number
+  directOverheadCost: number
+  allocatedOverheadCost: number
+  allocatedLabourCost: number
+  totalBatchCost: number
+  acceptedQuantity: number
+  costPerAcceptedUnit: number
+  calculationVersion: number
+  calculatedAt: string
+  finalizedAt?: string | null
+  createdAt: string
+}
+
+export interface BatchCostingDetail {
+  batch: {
+    id: string
+    batchNumber: string
+    status: ProductionBatchStatus
+    acceptedQuantity: number
+    rejectedQuantity: number
+    totalQuantity: number
+    productionDate: string
+    sessionId: string
+    sessionNumber?: string
+    recipeId: string
+    recipeName?: string
+  }
+  costSummary: {
+    rawMaterialCost: number
+    directOverheadCost: number
+    allocatedOverheadCost: number
+    allocatedLabourCost: number
+    totalBatchCost: number
+    acceptedQuantity: number
+    costPerAcceptedUnit: number
+    isFinalized: boolean
+    finalizedAt?: string | null
+    calculationVersion: number
+  }
+  breakdown: {
+    materials: {
+      lotId: string
+      materialName: string
+      lotNumber: string
+      quantityUsed: number
+      unitPrice: number
+      materialCost: number
+    }[]
+    directOverheads: OverheadRecordEntity[]
+    allocatedOverheads: (OverheadAllocationEntity & { category: OverheadCategory; operationalDate: string })[]
+    allocatedLabour: (LabourAllocationEntity & { employeeName: string; compensationType: CompensationType })[]
+  }
+  history: ProductionCostRecordEntity[]
+}
+
+export interface UnitCostTrendItem {
+  batchId: string
+  batchNumber: string
+  productionDate: string
+  recipeId: string
+  recipeName: string
+  acceptedQuantity: number
+  rejectedQuantity: number
+  rejectionRatePercent: number
+  rawMaterialCost: number
+  directOverheadCost: number
+  allocatedOverheadCost: number
+  allocatedLabourCost: number
+  totalBatchCost: number
+  costPerAcceptedUnit: number
+  finalizedAt: string
+}
+
