@@ -26,6 +26,15 @@ import type {
   PurchaseEntity,
   MaterialLotEntity,
   MaterialLotMovementEntity,
+  FinishedProductEntity,
+  RecipeIngredientEntity,
+  RecipeVersionEntity,
+  RecipeEntity,
+  ScaledIngredientEntity,
+  ScaledRecipeResult,
+  BlendInputEntity,
+  BlendOutputEntity,
+  BlendOperationEntity,
 } from '@/types'
 import type { LoginInput, RegisterInput } from '@/schemas'
 
@@ -57,6 +66,15 @@ export type {
   PurchaseEntity,
   MaterialLotEntity,
   MaterialLotMovementEntity,
+  FinishedProductEntity,
+  RecipeIngredientEntity,
+  RecipeVersionEntity,
+  RecipeEntity,
+  ScaledIngredientEntity,
+  ScaledRecipeResult,
+  BlendInputEntity,
+  BlendOutputEntity,
+  BlendOperationEntity,
 }
 
 // In-memory device identifier per browser tab session (no localStorage used)
@@ -624,5 +642,132 @@ export const materialsApi = {
     return res.data
   },
 }
+
+export const recipesApi = {
+  // Finished Products
+  async getProducts() {
+    const res = await api.get<{ data: FinishedProductEntity[] }>('/recipes/products')
+    return res.data.data
+  },
+
+  async createProduct(data: {
+    name: string
+    productCode: string
+    size?: string | null
+    unitId: string
+    defaultSellingPrice: number
+    isActive?: boolean
+  }) {
+    const res = await api.post<{ data: FinishedProductEntity }>('/recipes/products', data)
+    return res.data.data
+  },
+
+  // Recipes
+  async getRecipes() {
+    const res = await api.get<{ data: RecipeEntity[] }>('/recipes')
+    return res.data.data
+  },
+
+  async getRecipe(id: string) {
+    const res = await api.get<{ data: RecipeEntity }>(`/recipes/${id}`)
+    return res.data.data
+  },
+
+  async createRecipe(data: {
+    name: string
+    productId: string
+    branchId?: string | null
+    description?: string | null
+    referenceBatchQuantity: number
+    expectedYield: number
+    instructions?: string | null
+    effectiveFrom?: string
+    ingredients: {
+      materialId: string
+      varietyId?: string | null
+      unitId: string
+      expectedQuantity: number
+      notes?: string | null
+    }[]
+  }) {
+    const res = await api.post<{ data: RecipeEntity }>('/recipes', data)
+    return res.data.data
+  },
+
+  async createRecipeVersion(
+    recipeId: string,
+    data: {
+      referenceBatchQuantity: number
+      expectedYield: number
+      instructions?: string | null
+      effectiveFrom?: string
+      ingredients: {
+        materialId: string
+        varietyId?: string | null
+        unitId: string
+        expectedQuantity: number
+        notes?: string | null
+      }[]
+    }
+  ) {
+    const res = await api.post<{ message: string; data: RecipeVersionEntity }>(
+      `/recipes/${recipeId}/versions`,
+      data
+    )
+    return res.data
+  },
+
+  async scaleRecipe(
+    recipeId: string,
+    data: { plannedBatchQuantity: number },
+    versionNumber?: number
+  ) {
+    const res = await api.post<{ data: ScaledRecipeResult }>(
+      `/recipes/${recipeId}/scale`,
+      data,
+      { params: versionNumber !== undefined ? { versionNumber } : undefined }
+    )
+    return res.data.data
+  },
+
+  // Pre-Mix Blending
+  async getBlends() {
+    const res = await api.get<{ data: BlendOperationEntity[] }>('/recipes/blends')
+    return res.data.data
+  },
+
+  async getBlend(id: string) {
+    const res = await api.get<{ data: BlendOperationEntity }>(`/recipes/blends/${id}`)
+    return res.data.data
+  },
+
+  async createBlend(data: {
+    branchId: string
+    operationNumber: string
+    operationDate?: string
+    targetMaterialId: string
+    targetVarietyId?: string | null
+    targetUnitId: string
+    processingLoss?: number
+    processingCost?: number
+    inputs: {
+      materialLotId: string
+      quantityConsumed: number
+    }[]
+  }) {
+    const res = await api.post<{
+      message: string
+      data: {
+        operation: BlendOperationEntity
+        blendLot: MaterialLotEntity
+        outputQuantity: number
+        blendUnitCost: number
+        totalBlendCost: number
+      }
+    }>('/recipes/blends', data)
+    return res.data
+  },
+}
+
 
 

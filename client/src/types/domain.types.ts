@@ -190,39 +190,126 @@ export interface FinishedProductEntity {
   id: string
   businessId: string
   name: string
-  code?: string | null
-  description?: string | null
-  uomId: string
-  uom?: UnitOfMeasureEntity
-  unitPrice: number
-  costPrice: number
-  minStockLevel: number
-  shelfLifeHours?: number | null
+  productCode: string
+  size?: string | null
+  unitId: string
+  unitSymbol?: string
+  defaultSellingPrice: number
   isActive: boolean
+  createdAt: string
 }
 
 export interface RecipeIngredientEntity {
   id: string
+  businessId?: string
   recipeVersionId: string
   materialId: string
-  material?: MaterialEntity
-  quantity: number
-  uomId: string
-  uom?: UnitOfMeasureEntity
-  wastagePercentage: number
+  materialName?: string
+  varietyId?: string | null
+  varietyName?: string | null
+  expectedQuantity: number
+  unitId: string
+  unitSymbol?: string
+  notes?: string | null
+}
+
+export interface RecipeVersionEntity {
+  id: string
+  businessId?: string
+  recipeId: string
+  versionNumber: number
+  referenceBatchQuantity: number
+  expectedYield: number
+  instructions?: string | null
+  effectiveFrom?: string | null
+  createdById?: string
+  createdAt?: string
+  ingredients?: RecipeIngredientEntity[]
 }
 
 export interface RecipeEntity {
   id: string
   businessId: string
   productId: string
-  product?: FinishedProductEntity
+  productName?: string
+  productCode?: string
+  branchId?: string | null
+  branchName?: string
   name: string
   description?: string | null
-  yieldQuantity: number
-  yieldUomId: string
-  ingredients?: RecipeIngredientEntity[]
-  createdAt: string
+  status?: string
+  currentVersionNumber?: number
+  referenceBatchQuantity?: number
+  expectedYield?: number
+  effectiveFrom?: string | null
+  versions?: RecipeVersionEntity[]
+  currentVersion?: RecipeVersionEntity | null
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface ScaledIngredientEntity {
+  id: string
+  materialId: string
+  materialName: string
+  unitId: string
+  unitSymbol: string
+  varietyId?: string | null
+  notes?: string | null
+  baseExpectedQuantity: number
+  scaledExpectedQuantity: number
+}
+
+export interface ScaledRecipeResult {
+  recipeId: string
+  recipeName: string
+  versionNumber: number
+  referenceBatchQuantity: number
+  plannedBatchQuantity: number
+  scalingFactor: number
+  baseExpectedYield: number
+  scaledExpectedYield: number
+  scaledIngredients: ScaledIngredientEntity[]
+}
+
+export interface BlendInputEntity {
+  id: string
+  blendOperationId: string
+  materialLotId: string
+  lotNumber?: string
+  materialId?: string
+  varietyId?: string | null
+  quantityConsumed: number
+  unitCostSnapshot: number
+  totalCost: number
+}
+
+export interface BlendOutputEntity {
+  id: string
+  blendOperationId: string
+  materialLotId: string
+  lotNumber?: string
+  outputQuantity: number
+  unitCost: number
+  totalCost: number
+}
+
+export interface BlendOperationEntity {
+  id: string
+  businessId: string
+  branchId: string
+  branchName?: string
+  operationNumber: string
+  operationDate: string
+  outputQuantity: number
+  processingLoss: number
+  processingCost: number
+  status: 'COMPLETED' | 'CANCELLED'
+  createdById: string
+  inputsCount?: number
+  inputs?: BlendInputEntity[]
+  output?: BlendOutputEntity | null
+  createdAt?: string
 }
 
 export interface ProductionBatchEntity {
