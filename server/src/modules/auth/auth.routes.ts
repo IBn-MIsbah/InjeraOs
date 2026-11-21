@@ -7,6 +7,11 @@ import { loginSchema, registerSchema, sessionIdParamsSchema, type LoginInput, ty
 import { hashPassword, verifyPassword } from './auth.service.js'
 import { clearAuthCookies, readCookie, REFRESH_COOKIE, setAuthCookies } from './cookies.js'
 import {
+  AppRole,
+  DEFAULT_ROLE_PERMISSIONS,
+  ROLE_DEFINITIONS,
+} from './roles.constants.js'
+import {
   createSession,
   revokeOtherSessions,
   revokeSessionFromRefreshToken,
@@ -46,18 +51,51 @@ authRouter.post('/register', validateBody(registerSchema), async (req: Request, 
       },
     })
 
-    let ownerRole = await tx.role.findFirst({
-      where: { businessId: business.id, name: 'OWNER' },
+    // Preload system permissions to map codes to UUIDs for role templates
+    const allPermissions = await tx.permission.findMany({
+      select: { id: true, code: true },
     })
-    if (!ownerRole) {
-      ownerRole = await tx.role.create({
+    const permissionCodeToId = new Map(allPermissions.map((p) => [p.code, p.id]))
+
+    // Bootstrap standard bakery roles for this business
+    let ownerRole: { id: string; name: string } | null = null
+
+    for (const roleKey of Object.values(AppRole)) {
+      const meta = ROLE_DEFINITIONS[roleKey]
+      const createdRole = await tx.role.create({
         data: {
           businessId: business.id,
-          name: 'OWNER',
-          description: 'Full business owner access',
-          isSystem: true,
+          name: meta.name,
+          description: meta.description,
+          isSystem: meta.isSystem,
         },
       })
+
+      if (roleKey === AppRole.OWNER) {
+        ownerRole = createdRole
+      }
+
+      const defaultPermCodes = DEFAULT_ROLE_PERMISSIONS[roleKey]
+      if (!defaultPermCodes.includes('*')) {
+        const rolePermData = defaultPermCodes
+          .map((code) => permissionCodeToId.get(code))
+          .filter((id): id is string => Boolean(id))
+          .map((permissionId) => ({
+            roleId: createdRole.id,
+            permissionId,
+          }))
+
+        if (rolePermData.length > 0) {
+          await tx.rolePermission.createMany({
+            data: rolePermData,
+            skipDuplicates: true,
+          })
+        }
+      }
+    }
+
+    if (!ownerRole) {
+      throw new Error('Failed to initialize business owner role')
     }
 
     const membership = await tx.businessMembership.create({

@@ -5,6 +5,7 @@ export default defineConfig({
   schema: 'prisma/schema.prisma',
   migrations: {
     path: 'prisma/migrations',
+    seed: 'pnpm exec tsx prisma/seed.ts',
   },
   datasource: {
     // Commands that connect to PostgreSQL require this value. Keeping it optional
