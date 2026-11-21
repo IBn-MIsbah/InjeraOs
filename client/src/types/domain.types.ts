@@ -846,3 +846,96 @@ export interface UnitCostTrendItem {
   finalizedAt: string
 }
 
+// Milestone 7: Inventory Management Types
+export interface StockLocationEntity {
+  id: string
+  businessId: string
+  branchId: string
+  branchName?: string
+  name: string
+  description?: string | null
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export type FinishedLotStatus = 'AVAILABLE' | 'DEPLETED' | 'BLOCKED' | 'EXPIRED'
+
+export type FinishedMovementType =
+  | 'PRODUCTION_IN'
+  | 'SALE_OUT'
+  | 'DAMAGE_OUT'
+  | 'SPOILAGE_OUT'
+  | 'ADJUSTMENT_IN'
+  | 'ADJUSTMENT_OUT'
+  | 'TRANSFER_IN'
+  | 'TRANSFER_OUT'
+
+export interface FinishedStockMovementEntity {
+  id: string
+  finishedInventoryLotId: string
+  movementType: FinishedMovementType
+  quantity: number
+  unitCostSnapshot: number
+  totalCost: number
+  reason?: string | null
+  referenceId?: string | null
+  notes?: string | null
+  createdAt: string
+}
+
+export interface FinishedInventoryLotEntity {
+  id: string
+  businessId: string
+  branchId: string
+  branchName?: string
+  productId: string
+  productName?: string
+  productCode?: string
+  productSize?: string | null
+  productionBatchId?: string | null
+  batchNumber?: string | null
+  stockLocationId: string
+  locationName?: string
+  productionDate: string
+  expiryAt?: string | null
+  originalQuantity: number
+  remainingQuantity: number
+  unitCost: number
+  status: FinishedLotStatus
+  fifoSequence?: number
+  hoursOld?: number
+  hoursToExpiry?: number | null
+  isExpiringSoon?: boolean
+  isExpired?: boolean
+  movements?: FinishedStockMovementEntity[]
+  createdAt: string
+  updatedAt: string
+}
+
+export interface RawMaterialStockSummary {
+  materialId: string
+  materialName: string
+  materialCode: string
+  unitSymbol: string
+  categoryName?: string | null
+  minimumStock: number
+  totalRemainingQuantity: number
+  isLowStock: boolean
+  averageUnitCost: number
+  totalStockValuation: number
+  lotsCount: number
+}
+
+export interface LotReconciliationReport {
+  lotId: string
+  originalQuantity: number
+  remainingQuantity: number
+  totalIn: number
+  totalOut: number
+  calculatedBalance: number
+  reconciles: boolean
+  movements: FinishedStockMovementEntity[]
+}
+
+

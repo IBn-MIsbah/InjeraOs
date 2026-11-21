@@ -56,8 +56,22 @@ import type {
   ProductionCostRecordEntity,
   BatchCostingDetail,
   UnitCostTrendItem,
+  StockLocationEntity,
+  FinishedInventoryLotEntity,
+  FinishedStockMovementEntity,
+  RawMaterialStockSummary,
+  LotReconciliationReport,
 } from '@/types'
-import type { LoginInput, RegisterInput } from '@/schemas'
+import type {
+  LoginInput,
+  RegisterInput,
+  CreateStockLocationInput,
+  UpdateStockLocationInput,
+  PostProductionToStockInput,
+  RecordFinishedAdjustmentInput,
+  TransferFinishedStockInput,
+  RecordRawAdjustmentInput,
+} from '@/schemas'
 
 // Re-export types for backward compatibility
 export type {
@@ -1117,6 +1131,88 @@ export const costingApi = {
     return res.data.data
   },
 }
+
+export const inventoryApi = {
+  // Stock Locations
+  async getLocations(params?: { branchId?: string; isActive?: boolean }) {
+    const res = await api.get<{ data: StockLocationEntity[] }>('/inventory/locations', { params })
+    return res.data.data
+  },
+
+  async createLocation(data: CreateStockLocationInput) {
+    const res = await api.post<{ data: StockLocationEntity }>('/inventory/locations', data)
+    return res.data.data
+  },
+
+  async updateLocation(id: string, data: UpdateStockLocationInput) {
+    const res = await api.patch<{ data: StockLocationEntity }>(`/inventory/locations/${id}`, data)
+    return res.data.data
+  },
+
+  // Finished Goods Lots
+  async getFinishedLots(params?: {
+    branchId?: string
+    productId?: string
+    stockLocationId?: string
+    status?: string
+    fifoOnly?: string
+  }) {
+    const res = await api.get<{ data: FinishedInventoryLotEntity[] }>('/inventory/finished-lots', { params })
+    return res.data.data
+  },
+
+  async getSaleReadyStock(params?: { branchId?: string; productId?: string }) {
+    const res = await api.get<{ data: FinishedInventoryLotEntity[] }>('/inventory/sale-ready', { params })
+    return res.data.data
+  },
+
+  async postProductionToStock(data: PostProductionToStockInput) {
+    const res = await api.post<{ message: string; data: FinishedInventoryLotEntity }>(
+      '/inventory/finished-lots/post-production',
+      data
+    )
+    return res.data
+  },
+
+  async adjustFinishedStock(data: RecordFinishedAdjustmentInput) {
+    const res = await api.post<{ message: string; data: FinishedInventoryLotEntity }>(
+      '/inventory/finished-lots/adjust',
+      data
+    )
+    return res.data
+  },
+
+  async transferFinishedStock(data: TransferFinishedStockInput) {
+    const res = await api.post<{ message: string; data: FinishedInventoryLotEntity }>(
+      '/inventory/finished-lots/transfer',
+      data
+    )
+    return res.data
+  },
+
+  // Raw Material Stock
+  async getRawStock(params?: { branchId?: string; materialId?: string; lowStockOnly?: boolean }) {
+    const res = await api.get<{ data: RawMaterialStockSummary[] }>('/inventory/raw-stock', { params })
+    return res.data.data
+  },
+
+  async adjustRawStock(data: RecordRawAdjustmentInput) {
+    const res = await api.post<{ message: string; data: MaterialLotEntity }>(
+      '/inventory/raw-stock/adjust',
+      data
+    )
+    return res.data
+  },
+
+  // Lot Movement Reconciliation
+  async getLotReconciliation(lotId: string) {
+    const res = await api.get<{ data: LotReconciliationReport }>(
+      `/inventory/finished-lots/${lotId}/reconciliation`
+    )
+    return res.data.data
+  },
+}
+
 
 
 
