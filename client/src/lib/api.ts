@@ -1,4 +1,23 @@
 import axios, { type InternalAxiosRequestConfig } from 'axios'
+import type {
+  ActiveSession,
+  AuthContextResponse,
+  UserProfile,
+  RefreshTokenResponse,
+  RoleEntity,
+  PermissionEntity,
+} from '@/types'
+import type { LoginInput, RegisterInput } from '@/schemas'
+
+// Re-export types for backward compatibility
+export type {
+  ActiveSession,
+  AuthContextResponse,
+  UserProfile,
+  RefreshTokenResponse,
+  RoleEntity,
+  PermissionEntity,
+}
 
 // In-memory device identifier per browser tab session (no localStorage used)
 const sessionDeviceId =
@@ -42,67 +61,31 @@ api.interceptors.response.use(
 
     originalRequest._retried = true
 
-    try {
-      refreshPromise ??= api
-        .post('/auth/refresh')
-        .then(() => undefined)
-        .finally(() => {
-          refreshPromise = undefined
-        })
+    refreshPromise ??= api
+      .post('/auth/refresh')
+      .then(() => undefined)
+      .finally(() => {
+        refreshPromise = undefined
+      })
 
-      await refreshPromise
-      return api(originalRequest)
-    } catch (refreshError) {
-      throw refreshError
-    }
+    await refreshPromise
+    return api(originalRequest)
   }
 )
 
-export type UserProfile = {
-  id: string
-  name: string
-  email: string
-  phone?: string | null
-  createdAt?: string
-}
-
-export type AuthContextResponse = {
-  user: UserProfile
-  businessId: string
-  membershipId?: string
-  role?: string | null
-  permissions: string[]
-  sessionId?: string
-}
-
-export type ActiveSession = {
-  id: string
-  deviceId: string
-  createdAt: string
-  lastUsedAt: string
-  expiresAt: string
-  ipAddress?: string | null
-  userAgent?: string | null
-  isCurrent?: boolean
-}
-
 export const authApi = {
-  async register(data: {
-    name: string
-    email: string
-    password: string
-    phone?: string
-    businessName?: string
-  }) {
-    const res = await api.post<{ data: AuthContextResponse & { business?: { id: string; name: string } } }>(
-      '/auth/register',
-      data
-    )
+  async register(data: RegisterInput) {
+    const res = await api.post<{
+      data: AuthContextResponse & { business?: { id: string; name: string } }
+    }>('/auth/register', data)
     return res.data.data
   },
 
-  async login(credentials: { email: string; password: string; businessId?: string }) {
-    const res = await api.post<{ data: AuthContextResponse }>('/auth/login', credentials)
+  async login(credentials: LoginInput) {
+    const res = await api.post<{ data: AuthContextResponse }>(
+      '/auth/login',
+      credentials
+    )
     return res.data.data
   },
 
@@ -125,12 +108,68 @@ export const authApi = {
   },
 
   async revokeOtherSessions() {
-    const res = await api.post<{ data: { revokedCount: number } }>('/auth/sessions/revoke-others')
+    const res = await api.post<{ data: { revokedCount: number } }>(
+      '/auth/sessions/revoke-others'
+    )
     return res.data.data
   },
 
   async refresh() {
-    const res = await api.post<{ data: { accessToken: string } }>('/auth/refresh')
+    const res = await api.post<{ data: RefreshTokenResponse }>('/auth/refresh')
     return res.data.data
   },
 }
+
+export const rolesApi = {
+  async getRoles() {
+    const res = await api.get<{ data: RoleEntity[] }>('/roles')
+    return res.data.data
+  },
+
+  async getPermissions() {
+    const res = await api.get<{ data: PermissionEntity[] }>('/roles/permissions')
+    return res.data.data
+  },
+
+  async getRole(roleId: string) {
+    const res = await api.get<{ data: RoleEntity }>(`/roles/${roleId}`)
+    return res.data.data
+  },
+
+  async createCustomRole(data: {
+    name: string
+    description?: string
+    permissionCodes?: string[]
+  }) {
+    const res = await api.post<{ data: RoleEntity }>('/roles', data)
+    return res.data.data
+  },
+
+  async updateRole(
+    roleId: string,
+    data: { name?: string; description?: string }
+  ) {
+    const res = await api.patch<{ data: RoleEntity }>(`/roles/${roleId}`, data)
+    return res.data.data
+  },
+
+  async setRolePermissions(roleId: string, permissionCodes: string[]) {
+    const res = await api.put<{
+      data: { roleId: string; permissions: PermissionEntity[] }
+    }>(`/roles/${roleId}/permissions`, { permissionCodes })
+    return res.data.data
+  },
+
+  async assignMemberRole(membershipId: string, roleId: string) {
+    const res = await api.patch<{
+      data: {
+        membershipId: string
+        userId: string
+        roleId: string
+        roleName: string
+      }
+    }>(`/roles/members/${membershipId}`, { roleId })
+    return res.data.data
+  },
+}
+
