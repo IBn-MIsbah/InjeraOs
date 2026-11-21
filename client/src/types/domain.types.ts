@@ -1074,6 +1074,39 @@ export interface DashboardSummaryResult {
     activeCustomersCount: number
     totalReceivables: number
   }
+  sevenDayRevenue?: {
+    day: string
+    date: string
+    revenue: number
+    orderCount: number
+  }[]
+  qualityBreakdown?: {
+    totalProduced: number
+    acceptedProduced: number
+    rejectedProduced: number
+    yieldPercent: number
+    defects: {
+      reason: string
+      count: number
+      percent: number
+    }[]
+  }
+  grainStock?: {
+    totalStockKg: number
+    materials: {
+      materialId: string
+      materialName: string
+      remainingKg: number
+      percentage: number
+    }[]
+  }
+  topBakers?: {
+    employeeId: string
+    name: string
+    acceptedCount: number
+    speed: string
+    yieldPercent: number
+  }[]
 }
 
 export interface DashboardWidgetEntity {

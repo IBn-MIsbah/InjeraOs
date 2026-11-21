@@ -7,6 +7,8 @@ import { DemoDashboard } from '@/components/dashboard/DemoDashboard'
 import { BusinessSettingsView } from '@/components/business/BusinessSettingsView'
 import { BranchManagementView } from '@/components/business/BranchManagementView'
 import { TeamMembersView } from '@/components/business/TeamMembersView'
+import { RolesManagementView } from '@/components/roles/RolesManagementView'
+import { UserProfileView } from '@/components/profile/UserProfileView'
 import { WorkforceManagementView } from '@/components/workforce/WorkforceManagementView'
 import { MaterialsManagementView } from '@/components/materials/MaterialsManagementView'
 import { RecipesManagementView } from '@/components/recipes/RecipesManagementView'
@@ -17,7 +19,6 @@ import { SalesManagementView } from '@/components/sales/SalesManagementView'
 import { ExpensesManagementView } from '@/components/expenses/ExpensesManagementView'
 import { FinancialReportsView } from '@/components/reports/FinancialReportsView'
 import { SyncManagementView } from '@/components/sync/SyncManagementView'
-import { UnslopTool } from '@/components/unslop/UnslopTool'
 import { Toaster } from '@/components/ui/sonner'
 import { AppSidebar, type TabType } from '@/components/layout/AppSidebar'
 import {
@@ -89,6 +90,73 @@ export function App() {
     }
   }
 
+  // 1. Initializing state
+  if (isInitializing) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 text-xs text-muted-foreground bg-background">
+        <Loader2 className="h-6 w-6 animate-spin text-forest" />
+        <span>Initializing KD PLC InjeraOS…</span>
+        <Toaster />
+      </div>
+    )
+  }
+
+  // 2. Standalone Landing Page (NO sidebar intrusion whatsoever)
+  if ((!auth && authView === 'landing') || activeTab === 'landing') {
+    return (
+      <>
+        <LandingPage
+          onEnterWorkspace={() => {
+            if (auth) {
+              setActiveTab('workspace')
+            } else {
+              setAuthView('login')
+            }
+          }}
+          onOpenLogin={() => {
+            setActiveTab('workspace')
+            setAuthView('login')
+          }}
+          onOpenRegister={() => {
+            setActiveTab('workspace')
+            setAuthView('register')
+          }}
+          isAuthenticated={!!auth}
+        />
+        <Toaster />
+      </>
+    )
+  }
+
+  // 3. Unauthenticated Login & Register Views (Clean full-page without internal sidebar)
+  if (!auth) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 selection:bg-forest selection:text-oat">
+        {authView === 'login' ? (
+          <LoginForm
+            onSuccess={(data: AuthContextResponse) => {
+              setAuth(data)
+              setActiveTab('workspace')
+            }}
+            onSwitchToRegister={() => setAuthView('register')}
+            onBackToLanding={() => setAuthView('landing')}
+          />
+        ) : (
+          <RegisterForm
+            onSuccess={(data: AuthContextResponse) => {
+              setAuth(data)
+              setActiveTab('workspace')
+            }}
+            onSwitchToLogin={() => setAuthView('login')}
+            onBackToLanding={() => setAuthView('landing')}
+          />
+        )}
+        <Toaster />
+      </div>
+    )
+  }
+
+  // 4. Authenticated Workspace (Full sidebar navigation)
   return (
     <SidebarProvider defaultOpen={true}>
       <AppSidebar
@@ -119,10 +187,10 @@ export function App() {
                 {activeTab === 'expenses' && 'Operating Expenses & OPEX Ledger'}
                 {activeTab === 'reports' && 'Financial Reports, P&L & Baker Productivity'}
                 {activeTab === 'sync' && 'Offline Queue & Synchronization Engine'}
-                {activeTab === 'team' && 'Staff Roster & Permissions'}
+                {activeTab === 'team' && 'Staff Roster & Membership'}
+                {activeTab === 'roles' && 'Roles, Permissions & Security Governance'}
+                {activeTab === 'profile' && 'My Profile & Account Security'}
                 {activeTab === 'settings' && 'Bakery Business Settings'}
-                {activeTab === 'unslop' && 'Unslop AI Text Editor'}
-                {activeTab === 'landing' && 'KD PLC • Enterprise Bakery Operating System'}
                 {activeTab === 'workspace' &&
                   (auth ? `${auth.business?.name ?? 'KD PLC'} Executive Operations Dashboard` : 'KD PLC • InjeraOS Platform')}
               </span>
@@ -132,13 +200,18 @@ export function App() {
           <div className="flex items-center gap-3">
             <span className="hidden items-center gap-1 text-[11px] text-muted-foreground sm:inline-flex">
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-              <span>HttpOnly cookies</span>
+              <span>HttpOnly Cookies</span>
             </span>
 
             {auth && (
-              <span className="rounded-full border border-border bg-muted/60 px-2.5 py-0.5 text-xs font-medium text-foreground">
+              <button
+                type="button"
+                onClick={() => setActiveTab('profile')}
+                className="rounded-full border border-border bg-muted/60 px-2.5 py-0.5 text-xs font-medium text-foreground hover:bg-muted cursor-pointer transition-colors"
+                title="Manage user profile"
+              >
                 {auth.user.email}
-              </span>
+              </button>
             )}
           </div>
         </header>
@@ -163,54 +236,7 @@ export function App() {
 
         {/* Main Workspace Area */}
         <main className="flex-1 p-4 md:p-8">
-          {isInitializing ? (
-            <div className="flex min-h-[70vh] flex-col items-center justify-center gap-3 text-xs text-muted-foreground">
-              <Loader2 className="h-5 w-5 animate-spin" />
-              <span>Checking active cookie session…</span>
-            </div>
-          ) : activeTab === 'unslop' ? (
-            <UnslopTool />
-          ) : activeTab === 'landing' ? (
-            <LandingPage
-              onEnterWorkspace={() => setActiveTab('workspace')}
-              onOpenLogin={() => {
-                setActiveTab('workspace')
-                setAuthView('login')
-              }}
-              onOpenRegister={() => {
-                setActiveTab('workspace')
-                setAuthView('register')
-              }}
-              isAuthenticated={!!auth}
-            />
-          ) : !auth ? (
-            authView === 'landing' ? (
-              <LandingPage
-                onEnterWorkspace={() => setAuthView('login')}
-                onOpenLogin={() => setAuthView('login')}
-                onOpenRegister={() => setAuthView('register')}
-                isAuthenticated={false}
-              />
-            ) : authView === 'login' ? (
-              <LoginForm
-                onSuccess={(data: AuthContextResponse) => {
-                  setAuth(data)
-                  setActiveTab('workspace')
-                }}
-                onSwitchToRegister={() => setAuthView('register')}
-                onBackToLanding={() => setAuthView('landing')}
-              />
-            ) : (
-              <RegisterForm
-                onSuccess={(data: AuthContextResponse) => {
-                  setAuth(data)
-                  setActiveTab('workspace')
-                }}
-                onSwitchToLogin={() => setAuthView('login')}
-                onBackToLanding={() => setAuthView('landing')}
-              />
-            )
-          ) : activeTab === 'branches' ? (
+          {activeTab === 'branches' ? (
             <BranchManagementView />
           ) : activeTab === 'workforce' ? (
             <WorkforceManagementView />
@@ -234,6 +260,10 @@ export function App() {
             <SyncManagementView />
           ) : activeTab === 'team' ? (
             <TeamMembersView />
+          ) : activeTab === 'roles' ? (
+            <RolesManagementView />
+          ) : activeTab === 'profile' ? (
+            <UserProfileView auth={auth} onLogout={handleLogout} />
           ) : activeTab === 'settings' ? (
             <BusinessSettingsView />
           ) : (
@@ -246,7 +276,7 @@ export function App() {
         </main>
 
         <footer className="border-t border-border/60 py-4 text-center text-xs text-muted-foreground">
-          <p>Injera Bakery Commerce Platform &bull; Multi-Tenant Operating System</p>
+          <p>KD PLC &bull; Injera Commercial Bakery Operating System</p>
         </footer>
       </SidebarInset>
 

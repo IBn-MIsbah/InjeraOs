@@ -115,6 +115,7 @@ export type {
   ActiveSession,
   AuthContextResponse,
   UserProfile,
+  UserProfile as UserEntity,
   RefreshTokenResponse,
   RoleEntity,
   PermissionEntity,
@@ -295,6 +296,23 @@ export const authApi = {
     const res = await api.post<{ data: RefreshTokenResponse }>('/auth/refresh')
     return res.data.data
   },
+
+  async changePassword(data: { currentPassword: string; newPassword: string }) {
+    const res = await api.post<{ message: string }>('/auth/change-password', data)
+    return res.data
+  },
+}
+
+export const userApi = {
+  async getProfile() {
+    const res = await api.get<{ data: UserProfile }>('/users/me')
+    return res.data.data
+  },
+
+  async updateProfile(data: { name?: string; phone?: string }) {
+    const res = await api.patch<{ data: UserProfile }>('/users/me', data)
+    return res.data.data
+  },
 }
 
 export const rolesApi = {
@@ -347,6 +365,11 @@ export const rolesApi = {
       }
     }>(`/roles/members/${membershipId}`, { roleId })
     return res.data.data
+  },
+
+  async deleteRole(roleId: string) {
+    const res = await api.delete<{ message: string }>(`/roles/${roleId}`)
+    return res.data
   },
 }
 

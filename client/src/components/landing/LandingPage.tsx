@@ -9,9 +9,11 @@ import {
   HardDrive,
   Layers,
   Lock,
+  LogIn,
   ShieldCheck,
   ShoppingCart,
   Store,
+  UserPlus,
   Warehouse,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -48,52 +50,42 @@ export function LandingPage({
       : '0'
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* Top Navigation Bar */}
-      <nav className="sticky top-0 z-50 border-b border-border/80 bg-background/90 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-forest text-oat shadow-sm">
-              <Store className="h-5 w-5" />
+    <div className="relative min-h-screen bg-background text-foreground antialiased selection:bg-forest selection:text-oat">
+      {/* Floating Island Navigation Bar */}
+      <header className="fixed top-5 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-5xl">
+        <nav className="flex items-center justify-between rounded-full border border-forest/20 bg-background/85 px-4 sm:px-6 py-2.5 shadow-xl backdrop-blur-xl transition-all">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-forest text-oat shadow-xs">
+              <Store className="h-4 w-4" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-base font-bold tracking-tight text-forest dark:text-oat">
-                  KD PLC
-                </span>
-                <span className="rounded-full bg-forest/10 px-2 py-0.5 text-[10px] font-semibold text-forest dark:bg-oat/15 dark:text-oat">
-                  InjeraOS
-                </span>
-              </div>
-              <p className="text-[11px] text-muted-foreground">
-                Industrial Bakery Commerce Platform
-              </p>
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm font-extrabold tracking-tight text-forest dark:text-oat">
+                KD PLC
+              </span>
+              <span className="hidden sm:inline-block rounded-full bg-forest/10 px-2 py-0.5 text-[9px] font-bold text-forest dark:bg-oat/15 dark:text-oat uppercase tracking-wider">
+                InjeraOS
+              </span>
             </div>
           </div>
 
-          <div className="hidden md:flex items-center gap-6 text-xs font-medium text-foreground/80">
+          <div className="hidden lg:flex items-center gap-6 text-xs font-semibold text-foreground/80">
             <a href="#pillars" className="hover:text-forest transition-colors">
-              Operational Pillars
-            </a>
-            <a href="#traceability" className="hover:text-forest transition-colors">
-              Traceability & Yield
+              Pillars
             </a>
             <a href="#calculator" className="hover:text-forest transition-colors">
-              Costing Engine
-            </a>
-            <a href="#offline" className="hover:text-forest transition-colors">
-              Offline PWA
+              Cost Engine
             </a>
             <a href="#security" className="hover:text-forest transition-colors">
-              Enterprise Security
+              Security
             </a>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          {/* Floating Island CTA */}
+          <div className="flex items-center gap-2">
             {isAuthenticated ? (
               <Button
                 onClick={onEnterWorkspace}
-                className="bg-forest text-oat hover:bg-forest-light text-xs font-semibold gap-1.5 shadow-sm"
+                className="bg-forest text-oat hover:bg-forest-light rounded-full text-xs font-semibold gap-1.5 px-4 h-8 shadow-sm cursor-pointer"
               >
                 <span>Launch Workspace</span>
                 <ChevronRight className="h-3.5 w-3.5" />
@@ -101,52 +93,54 @@ export function LandingPage({
             ) : (
               <>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   onClick={onOpenLogin}
-                  className="border-forest/20 text-xs font-medium hover:bg-forest/5"
+                  className="rounded-full text-xs font-semibold text-forest dark:text-oat hover:bg-forest/10 h-8 px-3 gap-1 cursor-pointer"
                 >
-                  Sign In
+                  <LogIn className="h-3.5 w-3.5" />
+                  <span>Sign In</span>
                 </Button>
                 <Button
                   size="sm"
                   onClick={onOpenRegister}
-                  className="bg-forest text-oat hover:bg-forest-light text-xs font-semibold shadow-sm"
+                  className="bg-forest text-oat hover:bg-forest-light rounded-full text-xs font-semibold h-8 px-3.5 gap-1 shadow-sm cursor-pointer"
                 >
-                  Register Business
+                  <UserPlus className="h-3.5 w-3.5" />
+                  <span>Get Started</span>
                 </Button>
               </>
             )}
           </div>
-        </div>
-      </nav>
+        </nav>
+      </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-12 pb-20 sm:pt-16 sm:pb-24 border-b border-border/60">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(29,74,53,0.12),transparent)]" />
+      <section className="relative overflow-hidden pt-28 pb-20 sm:pt-36 sm:pb-24 border-b border-border/60">
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_80%_60%_at_50%_-15%,rgba(29,74,53,0.15),transparent)]" />
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto space-y-5">
-            <div className="inline-flex items-center gap-2 rounded-full border border-forest/20 bg-forest/5 px-3.5 py-1 text-xs font-medium text-forest dark:border-oat/20 dark:bg-oat/10 dark:text-oat">
-              <Award className="h-3.5 w-3.5 text-forest dark:text-oat" />
-              <span>Enterprise Operating System for Commercial Ethiopian Bakeries</span>
+          <div className="text-center max-w-3xl mx-auto space-y-6">
+            <div className="inline-flex items-center gap-2 rounded-full border border-forest/25 bg-forest/5 px-4 py-1 text-xs font-semibold text-forest dark:border-oat/20 dark:bg-oat/10 dark:text-oat">
+              <Award className="h-3.5 w-3.5" />
+              <span>Commercial Injera Production & Distribution System</span>
             </div>
 
-            <h1 className="text-3xl font-extrabold tracking-tight sm:text-5xl text-balance">
+            <h1 className="text-4xl font-extrabold tracking-tight sm:text-6xl text-balance text-forest dark:text-oat">
               Industrial Precision for Traditional Ethiopian Injera
             </h1>
 
             <p className="text-sm sm:text-base text-muted-foreground leading-relaxed text-pretty">
-              Engineered exclusively for <strong className="text-foreground">KD PLC</strong>.
+              Engineered exclusively for <strong className="text-foreground font-semibold">KD PLC</strong>.
               From grain shipment intake and teff blending, to automated mitad baking sessions,
               FIFO freshness dispatching, customer credit ledgers, and zero-downtime offline synchronization.
             </p>
 
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
               {isAuthenticated ? (
                 <Button
                   size="lg"
                   onClick={onEnterWorkspace}
-                  className="bg-forest text-oat hover:bg-forest-light gap-2 px-6 font-semibold shadow-md"
+                  className="bg-forest text-oat hover:bg-forest-light rounded-xl gap-2 px-6 font-semibold shadow-md cursor-pointer"
                 >
                   <span>Go to Management Dashboard</span>
                   <ChevronRight className="h-4 w-4" />
@@ -156,18 +150,18 @@ export function LandingPage({
                   <Button
                     size="lg"
                     onClick={onOpenRegister}
-                    className="bg-forest text-oat hover:bg-forest-light gap-2 px-6 font-semibold shadow-md"
+                    className="bg-forest text-oat hover:bg-forest-light rounded-xl gap-2 px-6 font-semibold shadow-md cursor-pointer"
                   >
-                    <span>Get Started with KD PLC</span>
+                    <span>Register Business</span>
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                   <Button
                     size="lg"
                     variant="outline"
                     onClick={onOpenLogin}
-                    className="border-border hover:bg-muted text-xs font-medium"
+                    className="rounded-xl border-border hover:bg-muted text-xs font-semibold px-5 cursor-pointer"
                   >
-                    Access Existing Account
+                    Sign in to Workspace
                   </Button>
                 </>
               )}
@@ -175,25 +169,25 @@ export function LandingPage({
 
             {/* Quick Metrics Ticker */}
             <div className="pt-8 grid grid-cols-2 gap-3 sm:grid-cols-4 max-w-4xl mx-auto text-left">
-              <div className="rounded-xl border border-border bg-card/60 p-3.5 backdrop-blur-sm">
+              <div className="rounded-xl border border-border bg-card/70 p-3.5 backdrop-blur-sm shadow-xs">
                 <div className="text-xs font-medium text-muted-foreground">Production Costing</div>
                 <div className="text-lg font-bold text-forest dark:text-oat">100% Traceable</div>
                 <div className="text-[11px] text-muted-foreground">Every accepted injera accounted</div>
               </div>
 
-              <div className="rounded-xl border border-border bg-card/60 p-3.5 backdrop-blur-sm">
+              <div className="rounded-xl border border-border bg-card/70 p-3.5 backdrop-blur-sm shadow-xs">
                 <div className="text-xs font-medium text-muted-foreground">Mitad Efficiency</div>
                 <div className="text-lg font-bold text-forest dark:text-oat">94.8% Average Yield</div>
                 <div className="text-[11px] text-muted-foreground">Burnt/torn rejection logging</div>
               </div>
 
-              <div className="rounded-xl border border-border bg-card/60 p-3.5 backdrop-blur-sm">
+              <div className="rounded-xl border border-border bg-card/70 p-3.5 backdrop-blur-sm shadow-xs">
                 <div className="text-xs font-medium text-muted-foreground">Stock Integrity</div>
                 <div className="text-lg font-bold text-forest dark:text-oat">Strict FIFO Rotation</div>
                 <div className="text-[11px] text-muted-foreground">Freshness countdown & alerts</div>
               </div>
 
-              <div className="rounded-xl border border-border bg-card/60 p-3.5 backdrop-blur-sm">
+              <div className="rounded-xl border border-border bg-card/70 p-3.5 backdrop-blur-sm shadow-xs">
                 <div className="text-xs font-medium text-muted-foreground">Offline Reliability</div>
                 <div className="text-lg font-bold text-forest dark:text-oat">Zero Data Loss</div>
                 <div className="text-[11px] text-muted-foreground">IndexedDB queued operations</div>

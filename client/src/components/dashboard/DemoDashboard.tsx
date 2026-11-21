@@ -22,6 +22,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   Award,
   BarChart3,
@@ -42,6 +43,7 @@ import {
   RefreshCw,
   Settings2,
   Shield,
+  ShieldCheck,
   Smartphone,
   Trash2,
   TrendingUp,
@@ -332,16 +334,18 @@ export function DemoDashboard({ auth, onLogout, onNavigateTab }: DemoDashboardPr
     return activeLayout?.widgets ? activeLayout.widgets.some((w) => w.widgetType === type) : true
   }
 
-  // Simulated 7-day revenue trend data for the visual graph
-  const revenueTrendDays = [
-    { day: 'Mon', revenue: 14200, height: 42 },
-    { day: 'Tue', revenue: 18500, height: 55 },
-    { day: 'Wed', revenue: 22100, height: 68 },
-    { day: 'Thu', revenue: 19800, height: 60 },
-    { day: 'Fri', revenue: 28400, height: 86 },
-    { day: 'Sat', revenue: 34200, height: 100 },
-    { day: 'Sun (Today)', revenue: summary?.today.revenue || 24600, height: 75 },
-  ]
+  // 7-day revenue trend data from real database transactions
+  const revenueTrendDays = summary?.sevenDayRevenue && summary.sevenDayRevenue.length > 0
+    ? summary.sevenDayRevenue
+    : [
+        { day: 'Mon', revenue: 0, height: 6, orderCount: 0, date: '' },
+        { day: 'Tue', revenue: 0, height: 6, orderCount: 0, date: '' },
+        { day: 'Wed', revenue: 0, height: 6, orderCount: 0, date: '' },
+        { day: 'Thu', revenue: 0, height: 6, orderCount: 0, date: '' },
+        { day: 'Fri', revenue: 0, height: 6, orderCount: 0, date: '' },
+        { day: 'Sat', revenue: 0, height: 6, orderCount: 0, date: '' },
+        { day: 'Sun (Today)', revenue: summary?.today.revenue ?? 0, height: 6, orderCount: 0, date: '' },
+      ]
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
@@ -538,13 +542,24 @@ export function DemoDashboard({ auth, onLogout, onNavigateTab }: DemoDashboardPr
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold tracking-tight text-foreground font-mono">
-              {loadingSummary ? '…' : formatCurrency(summary?.today.revenue)}
-            </div>
-            <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
-              <span>{summary?.today.orderCount ?? 0} orders recorded</span>
-              <span className="text-emerald-600 font-semibold">+14.2%</span>
-            </div>
+            {loadingSummary ? (
+              <div className="space-y-2">
+                <Skeleton className="h-8 w-32" />
+                <Skeleton className="h-4 w-40" />
+              </div>
+            ) : (
+              <>
+                <div className="text-2xl font-bold tracking-tight text-foreground font-mono">
+                  {formatCurrency(summary?.today.revenue)}
+                </div>
+                <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+                  <span>{summary?.today.orderCount ?? 0} orders recorded</span>
+                  <span className="text-emerald-600 font-semibold font-mono">
+                    {summary?.today.orderCount ? `${summary.today.orderCount} closed` : 'Awaiting POS'}
+                  </span>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -559,13 +574,22 @@ export function DemoDashboard({ auth, onLogout, onNavigateTab }: DemoDashboardPr
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold tracking-tight text-forest dark:text-oat font-mono">
-              {loadingSummary ? '…' : formatCurrency(summary?.currentMonth.revenue)}
-            </div>
-            <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
-              <span>OPEX: {formatCurrency(summary?.currentMonth.operatingExpenses)}</span>
-              <span>{summary?.currentMonth.orderCount ?? 0} deliveries</span>
-            </div>
+            {loadingSummary ? (
+              <div className="space-y-2">
+                <Skeleton className="h-8 w-32" />
+                <Skeleton className="h-4 w-40" />
+              </div>
+            ) : (
+              <>
+                <div className="text-2xl font-bold tracking-tight text-forest dark:text-oat font-mono">
+                  {formatCurrency(summary?.currentMonth.revenue)}
+                </div>
+                <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+                  <span>OPEX: {formatCurrency(summary?.currentMonth.operatingExpenses)}</span>
+                  <span>{summary?.currentMonth.orderCount ?? 0} deliveries</span>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -580,13 +604,24 @@ export function DemoDashboard({ auth, onLogout, onNavigateTab }: DemoDashboardPr
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold tracking-tight text-foreground font-mono">
-              {loadingSummary ? '…' : `${summary?.operations.activeBatchesCount ?? 0} Batches`}
-            </div>
-            <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
-              <span>Clay & Electric Mitads active</span>
-              <span className="text-amber-600 font-medium">Baking now</span>
-            </div>
+            {loadingSummary ? (
+              <div className="space-y-2">
+                <Skeleton className="h-8 w-28" />
+                <Skeleton className="h-4 w-36" />
+              </div>
+            ) : (
+              <>
+                <div className="text-2xl font-bold tracking-tight text-foreground font-mono">
+                  {summary?.operations.activeBatchesCount ?? 0} Batches
+                </div>
+                <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+                  <span>Clay & Electric Mitads</span>
+                  <span className="text-amber-600 font-medium">
+                    {summary?.operations.activeBatchesCount ? 'Baking in progress' : 'Idle / Standby'}
+                  </span>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -601,13 +636,22 @@ export function DemoDashboard({ auth, onLogout, onNavigateTab }: DemoDashboardPr
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold tracking-tight text-foreground font-mono">
-              {loadingSummary ? '…' : formatCurrency(summary?.operations.totalReceivables)}
-            </div>
-            <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
-              <span>{summary?.operations.activeCustomersCount ?? 0} active credit accounts</span>
-              <span className="text-violet-600 font-medium">Aging monitored</span>
-            </div>
+            {loadingSummary ? (
+              <div className="space-y-2">
+                <Skeleton className="h-8 w-32" />
+                <Skeleton className="h-4 w-40" />
+              </div>
+            ) : (
+              <>
+                <div className="text-2xl font-bold tracking-tight text-foreground font-mono">
+                  {formatCurrency(summary?.operations.totalReceivables)}
+                </div>
+                <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+                  <span>{summary?.operations.activeCustomersCount ?? 0} active credit accounts</span>
+                  <span className="text-violet-600 font-medium">Aging monitored</span>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -628,38 +672,57 @@ export function DemoDashboard({ auth, onLogout, onNavigateTab }: DemoDashboardPr
                 </CardDescription>
               </div>
               <span className="text-xs font-bold font-mono text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded">
-                +18.4% Week-on-Week
+                Live DB Ledger
               </span>
             </CardHeader>
             <CardContent>
-              {/* Visual Graph Bars */}
-              <div className="h-48 flex items-end justify-between gap-2 pt-6 pb-2 px-2 border-b border-border/80">
-                {revenueTrendDays.map((item, idx) => (
-                  <div key={idx} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group">
-                    <span className="text-[10px] font-mono text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
-                      {(item.revenue / 1000).toFixed(1)}k
-                    </span>
-                    <div
-                      style={{ height: `${item.height}%` }}
-                      className={`w-full max-w-[36px] rounded-t-md transition-all ${
-                        idx === 6
-                          ? 'bg-forest dark:bg-oat shadow-sm'
-                          : 'bg-forest/60 hover:bg-forest/80 dark:bg-oat/50 dark:hover:bg-oat/80'
-                      }`}
-                    />
-                    <span className="text-[11px] font-medium text-muted-foreground truncate w-full text-center">
-                      {item.day}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              {loadingSummary ? (
+                <div className="h-48 flex items-end justify-between gap-2 pt-6 pb-2 px-2 border-b border-border/80">
+                  {[35, 60, 45, 80, 55, 95, 70].map((h, i) => (
+                    <div key={i} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                      <Skeleton className="w-full max-w-[36px] rounded-t-md" style={{ height: `${h}%` }} />
+                      <Skeleton className="h-3 w-8" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="h-48 flex items-end justify-between gap-2 pt-6 pb-2 px-2 border-b border-border/80">
+                  {revenueTrendDays.map((item, idx) => {
+                    const maxRev = Math.max(...revenueTrendDays.map((d) => d.revenue), 1)
+                    const barHeight = Math.max(Math.round((item.revenue / maxRev) * 100), item.revenue > 0 ? 12 : 5)
+                    return (
+                      <div key={idx} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group">
+                        <span className="text-[10px] font-mono text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                          {item.revenue > 0 ? `${(item.revenue / 1000).toFixed(1)}k` : '0 ETB'}
+                        </span>
+                        <div
+                          style={{ height: `${barHeight}%` }}
+                          className={`w-full max-w-[36px] rounded-t-md transition-all ${
+                            idx === revenueTrendDays.length - 1
+                              ? 'bg-forest dark:bg-oat shadow-sm'
+                              : 'bg-forest/60 hover:bg-forest/80 dark:bg-oat/50 dark:hover:bg-oat/80'
+                          }`}
+                          title={`${item.day}: ${formatCurrency(item.revenue)} (${item.orderCount} orders)`}
+                        />
+                        <span className="text-[11px] font-medium text-muted-foreground truncate w-full text-center">
+                          {item.day}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
 
               <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <div className="h-3 w-3 rounded-full bg-forest dark:bg-oat" />
-                  <span>Completed Sales Ledger (ETB)</span>
+                  <span>Real Sales Ledger Aggregation (ETB)</span>
                 </div>
-                <span>Peak production day: Saturday (34,200 ETB)</span>
+                <span>
+                  {summary?.sevenDayRevenue && summary.sevenDayRevenue.length > 0
+                    ? `7-Day Total: ${formatCurrency(summary.sevenDayRevenue.reduce((s, d) => s + d.revenue, 0))}`
+                    : 'Awaiting transactions'}
+                </span>
               </div>
             </CardContent>
           </Card>
@@ -674,54 +737,66 @@ export function DemoDashboard({ auth, onLogout, onNavigateTab }: DemoDashboardPr
                 Mitad Quality & Rejection Distribution
               </CardTitle>
               <CardDescription className="text-xs">
-                Real-time output absorption: 94.6% Accepted Sellable Injera.
+                Real-time output absorption: {summary?.qualityBreakdown?.yieldPercent ?? 100}% Accepted Sellable Injera.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-xs">
-                  <span className="font-semibold text-foreground">Accepted Sellable Units</span>
-                  <span className="font-bold text-forest dark:text-oat">94.6% (14,280 pcs)</span>
+              {loadingSummary ? (
+                <div className="space-y-3">
+                  <Skeleton className="h-8 w-full" />
+                  <Skeleton className="h-8 w-full" />
+                  <Skeleton className="h-8 w-full" />
                 </div>
-                <div className="h-2.5 w-full bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-forest dark:bg-oat rounded-full" style={{ width: '94.6%' }} />
-                </div>
-              </div>
+              ) : (
+                <>
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-xs">
+                      <span className="font-semibold text-foreground">Accepted Sellable Units</span>
+                      <span className="font-bold text-forest dark:text-oat">
+                        {summary?.qualityBreakdown?.yieldPercent ?? 100}% ({summary?.qualityBreakdown?.acceptedProduced ?? 0} pcs)
+                      </span>
+                    </div>
+                    <div className="h-2.5 w-full bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-forest dark:bg-oat rounded-full transition-all"
+                        style={{ width: `${Math.min(summary?.qualityBreakdown?.yieldPercent ?? 100, 100)}%` }}
+                      />
+                    </div>
+                  </div>
 
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Burnt Defect (ከልክ በላይ የበሰለ)</span>
-                  <span className="font-medium text-rose-600">2.8% (420 pcs)</span>
-                </div>
-                <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-rose-500 rounded-full" style={{ width: '2.8%' }} />
-                </div>
-              </div>
+                  {summary?.qualityBreakdown?.defects && summary.qualityBreakdown.defects.length > 0 ? (
+                    summary.qualityBreakdown.defects.map((defect) => (
+                      <div key={defect.reason} className="space-y-1.5">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-muted-foreground">{defect.reason}</span>
+                          <span className="font-medium text-rose-600">
+                            {defect.percent}% ({defect.count} pcs)
+                          </span>
+                        </div>
+                        <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all bg-rose-500"
+                            style={{ width: `${Math.min(defect.percent, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3 text-center">
+                      <CheckCircle2 className="h-4 w-4 text-emerald-600 mx-auto mb-1" />
+                      <span className="text-xs font-semibold text-foreground">Zero Defect Rate Recorded</span>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        All {summary?.qualityBreakdown?.acceptedProduced ?? 0} baked injera passed quality inspections.
+                      </p>
+                    </div>
+                  )}
 
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Torn & Broken (የተቀደደ)</span>
-                  <span className="font-medium text-amber-600">1.6% (240 pcs)</span>
-                </div>
-                <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-amber-500 rounded-full" style={{ width: '1.6%' }} />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Irregular Thickness / Size</span>
-                  <span className="font-medium text-muted-foreground">1.0% (150 pcs)</span>
-                </div>
-                <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-gray-400 rounded-full" style={{ width: '1.0%' }} />
-                </div>
-              </div>
-
-              <div className="pt-2 rounded-lg bg-muted/40 p-2.5 text-[11px] text-muted-foreground">
-                <strong className="text-foreground">Invariant: </strong>
-                All rejected unit costs are absorbed directly into the accepted unit cost.
-              </div>
+                  <div className="pt-2 rounded-lg bg-muted/40 p-2.5 text-[11px] text-muted-foreground">
+                    <strong className="text-foreground">Cost Invariant: </strong>
+                    All rejected unit costs are absorbed directly into the accepted unit cost.
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
         )}
@@ -738,51 +813,38 @@ export function DemoDashboard({ auth, onLogout, onNavigateTab }: DemoDashboardPr
                 Raw Teff Grain Formulation Mix
               </CardTitle>
               <CardDescription className="text-xs">
-                Active batch consumption across pure Magna, Sergegna, and Tikur teff lots.
+                Active inventory balances across pure Magna, Sergegna, and Tikur grain lots.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex items-center justify-between text-xs bg-muted/30 p-2.5 rounded-lg border border-border">
-                <div className="flex items-center gap-2.5">
-                  <div className="h-3 w-3 rounded-full bg-amber-100 border border-amber-300" />
-                  <div>
-                    <div className="font-bold text-foreground">White Magna Teff (ነጭ ማኛ)</div>
-                    <div className="text-[11px] text-muted-foreground">High purity premium hotel batches</div>
+              {loadingSummary ? (
+                <div className="space-y-2">
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                </div>
+              ) : summary?.grainStock?.materials && summary.grainStock.materials.length > 0 ? (
+                summary.grainStock.materials.map((mat) => (
+                  <div key={mat.materialId} className="flex items-center justify-between text-xs bg-muted/30 p-2.5 rounded-lg border border-border">
+                    <div className="flex items-center gap-2.5">
+                      <div className="h-3 w-3 rounded-full bg-forest/40 dark:bg-oat/50" />
+                      <div>
+                        <div className="font-bold text-foreground">{mat.materialName}</div>
+                        <div className="text-[11px] text-muted-foreground font-mono">Lot Tracking Active</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold font-mono">{mat.percentage}% Share</div>
+                      <div className="text-[10px] text-muted-foreground">
+                        {mat.remainingKg.toLocaleString()} kg remaining
+                      </div>
+                    </div>
                   </div>
+                ))
+              ) : (
+                <div className="rounded-lg border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
+                  No raw grain lots currently active in inventory. Receive material lots in Materials & Inventory.
                 </div>
-                <div className="text-right">
-                  <div className="font-bold font-mono">55% Share</div>
-                  <div className="text-[10px] text-muted-foreground">4,200 kg remaining</div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between text-xs bg-muted/30 p-2.5 rounded-lg border border-border">
-                <div className="flex items-center gap-2.5">
-                  <div className="h-3 w-3 rounded-full bg-amber-600/70" />
-                  <div>
-                    <div className="font-bold text-foreground">Mixed Sergegna Teff (ሰርገኛ)</div>
-                    <div className="text-[11px] text-muted-foreground">Balanced restaurant formulation</div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="font-bold font-mono">30% Share</div>
-                  <div className="text-[10px] text-muted-foreground">2,300 kg remaining</div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between text-xs bg-muted/30 p-2.5 rounded-lg border border-border">
-                <div className="flex items-center gap-2.5">
-                  <div className="h-3 w-3 rounded-full bg-amber-950" />
-                  <div>
-                    <div className="font-bold text-foreground">Brown Tikur Teff (ጥቁር ጤፍ)</div>
-                    <div className="text-[11px] text-muted-foreground">High iron traditional blend</div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="font-bold font-mono">15% Share</div>
-                  <div className="text-[10px] text-muted-foreground">1,150 kg remaining</div>
-                </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         )}
@@ -796,34 +858,44 @@ export function DemoDashboard({ auth, onLogout, onNavigateTab }: DemoDashboardPr
                 Baker Productivity & Speed Leaderboard
               </CardTitle>
               <CardDescription className="text-xs">
-                Performance rankings by accepted output quantity and low defect ratios.
+                Performance rankings by accepted output quantity and high quality yield.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="divide-y divide-border/60">
-                {[
-                  { rank: '1', name: 'Almaz Tadesse', speed: '52 pcs/hr', accepted: '1,840 pcs', yield: '97.2%', badge: 'Gold Baker' },
-                  { rank: '2', name: 'Genet Wolde', speed: '48 pcs/hr', accepted: '1,680 pcs', yield: '96.5%', badge: 'Silver Baker' },
-                  { rank: '3', name: 'Tigist Bekele', speed: '45 pcs/hr', accepted: '1,520 pcs', yield: '95.1%', badge: 'Master Baker' },
-                  { rank: '4', name: 'Hiwot Assefa', speed: '41 pcs/hr', accepted: '1,390 pcs', yield: '94.8%', badge: 'Baker' },
-                ].map((baker) => (
-                  <div key={baker.rank} className="py-2.5 flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-3">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-forest/10 text-forest dark:bg-oat/15 dark:text-oat font-bold text-xs">
-                        #{baker.rank}
-                      </span>
-                      <div>
-                        <span className="font-semibold text-foreground">{baker.name}</span>
-                        <div className="text-[11px] text-muted-foreground">{baker.speed} average speed</div>
+              {loadingSummary ? (
+                <div className="space-y-2">
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                </div>
+              ) : summary?.topBakers && summary.topBakers.length > 0 ? (
+                <div className="divide-y divide-border/60">
+                  {summary.topBakers.map((baker, idx) => (
+                    <div key={baker.employeeId} className="py-2.5 flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-3">
+                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-forest/10 text-forest dark:bg-oat/15 dark:text-oat font-bold text-xs">
+                          #{idx + 1}
+                        </span>
+                        <div>
+                          <span className="font-semibold text-foreground">{baker.name}</span>
+                          <div className="text-[11px] text-muted-foreground">
+                            Speed: {baker.speed}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="font-bold font-mono text-foreground">{baker.acceptedCount} pcs accepted</span>
+                        <div className="text-[11px] text-emerald-600 font-medium">
+                          {baker.yieldPercent}% yield
+                        </div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <span className="font-bold font-mono text-foreground">{baker.accepted}</span>
-                      <div className="text-[11px] text-emerald-600 font-medium">{baker.yield} yield</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-lg border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
+                  No baker production logged yet. Track mitad output in Production & Baking.
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
@@ -1007,9 +1079,20 @@ export function DemoDashboard({ auth, onLogout, onNavigateTab }: DemoDashboardPr
             </CardDescription>
           </div>
 
-          <div className="flex items-center gap-1.5">
-            <span className="text-[11px] text-muted-foreground">
-              {roles.length} roles available
+          <div className="flex items-center gap-2">
+            {onNavigateTab && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onNavigateTab('roles')}
+                className="text-xs h-7 gap-1.5 border-forest/30 text-forest dark:text-oat hover:bg-forest/5"
+              >
+                <ShieldCheck className="h-3.5 w-3.5" />
+                <span>Configure Custom Roles</span>
+              </Button>
+            )}
+            <span className="text-[11px] text-muted-foreground font-mono">
+              {roles.length} roles defined
             </span>
           </div>
         </CardHeader>

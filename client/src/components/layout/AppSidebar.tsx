@@ -29,9 +29,9 @@ import {
   RefreshCw,
   ShieldCheck,
   ShoppingCart,
-  Sparkles,
   Store,
   TrendingUp,
+  User,
   UserCheck,
   UserPlus,
   Users,
@@ -53,8 +53,9 @@ export type TabType =
   | 'reports'
   | 'sync'
   | 'team'
+  | 'roles'
+  | 'profile'
   | 'settings'
-  | 'unslop'
 
 interface AppSidebarProps {
   activeTab: TabType
@@ -315,6 +316,18 @@ export function AppSidebar({
 
                   <SidebarMenuItem>
                     <SidebarMenuButton
+                      isActive={activeTab === 'roles'}
+                      onClick={() => onSelectTab('roles')}
+                      tooltip="Roles & Permissions Governance"
+                      className="cursor-pointer gap-2.5 text-xs"
+                    >
+                      <ShieldCheck className="h-4 w-4 text-emerald-500" />
+                      <span>Roles & Permissions</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
                       isActive={activeTab === 'settings'}
                       onClick={() => onSelectTab('settings')}
                       tooltip="Business Profile & Calendar"
@@ -375,7 +388,7 @@ export function AppSidebar({
         {/* Group 3: Tools & Utilities */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-[10px] font-medium tracking-wider text-muted-foreground uppercase">
-            Utilities
+            Platform
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -387,19 +400,7 @@ export function AppSidebar({
                   className="cursor-pointer gap-2.5 text-xs"
                 >
                   <Globe2 className="h-4 w-4 text-emerald-400" />
-                  <span>KD PLC Overview</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={activeTab === 'unslop'}
-                  onClick={() => onSelectTab('unslop')}
-                  tooltip="AI Writing De-Slopper"
-                  className="cursor-pointer gap-2.5 text-xs"
-                >
-                  <Sparkles className="h-4 w-4 text-amber-500" />
-                  <span>Unslop Editor</span>
+                  <span>KD PLC Landing Page</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -411,21 +412,49 @@ export function AppSidebar({
       <SidebarFooter className="border-t border-sidebar-border p-2">
         {auth ? (
           <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between rounded-md bg-sidebar-accent/50 p-2 group-data-[collapsible=icon]:hidden">
-              <div className="flex min-w-0 flex-col">
-                <span className="truncate text-xs font-medium text-sidebar-foreground">
-                  {auth.user.name}
-                </span>
-                <span className="truncate text-[10px] text-muted-foreground">
-                  {auth.user.email}
-                </span>
+            {/* User profile clickable item */}
+            <div
+              onClick={() => onSelectTab('profile')}
+              className={`flex items-center justify-between rounded-lg p-2 transition-all cursor-pointer group-data-[collapsible=icon]:hidden ${
+                activeTab === 'profile'
+                  ? 'bg-forest/15 border border-forest/30 dark:bg-oat/15'
+                  : 'bg-sidebar-accent/50 hover:bg-sidebar-accent border border-sidebar-border'
+              }`}
+              title="Manage profile & account settings"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-forest text-oat text-[11px] font-bold shrink-0">
+                  {auth.user.name ? auth.user.name[0].toUpperCase() : 'U'}
+                </div>
+                <div className="flex min-w-0 flex-col">
+                  <span className="truncate text-xs font-semibold text-sidebar-foreground">
+                    {auth.user.name}
+                  </span>
+                  <span className="truncate text-[10px] text-muted-foreground">
+                    {auth.user.email}
+                  </span>
+                </div>
               </div>
-              <span className="rounded-full bg-sidebar-accent px-1.5 py-0.5 text-[9px] font-semibold text-sidebar-foreground uppercase">
+              <span className="rounded-full bg-sidebar-primary/20 px-1.5 py-0.5 text-[9px] font-bold text-sidebar-primary uppercase">
                 {auth.role ?? 'MEMBER'}
               </span>
             </div>
 
-            <div className="flex items-center justify-between gap-1 group-data-[collapsible=icon]:justify-center">
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={activeTab === 'profile'}
+                  onClick={() => onSelectTab('profile')}
+                  tooltip="My Profile & Security"
+                  className="cursor-pointer gap-2.5 text-xs"
+                >
+                  <User className="h-4 w-4" />
+                  <span>My Profile</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+
+            <div className="flex items-center justify-between gap-1 pt-1 border-t border-sidebar-border/50 group-data-[collapsible=icon]:justify-center">
               <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground group-data-[collapsible=icon]:hidden">
                 {isOnline ? (
                   <>
@@ -442,11 +471,11 @@ export function AppSidebar({
 
               <SidebarMenuButton
                 onClick={onLogout}
-                tooltip="Sign out"
+                tooltip="Sign out of InjeraOS"
                 className="cursor-pointer gap-2 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive group-data-[collapsible=icon]:w-8"
               >
                 <LogOut className="h-4 w-4" />
-                <span className="group-data-[collapsible=icon]:hidden">Sign Out</span>
+                <span className="group-data-[collapsible=icon]:hidden font-medium">Sign Out</span>
               </SidebarMenuButton>
             </div>
           </div>

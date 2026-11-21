@@ -401,3 +401,34 @@ authRouter.delete(
     return res.status(204).end()
   }
 )
+
+/**
+ * Change authenticated user's password securely
+ */
+authRouter.post('/change-password', authenticate, async (req: Request, res: Response) => {
+  const { currentPassword, newPassword } = req.body
+  if (!currentPassword || !newPassword || typeof newPassword !== 'string' || newPassword.length < 8) {
+    return res.status(400).json({
+      error: 'BAD_REQUEST',
+      message: 'New password must be at least 8 characters long.',
+    })
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: req.auth!.userId } })
+  if (!user?.passwordHash) {
+    return res.status(404).json({ error: 'NOT_FOUND', message: 'User not found.' })
+  }
+
+  const valid = await verifyPassword(currentPassword, user.passwordHash)
+  if (!valid) {
+    return res.status(401).json({ error: 'UNAUTHORIZED', message: 'Current password is incorrect.' })
+  }
+
+  const newHash = await hashPassword(newPassword)
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { passwordHash: newHash },
+  })
+
+  return res.json({ message: 'Password updated successfully.' })
+})
