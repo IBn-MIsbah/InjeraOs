@@ -35,6 +35,15 @@ import type {
   BlendInputEntity,
   BlendOutputEntity,
   BlendOperationEntity,
+  ProductionSessionEntity,
+  BatchEmployeeAssignmentEntity,
+  MaterialConsumptionEntity,
+  ProductionOutputEntity,
+  RejectionRecordEntity,
+  BakerProductionRecordEntity,
+  ProductionBatchEntity,
+  BakerProductivitySummary,
+  BatchReconciliationReport,
 } from '@/types'
 import type { LoginInput, RegisterInput } from '@/schemas'
 
@@ -75,6 +84,15 @@ export type {
   BlendInputEntity,
   BlendOutputEntity,
   BlendOperationEntity,
+  ProductionSessionEntity,
+  BatchEmployeeAssignmentEntity,
+  MaterialConsumptionEntity,
+  ProductionOutputEntity,
+  RejectionRecordEntity,
+  BakerProductionRecordEntity,
+  ProductionBatchEntity,
+  BakerProductivitySummary,
+  BatchReconciliationReport,
 }
 
 // In-memory device identifier per browser tab session (no localStorage used)
@@ -768,6 +786,177 @@ export const recipesApi = {
     return res.data
   },
 }
+
+export const productionApi = {
+  // Sessions
+  async getSessions(params?: { branchId?: string; status?: string; operationalDate?: string }) {
+    const res = await api.get<{ data: ProductionSessionEntity[] }>('/production/sessions', {
+      params,
+    })
+    return res.data.data
+  },
+
+  async getSession(id: string) {
+    const res = await api.get<{ data: ProductionSessionEntity }>(`/production/sessions/${id}`)
+    return res.data.data
+  },
+
+  async createSession(data: {
+    branchId: string
+    sessionNumber: string
+    operationalDate: string
+    startTime: string
+    endTime?: string | null
+    shiftAssignmentId?: string | null
+    supervisorId: string
+    notes?: string | null
+  }) {
+    const res = await api.post<{ data: ProductionSessionEntity }>('/production/sessions', data)
+    return res.data.data
+  },
+
+  async updateSessionStatus(id: string, data: { status: string; endTime?: string | null }) {
+    const res = await api.patch<{ data: ProductionSessionEntity }>(
+      `/production/sessions/${id}/status`,
+      data
+    )
+    return res.data.data
+  },
+
+  // Batches
+  async getBatches(params?: { productionSessionId?: string; status?: string }) {
+    const res = await api.get<{ data: ProductionBatchEntity[] }>('/production/batches', {
+      params,
+    })
+    return res.data.data
+  },
+
+  async getBatch(id: string) {
+    const res = await api.get<{ data: ProductionBatchEntity }>(`/production/batches/${id}`)
+    return res.data.data
+  },
+
+  async createBatch(data: {
+    productionSessionId: string
+    recipeId: string
+    recipeVersionId: string
+    batchNumber: string
+    plannedQuantity: number
+    startTime?: string | null
+  }) {
+    const res = await api.post<{ data: ProductionBatchEntity }>('/production/batches', data)
+    return res.data.data
+  },
+
+  async assignEmployee(
+    batchId: string,
+    data: {
+      employeeId: string
+      assignmentRole: 'BAKER' | 'LABOURER' | 'SUPERVISOR' | 'OTHER'
+      assignedStart: string
+      assignedEnd?: string | null
+      notes?: string | null
+    }
+  ) {
+    const res = await api.post<{ data: BatchEmployeeAssignmentEntity }>(
+      `/production/batches/${batchId}/assignments`,
+      data
+    )
+    return res.data.data
+  },
+
+  async consumeMaterials(
+    batchId: string,
+    data: {
+      consumptions: {
+        materialLotId: string
+        actualQuantity: number
+        unitId: string
+      }[]
+    }
+  ) {
+    const res = await api.post<{
+      message: string
+      data: MaterialConsumptionEntity[]
+    }>(`/production/batches/${batchId}/consume`, data)
+    return res.data
+  },
+
+  async recordOutputs(
+    batchId: string,
+    data: {
+      productId: string
+      acceptedQuantity: number
+      rejectedQuantity: number
+      allocationMethod?: string
+      rejections?: {
+        reason: 'BURNT' | 'TORN_DAMAGED' | 'INCORRECT_THICKNESS' | 'INCORRECT_SIZE' | 'CONTAMINATION' | 'OTHER'
+        quantity: number
+        employeeId?: string | null
+        notes?: string | null
+      }[]
+    }
+  ) {
+    const res = await api.post<{
+      message: string
+      data: {
+        output: ProductionOutputEntity
+        rejections: RejectionRecordEntity[]
+        updatedBatch: ProductionBatchEntity
+      }
+    }>(`/production/batches/${batchId}/outputs`, data)
+    return res.data
+  },
+
+  async recordBakerProduction(
+    batchId: string,
+    data: {
+      employeeId: string
+      productId: string
+      shiftAssignmentId?: string | null
+      acceptedQuantity: number
+      rejectedQuantity: number
+      attributionMethod?: string
+      notes?: string | null
+    }
+  ) {
+    const res = await api.post<{
+      message: string
+      data: BakerProductionRecordEntity
+    }>(`/production/batches/${batchId}/bakers`, data)
+    return res.data
+  },
+
+  async finalizeBatch(batchId: string) {
+    const res = await api.post<{
+      message: string
+      data: ProductionBatchEntity
+    }>(`/production/batches/${batchId}/finalize`)
+    return res.data
+  },
+
+  // Reports
+  async getBakerProductivity(params?: {
+    startDate?: string
+    endDate?: string
+    branchId?: string
+  }) {
+    const res = await api.get<{ data: BakerProductivitySummary[] }>(
+      '/production/reports/baker-productivity',
+      { params }
+    )
+    return res.data.data
+  },
+
+  async getReconciliation(batchId: string) {
+    const res = await api.get<{ data: BatchReconciliationReport }>(
+      '/production/reports/reconciliations',
+      { params: { batchId } }
+    )
+    return res.data.data
+  },
+}
+
 
 
 

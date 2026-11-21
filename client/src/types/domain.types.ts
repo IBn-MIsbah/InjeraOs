@@ -312,31 +312,159 @@ export interface BlendOperationEntity {
   createdAt?: string
 }
 
-export interface ProductionBatchEntity {
+export interface ProductionSessionEntity {
   id: string
   businessId: string
   branchId: string
-  branch?: BranchEntity
-  recipeId: string
-  recipe?: RecipeEntity
-  batchNumber: string
-  plannedQuantity: number
-  scheduledDate: string
-  status: ProductionStatus
+  branchName?: string
+  sessionNumber: string
+  operationalDate: string
+  startTime: string
+  endTime?: string | null
+  shiftAssignmentId?: string | null
+  supervisorId: string
+  supervisorName?: string
+  status: 'DRAFT' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
   notes?: string | null
-  goodQuantity?: number
-  rejectedQuantity?: number
+  batchCount?: number
+  batches?: ProductionBatchEntity[]
   createdAt: string
-  updatedAt: string
+}
+
+export interface BatchEmployeeAssignmentEntity {
+  id: string
+  businessId: string
+  productionBatchId: string
+  employeeId: string
+  employeeName?: string
+  assignmentRole: 'BAKER' | 'LABOURER' | 'SUPERVISOR' | 'OTHER'
+  assignedStart: string
+  assignedEnd?: string | null
+  notes?: string | null
+}
+
+export interface MaterialConsumptionEntity {
+  id: string
+  businessId: string
+  productionBatchId: string
+  materialLotId: string
+  lotNumber?: string
+  materialName?: string
+  actualQuantity: number
+  unitId: string
+  unitSymbol?: string
+  unitCostSnapshot: number
+  totalCost: number
+  consumedAt: string
+}
+
+export interface ProductionOutputEntity {
+  id: string
+  businessId: string
+  productionBatchId: string
+  productId: string
+  productName?: string
+  totalQuantity: number
+  acceptedQuantity: number
+  rejectedQuantity: number
+  allocationMethod: string
+  allocatedCost: number
+  unitCost: number
 }
 
 export interface RejectionRecordEntity {
   id: string
-  batchId: string
+  businessId: string
+  productionBatchId: string
+  productionOutputId?: string | null
+  employeeId?: string | null
+  employeeName?: string
+  reason: 'BURNT' | 'TORN_DAMAGED' | 'INCORRECT_THICKNESS' | 'INCORRECT_SIZE' | 'CONTAMINATION' | 'OTHER'
   quantity: number
-  reason: RejectionReason
+  notes?: string | null
+  evidenceReference?: string | null
+  recordedAt: string
+}
+
+export interface BakerProductionRecordEntity {
+  id: string
+  businessId: string
+  branchId: string
+  employeeId: string
+  bakerName?: string
+  productionSessionId: string
+  productionBatchId: string
+  shiftAssignmentId?: string | null
+  productId: string
+  productName?: string
+  operationalDate: string
+  totalProduced: number
+  acceptedQuantity: number
+  rejectedQuantity: number
+  attributionMethod: 'INDIVIDUAL_COUNT' | 'SUPERVISOR_ALLOCATION'
+  recordedById?: string | null
+  approvedById?: string | null
   notes?: string | null
   createdAt: string
+}
+
+export interface ProductionBatchEntity {
+  id: string
+  businessId: string
+  productionSessionId: string
+  sessionNumber?: string
+  operationalDate?: string | null
+  branchName?: string
+  recipeId: string
+  recipeName?: string
+  recipeVersionId: string
+  versionNumber?: number
+  batchNumber: string
+  plannedQuantity: number
+  actualOutput: number
+  acceptedOutput: number
+  rejectedOutput: number
+  startTime?: string | null
+  endTime?: string | null
+  status: 'DRAFT' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+  finalizedAt?: string | null
+  finalizedById?: string | null
+  consumptions?: MaterialConsumptionEntity[]
+  outputs?: ProductionOutputEntity[]
+  rejections?: RejectionRecordEntity[]
+  bakers?: BakerProductionRecordEntity[]
+  assignments?: BatchEmployeeAssignmentEntity[]
+}
+
+export interface BakerProductivitySummary {
+  employeeId: string
+  bakerName: string
+  totalProduced: number
+  acceptedQuantity: number
+  rejectedQuantity: number
+  rejectionRatePercentage: number
+  distinctSessionsWorked: number
+}
+
+export interface BatchReconciliationReport {
+  batchId: string
+  batchNumber: string
+  teamOutput: {
+    total: number
+    accepted: number
+    rejected: number
+  }
+  bakerAttributed: {
+    total: number
+    accepted: number
+    rejected: number
+  }
+  unallocated: {
+    total: number
+    accepted: number
+    rejected: number
+  }
+  isReconciled: boolean
 }
 
 export interface CustomerEntity {
