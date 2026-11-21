@@ -54,26 +54,136 @@ export interface TeamMemberEntity {
   createdAt: string
 }
 
+export interface MaterialCategoryEntity {
+  id: string
+  businessId: string
+  name: string
+  description?: string | null
+  isActive: boolean
+}
+
 export interface UnitOfMeasureEntity {
   id: string
+  businessId: string
   name: string
-  code: string
+  symbol: string
   dimension: Dimension
+  isBaseUnit: boolean
+}
+
+export interface MaterialVarietyEntity {
+  id: string
+  businessId: string
+  materialId: string
+  name: string
+  description?: string | null
+  isActive: boolean
 }
 
 export interface MaterialEntity {
   id: string
   businessId: string
+  categoryId: string
+  categoryName?: string
   name: string
-  code?: string | null
-  categoryId?: string | null
-  uomId: string
-  uom?: UnitOfMeasureEntity
-  minStockLevel: number
-  reorderPoint: number
-  costPerUnit: number
+  defaultUnitId: string
+  defaultUnitSymbol?: string
+  minimumStock: number
   isActive: boolean
   currentStock?: number
+  isLowStock?: boolean
+  createdAt: string
+  varieties?: MaterialVarietyEntity[]
+  activeLots?: MaterialLotEntity[]
+}
+
+export interface SupplierEntity {
+  id: string
+  businessId: string
+  name: string
+  phone?: string | null
+  address?: string | null
+  contactPerson?: string | null
+  status: 'ACTIVE' | 'INACTIVE'
+  createdAt: string
+}
+
+export interface PurchaseItemEntity {
+  id: string
+  businessId: string
+  purchaseId: string
+  materialId: string
+  varietyId?: string | null
+  grossQuantity: number
+  tareQuantity: number
+  unusableQuantity: number
+  usableQuantity: number
+  unitId: string
+  purchaseCost: number
+  allocatedAcquisitionCost: number
+  unitCost: number
+}
+
+export interface PurchaseEntity {
+  id: string
+  businessId: string
+  branchId: string
+  supplierId: string
+  purchaseNumber: string
+  purchaseDate: string
+  totalAmount: number
+  acquisitionCost: number
+  paymentStatus: PaymentStatus
+  status: 'DRAFT' | 'RECEIVED' | 'COMPLETED' | 'CANCELLED'
+  createdById: string
+  createdAt: string
+  items?: PurchaseItemEntity[]
+}
+
+export interface MaterialLotEntity {
+  id: string
+  businessId: string
+  branchId: string
+  branchName?: string
+  materialId: string
+  materialName?: string
+  varietyId?: string | null
+  varietyName?: string | null
+  purchaseItemId?: string | null
+  blendOperationId?: string | null
+  lotNumber: string
+  originalQuantity: number
+  remainingQuantity: number
+  unitId: string
+  unitSymbol?: string
+  totalAcquisitionCost: number
+  unitCost: number
+  receivedAt: string
+  expiryDate?: string | null
+  status: 'AVAILABLE' | 'DEPLETED' | 'BLOCKED' | 'EXPIRED'
+}
+
+export interface MaterialLotMovementEntity {
+  id: string
+  businessId: string
+  materialLotId: string
+  movementType:
+    | 'PURCHASE_RECEIPT'
+    | 'PRODUCTION_CONSUMPTION'
+    | 'BLEND_INPUT'
+    | 'BLEND_OUTPUT'
+    | 'ADJUSTMENT_IN'
+    | 'ADJUSTMENT_OUT'
+    | 'TRANSFER_IN'
+    | 'TRANSFER_OUT'
+    | 'REVERSAL'
+  quantity: number
+  unitCostSnapshot: number
+  totalCost: number
+  referenceType: string
+  referenceId: string
+  occurredAt: string
+  createdById: string
 }
 
 export interface FinishedProductEntity {

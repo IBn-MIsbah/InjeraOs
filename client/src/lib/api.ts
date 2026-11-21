@@ -17,6 +17,15 @@ import type {
   AttendanceRecordEntity,
   LeaveRecordEntity,
   HeadcountReport,
+  MaterialCategoryEntity,
+  UnitOfMeasureEntity,
+  MaterialVarietyEntity,
+  MaterialEntity,
+  SupplierEntity,
+  PurchaseItemEntity,
+  PurchaseEntity,
+  MaterialLotEntity,
+  MaterialLotMovementEntity,
 } from '@/types'
 import type { LoginInput, RegisterInput } from '@/schemas'
 
@@ -39,6 +48,15 @@ export type {
   AttendanceRecordEntity,
   LeaveRecordEntity,
   HeadcountReport,
+  MaterialCategoryEntity,
+  UnitOfMeasureEntity,
+  MaterialVarietyEntity,
+  MaterialEntity,
+  SupplierEntity,
+  PurchaseItemEntity,
+  PurchaseEntity,
+  MaterialLotEntity,
+  MaterialLotMovementEntity,
 }
 
 // In-memory device identifier per browser tab session (no localStorage used)
@@ -426,6 +444,184 @@ export const workforceApi = {
   async getHeadcountReport() {
     const res = await api.get<{ data: HeadcountReport }>('/workforce/reports/headcount')
     return res.data.data
+  },
+}
+
+export const materialsApi = {
+  // Categories
+  async getCategories() {
+    const res = await api.get<{ data: MaterialCategoryEntity[] }>('/materials/categories')
+    return res.data.data
+  },
+
+  async createCategory(data: { name: string; description?: string }) {
+    const res = await api.post<{ data: MaterialCategoryEntity }>('/materials/categories', data)
+    return res.data.data
+  },
+
+  // Units
+  async getUnits() {
+    const res = await api.get<{ data: UnitOfMeasureEntity[] }>('/materials/units')
+    return res.data.data
+  },
+
+  async createUnit(data: { name: string; symbol: string; dimension: string; isBaseUnit?: boolean }) {
+    const res = await api.post<{ data: UnitOfMeasureEntity }>('/materials/units', data)
+    return res.data.data
+  },
+
+  async convertUnit(data: { fromUnitId: string; toUnitId: string; quantity: number }) {
+    const res = await api.post<{
+      data: {
+        fromUnit: UnitOfMeasureEntity
+        toUnit: UnitOfMeasureEntity
+        originalQuantity: number
+        convertedQuantity: number
+        conversionRatio: number
+      }
+    }>('/materials/units/convert', data)
+    return res.data.data
+  },
+
+  // Materials & Varieties
+  async getMaterials() {
+    const res = await api.get<{ data: MaterialEntity[] }>('/materials')
+    return res.data.data
+  },
+
+  async getLowStockMaterials() {
+    const res = await api.get<{
+      data: MaterialEntity[]
+      summary: { totalLowStockCount: number }
+    }>('/materials/low-stock')
+    return res.data
+  },
+
+  async getMaterial(id: string) {
+    const res = await api.get<{ data: MaterialEntity }>(`/materials/${id}`)
+    return res.data.data
+  },
+
+  async createMaterial(data: {
+    name: string
+    categoryId: string
+    defaultUnitId: string
+    minimumStock: number
+  }) {
+    const res = await api.post<{ data: MaterialEntity }>('/materials', data)
+    return res.data.data
+  },
+
+  async updateMaterial(
+    id: string,
+    data: Partial<{
+      name: string
+      categoryId: string
+      defaultUnitId: string
+      minimumStock: number
+      isActive: boolean
+    }>
+  ) {
+    const res = await api.patch<{ data: MaterialEntity }>(`/materials/${id}`, data)
+    return res.data.data
+  },
+
+  async getVarieties(materialId: string) {
+    const res = await api.get<{ data: MaterialVarietyEntity[] }>(`/materials/${materialId}/varieties`)
+    return res.data.data
+  },
+
+  async createVariety(materialId: string, data: { name: string; description?: string }) {
+    const res = await api.post<{ data: MaterialVarietyEntity }>(
+      `/materials/${materialId}/varieties`,
+      data
+    )
+    return res.data.data
+  },
+
+  // Suppliers
+  async getSuppliers() {
+    const res = await api.get<{ data: SupplierEntity[] }>('/materials/suppliers')
+    return res.data.data
+  },
+
+  async createSupplier(data: {
+    name: string
+    phone?: string
+    address?: string
+    contactPerson?: string
+  }) {
+    const res = await api.post<{ data: SupplierEntity }>('/materials/suppliers', data)
+    return res.data.data
+  },
+
+  // Purchases
+  async getPurchases() {
+    const res = await api.get<{ data: PurchaseEntity[] }>('/materials/purchases')
+    return res.data.data
+  },
+
+  async getPurchase(id: string) {
+    const res = await api.get<{ data: PurchaseEntity }>(`/materials/purchases/${id}`)
+    return res.data.data
+  },
+
+  async createPurchase(data: {
+    branchId: string
+    supplierId: string
+    purchaseNumber: string
+    purchaseDate: string
+    acquisitionCost: number
+    paymentStatus?: 'UNPAID' | 'PARTIAL' | 'PAID'
+    receiveImmediately?: boolean
+    items: {
+      materialId: string
+      varietyId?: string | null
+      unitId: string
+      grossQuantity: number
+      tareQuantity: number
+      unusableQuantity: number
+      purchaseCost: number
+    }[]
+  }) {
+    const res = await api.post<{ data: PurchaseEntity }>('/materials/purchases', data)
+    return res.data.data
+  },
+
+  async receivePurchase(id: string) {
+    const res = await api.post<{
+      message: string
+      data: { purchaseId: string; status: string; createdLots: MaterialLotEntity[] }
+    }>(`/materials/purchases/${id}/receive`)
+    return res.data
+  },
+
+  // Lots & Movements
+  async getLots(params?: { materialId?: string; status?: string }) {
+    const res = await api.get<{ data: MaterialLotEntity[] }>('/materials/lots', { params })
+    return res.data.data
+  },
+
+  async getLotMovements(lotId: string) {
+    const res = await api.get<{
+      data: { lot: MaterialLotEntity; movements: MaterialLotMovementEntity[] }
+    }>(`/materials/lots/${lotId}/movements`)
+    return res.data.data
+  },
+
+  async adjustLot(
+    lotId: string,
+    data: {
+      movementType: 'PRODUCTION_CONSUMPTION' | 'ADJUSTMENT_OUT' | 'ADJUSTMENT_IN'
+      quantity: number
+      reason: string
+    }
+  ) {
+    const res = await api.post<{
+      message: string
+      data: { lot: MaterialLotEntity; movement: MaterialLotMovementEntity }
+    }>(`/materials/lots/${lotId}/adjust`, data)
+    return res.data
   },
 }
 
