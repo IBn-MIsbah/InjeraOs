@@ -3,15 +3,28 @@ import { authApi, type AuthContextResponse } from '@/lib/api'
 import { LoginForm } from '@/components/auth/LoginForm'
 import { RegisterForm } from '@/components/auth/RegisterForm'
 import { DemoDashboard } from '@/components/dashboard/DemoDashboard'
+import { BusinessSettingsView } from '@/components/business/BusinessSettingsView'
+import { BranchManagementView } from '@/components/business/BranchManagementView'
+import { TeamMembersView } from '@/components/business/TeamMembersView'
 import { UnslopTool } from '@/components/unslop/UnslopTool'
 import { Toaster } from '@/components/ui/sonner'
-import { Loader2, ShieldCheck, Sparkles, Store } from 'lucide-react'
+import {
+  Building2,
+  GitBranch,
+  Loader2,
+  ShieldCheck,
+  Sparkles,
+  Store,
+  Users,
+} from 'lucide-react'
 import { toast } from 'sonner'
+
+type TabType = 'workspace' | 'branches' | 'team' | 'settings' | 'unslop'
 
 export function App() {
   const [auth, setAuth] = useState<AuthContextResponse | null>(null)
   const [authView, setAuthView] = useState<'login' | 'register'>('login')
-  const [activeTab, setActiveTab] = useState<'workspace' | 'unslop'>('workspace')
+  const [activeTab, setActiveTab] = useState<TabType>('workspace')
   const [isInitializing, setIsInitializing] = useState(true)
 
   // Verify session on page load using secure httpOnly cookies
@@ -47,6 +60,7 @@ export function App() {
     } finally {
       setAuth(null)
       setAuthView('login')
+      setActiveTab('workspace')
     }
   }
 
@@ -70,7 +84,7 @@ export function App() {
 
             <div className="hidden h-4 w-px bg-border sm:block" />
 
-            <nav className="flex items-center gap-1">
+            <nav className="flex items-center gap-1 overflow-x-auto py-0.5">
               <button
                 type="button"
                 onClick={() => setActiveTab('workspace')}
@@ -80,8 +94,52 @@ export function App() {
                     : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
                 }`}
               >
-                Workspace
+                Overview
               </button>
+
+              {auth && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('branches')}
+                    className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                      activeTab === 'branches'
+                        ? 'bg-muted text-foreground'
+                        : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+                    }`}
+                  >
+                    <GitBranch className="h-3 w-3" />
+                    <span>Branches</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('team')}
+                    className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                      activeTab === 'team'
+                        ? 'bg-muted text-foreground'
+                        : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+                    }`}
+                  >
+                    <Users className="h-3 w-3" />
+                    <span>Team</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('settings')}
+                    className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                      activeTab === 'settings'
+                        ? 'bg-muted text-foreground'
+                        : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+                    }`}
+                  >
+                    <Building2 className="h-3 w-3" />
+                    <span>Business Profile</span>
+                  </button>
+                </>
+              )}
+
               <button
                 type="button"
                 onClick={() => setActiveTab('unslop')}
@@ -121,23 +179,31 @@ export function App() {
             <Loader2 className="h-5 w-5 animate-spin" />
             <span>Checking active cookie session…</span>
           </div>
-        ) : auth ? (
-          <DemoDashboard auth={auth} onLogout={handleLogout} />
-        ) : authView === 'login' ? (
-          <LoginForm
-            onSuccess={(data: AuthContextResponse) => setAuth(data)}
-            onSwitchToRegister={() => setAuthView('register')}
-          />
+        ) : !auth ? (
+          authView === 'login' ? (
+            <LoginForm
+              onSuccess={(data: AuthContextResponse) => setAuth(data)}
+              onSwitchToRegister={() => setAuthView('register')}
+            />
+          ) : (
+            <RegisterForm
+              onSuccess={(data: AuthContextResponse) => setAuth(data)}
+              onSwitchToLogin={() => setAuthView('login')}
+            />
+          )
+        ) : activeTab === 'branches' ? (
+          <BranchManagementView />
+        ) : activeTab === 'team' ? (
+          <TeamMembersView />
+        ) : activeTab === 'settings' ? (
+          <BusinessSettingsView />
         ) : (
-          <RegisterForm
-            onSuccess={(data: AuthContextResponse) => setAuth(data)}
-            onSwitchToLogin={() => setAuthView('login')}
-          />
+          <DemoDashboard auth={auth} onLogout={handleLogout} />
         )}
       </main>
 
       <footer className="border-t border-border/60 py-6 text-center text-xs text-muted-foreground">
-        <p>Injera Bakery Commerce Platform &bull; Crafted with zero artificial filler</p>
+        <p>Injera Bakery Commerce Platform &bull; Multi-Tenant Operating System</p>
       </footer>
 
       {/* Shadcn Sonner Toaster */}
