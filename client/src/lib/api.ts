@@ -69,6 +69,14 @@ import type {
   DeliveryEntity,
   SaleItemEntity,
   DeliveryItemEntity,
+  ExpenseCategoryEntity,
+  ExpenseEntity,
+  FinancialReportResult,
+  BakerProductivityReportItem,
+  InventoryValuationReportResult,
+  DashboardSummaryResult,
+  DashboardWidgetEntity,
+  DashboardLayoutEntity,
 } from '@/types'
 import type {
   LoginInput,
@@ -86,6 +94,13 @@ import type {
   RecordLedgerAdjustmentInput,
   CreateDeliveryInput,
   UpdateDeliveryStatusInput,
+  CreateExpenseCategoryInput,
+  UpdateExpenseCategoryInput,
+  CreateExpenseInput,
+  GetExpensesQueryInput,
+  ReportFilterInput,
+  CreateDashboardLayoutInput,
+  UpdateDashboardLayoutInput,
 } from '@/schemas'
 
 // Re-export types for backward compatibility
@@ -159,6 +174,14 @@ export type {
   DeliveryEntity,
   SaleItemEntity,
   DeliveryItemEntity,
+  ExpenseCategoryEntity,
+  ExpenseEntity,
+  FinancialReportResult,
+  BakerProductivityReportItem,
+  InventoryValuationReportResult,
+  DashboardSummaryResult,
+  DashboardWidgetEntity,
+  DashboardLayoutEntity,
 }
 
 // In-memory device identifier per browser tab session (no localStorage used)
@@ -1342,6 +1365,93 @@ export const salesApi = {
     return res.data
   },
 }
+
+export const expensesApi = {
+  async getCategories() {
+    const res = await api.get<{ data: ExpenseCategoryEntity[] }>('/expenses/categories')
+    return res.data.data
+  },
+
+  async createCategory(data: CreateExpenseCategoryInput) {
+    const res = await api.post<{ message: string; data: ExpenseCategoryEntity }>('/expenses/categories', data)
+    return res.data
+  },
+
+  async updateCategory(id: string, data: UpdateExpenseCategoryInput) {
+    const res = await api.patch<{ message: string; data: ExpenseCategoryEntity }>(`/expenses/categories/${id}`, data)
+    return res.data
+  },
+
+  async getExpenses(params?: GetExpensesQueryInput) {
+    const res = await api.get<{ data: ExpenseEntity[] }>('/expenses', { params })
+    return res.data.data
+  },
+
+  async createExpense(data: CreateExpenseInput) {
+    const res = await api.post<{ message: string; data: ExpenseEntity }>('/expenses', data)
+    return res.data
+  },
+
+  async getExpense(id: string) {
+    const res = await api.get<{ data: ExpenseEntity }>(`/expenses/${id}`)
+    return res.data.data
+  },
+
+  async cancelExpense(id: string) {
+    const res = await api.post<{ message: string; data: ExpenseEntity }>(`/expenses/${id}/cancel`, {})
+    return res.data
+  },
+}
+
+export const reportsApi = {
+  async getFinancialReport(params?: ReportFilterInput) {
+    const res = await api.get<{ data: FinancialReportResult }>('/reports/financial', { params })
+    return res.data.data
+  },
+
+  async getBakerProductivityReport(params?: ReportFilterInput) {
+    const res = await api.get<{ data: BakerProductivityReportItem[] }>('/reports/baker-productivity', { params })
+    return res.data.data
+  },
+
+  async getInventoryValuationReport(params?: { branchId?: string }) {
+    const res = await api.get<{ data: InventoryValuationReportResult }>('/reports/inventory-valuation', { params })
+    return res.data.data
+  },
+
+  async getDashboardSummary() {
+    const res = await api.get<{ data: DashboardSummaryResult }>('/reports/dashboard-summary')
+    return res.data.data
+  },
+}
+
+export const dashboardsApi = {
+  async getLayouts() {
+    const res = await api.get<{ data: DashboardLayoutEntity[] }>('/dashboards')
+    return res.data.data
+  },
+
+  async createLayout(data: CreateDashboardLayoutInput) {
+    const res = await api.post<{ message: string; data: DashboardLayoutEntity }>('/dashboards', data)
+    return res.data
+  },
+
+  async getLayout(id: string) {
+    const res = await api.get<{ data: DashboardLayoutEntity }>(`/dashboards/${id}`)
+    return res.data.data
+  },
+
+  async updateLayout(id: string, data: UpdateDashboardLayoutInput) {
+    const res = await api.put<{ message: string; data: DashboardLayoutEntity }>(`/dashboards/${id}`, data)
+    return res.data
+  },
+
+  async deleteLayout(id: string) {
+    const res = await api.delete<{ message: string }>(`/dashboards/${id}`)
+    return res.data
+  },
+}
+
 
 
 

@@ -605,8 +605,11 @@ export interface ExpenseEntity {
   businessId: string
   branchId: string
   branch?: BranchEntity
+  branchName?: string
   categoryId: string
   category?: ExpenseCategoryEntity
+  categoryName?: string
+  categoryType?: string
   amount: number
   expenseDate: string
   paymentMethod: PaymentMethod
@@ -985,5 +988,116 @@ export interface LotReconciliationReport {
   reconciles: boolean
   movements: FinishedStockMovementEntity[]
 }
+
+// Milestone 9: Reporting, Analytics & Customizable Dashboard Types
+export interface FinancialReportResult {
+  period: {
+    startDate: string | null
+    endDate: string | null
+    branchId: string | null
+  }
+  profitability: {
+    totalSalesCount: number
+    grossSales: number
+    totalDiscounts: number
+    revenue: number
+    cogs: number
+    grossProfit: number
+    grossMarginPercent: number
+    operatingExpenses: number
+    expensesByCategory: Record<string, number>
+    netOperatingProfit: number
+    netOperatingMarginPercent: number
+  }
+  cashFlowAndCredit: {
+    cashCollected: number
+    accountsReceivable: number
+    customersWithDebtCount: number
+  }
+  productionOutput: {
+    totalBatchesCount: number
+    totalAcceptedProduced: number
+    totalProductionCost: number
+    averageProductionCostPerUnit: number
+  }
+}
+
+export interface BakerProductivityReportItem {
+  employeeId: string
+  employeeName: string
+  employeeNumber: string
+  recordCount: number
+  totalQuantity: number
+  acceptedQuantity: number
+  rejectedQuantity: number
+  rejectionRatePercent: number
+  yieldPercent: number
+}
+
+export interface InventoryValuationReportResult {
+  totalInventoryValuation: number
+  rawMaterials: {
+    totalValuation: number
+    materials: {
+      materialId: string
+      materialName: string
+      totalRemainingQuantity: number
+      totalValuation: number
+    }[]
+  }
+  finishedGoods: {
+    totalValuation: number
+    products: {
+      productId: string
+      productName: string
+      totalRemainingQuantity: number
+      totalValuation: number
+    }[]
+  }
+}
+
+export interface DashboardSummaryResult {
+  today: {
+    revenue: number
+    orderCount: number
+  }
+  currentMonth: {
+    revenue: number
+    orderCount: number
+    operatingExpenses: number
+  }
+  operations: {
+    activeBatchesCount: number
+    pendingDeliveriesCount: number
+    activeCustomersCount: number
+    totalReceivables: number
+  }
+}
+
+export interface DashboardWidgetEntity {
+  id: string
+  dashboardLayoutId: string
+  widgetType: string
+  title: string
+  positionX: number
+  positionY: number
+  width: number
+  height: number
+  configuration: Record<string, any>
+  createdAt: string
+}
+
+export interface DashboardLayoutEntity {
+  id: string
+  businessId: string
+  userId: string
+  name: string
+  isDefault: boolean
+  widgetCount?: number
+  widgets?: DashboardWidgetEntity[]
+  createdAt: string
+  updatedAt: string
+}
+
 
 
