@@ -10,6 +10,7 @@ import { WorkforceManagementView } from '@/components/workforce/WorkforceManagem
 import { MaterialsManagementView } from '@/components/materials/MaterialsManagementView'
 import { RecipesManagementView } from '@/components/recipes/RecipesManagementView'
 import { ProductionManagementView } from '@/components/production/ProductionManagementView'
+import { CostingManagementView } from '@/components/costing/CostingManagementView'
 import { UnslopTool } from '@/components/unslop/UnslopTool'
 import { Toaster } from '@/components/ui/sonner'
 import { AppSidebar, type TabType } from '@/components/layout/AppSidebar'
@@ -143,6 +144,8 @@ export function App() {
             <RecipesManagementView />
           ) : activeTab === 'production' ? (
             <ProductionManagementView />
+          ) : activeTab === 'costing' ? (
+            <CostingManagementView />
           ) : activeTab === 'team' ? (
             <TeamMembersView />
           ) : activeTab === 'settings' ? (

@@ -66,9 +66,8 @@ export type AttendanceStatus = (typeof AttendanceStatus)[keyof typeof Attendance
 
 export const CompensationType = {
   HOURLY: 'HOURLY',
-  DAILY: 'DAILY',
-  PER_SHIFT: 'PER_SHIFT',
-  MONTHLY: 'MONTHLY',
+  MONTHLY_SALARY: 'MONTHLY_SALARY',
+  PIECE_RATE: 'PIECE_RATE',
 } as const
 export type CompensationType = (typeof CompensationType)[keyof typeof CompensationType]
 

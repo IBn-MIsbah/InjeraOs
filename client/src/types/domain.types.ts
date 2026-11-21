@@ -685,9 +685,8 @@ export interface HeadcountReport {
 // Milestone 6: Costing & Labour Cost Types
 // ==========================================
 
-export type CompensationType = 'HOURLY' | 'MONTHLY_SALARY' | 'PIECE_RATE'
-export type OverheadCategory = 'ELECTRICITY' | 'WATER' | 'FIREWOOD' | 'FUEL' | 'PACKAGING' | 'LABOUR' | 'OTHER'
-export type OverheadAllocationType = 'DIRECT_BATCH' | 'DAILY_SHARED'
+import type { CompensationType, OverheadCategory, OverheadAllocationType } from './enums'
+
 export type LabourCostStatus = 'UNALLOCATED' | 'ALLOCATED' | 'FINALIZED'
 
 export interface EmployeeCompensationEntity {
@@ -791,7 +790,7 @@ export interface BatchCostingDetail {
   batch: {
     id: string
     batchNumber: string
-    status: ProductionBatchStatus
+    status: 'DRAFT' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
     acceptedQuantity: number
     rejectedQuantity: number
     totalQuantity: number

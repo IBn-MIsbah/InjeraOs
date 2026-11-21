@@ -16,6 +16,7 @@ import {
   Boxes,
   Building2,
   ChefHat,
+  Coins,
   Flame,
   GitBranch,
   LayoutDashboard,
@@ -36,6 +37,7 @@ export type TabType =
   | 'materials'
   | 'recipes'
   | 'production'
+  | 'costing'
   | 'team'
   | 'settings'
   | 'unslop'
@@ -156,6 +158,18 @@ export function AppSidebar({
                     >
                       <Flame className="h-4 w-4 text-amber-500" />
                       <span>Production & Baking</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={activeTab === 'costing'}
+                      onClick={() => onSelectTab('costing')}
+                      tooltip="Batch Costing, Labour & Overhead Absorption"
+                      className="cursor-pointer gap-2.5 text-xs"
+                    >
+                      <Coins className="h-4 w-4 text-emerald-500" />
+                      <span>Production Costing</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>

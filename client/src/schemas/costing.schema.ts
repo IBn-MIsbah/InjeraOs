@@ -33,8 +33,8 @@ export const paymentMethodOptions = [
 export const createCompensationSchema = z.object({
   employeeId: z.string().uuid('Please select an employee'),
   compensationType: z.enum(['HOURLY', 'MONTHLY_SALARY', 'PIECE_RATE']),
-  baseRate: z.coerce.number().min(0, 'Base rate must be non-negative'),
-  pieceRatePerInjera: z.coerce.number().min(0, 'Piece rate must be non-negative').optional().nullable(),
+  baseRate: z.number().min(0, 'Base rate must be non-negative'),
+  pieceRatePerInjera: z.number().min(0, 'Piece rate must be non-negative').optional().nullable(),
   effectiveFrom: z.string().min(1, 'Effective from date is required'),
   notes: z.string().trim().max(500).optional().nullable(),
 })
@@ -47,7 +47,7 @@ export const createOverheadRecordSchema = z.object({
   productionBatchId: z.string().uuid('Invalid batch ID').optional().nullable(),
   operationalDate: z.string().min(1, 'Operational date is required'),
   category: z.enum(['ELECTRICITY', 'WATER', 'FIREWOOD', 'FUEL', 'PACKAGING', 'LABOUR', 'OTHER']),
-  amount: z.coerce.number().positive('Amount must be greater than zero'),
+  amount: z.number().positive('Amount must be greater than zero'),
   paymentMethod: z.enum(['CASH', 'BANK_TRANSFER', 'CHECK', 'TELEBIRR', 'OTHER']).optional().nullable(),
   allocationType: z.enum(['DIRECT_BATCH', 'DAILY_SHARED']),
   description: z.string().trim().max(500).optional().nullable(),
@@ -70,8 +70,8 @@ export type CreateOverheadRecordInput = z.infer<typeof createOverheadRecordSchem
 // 3. Overhead Allocation Schema
 export const allocateOverheadItemSchema = z.object({
   productionBatchId: z.string().uuid('Please select a batch'),
-  allocatedAmount: z.coerce.number().positive('Allocated amount must be greater than 0'),
-  allocationBasis: z.string().trim().min(1).default('PROPORTIONAL_VOLUME'),
+  allocatedAmount: z.number().positive('Allocated amount must be greater than 0'),
+  allocationBasis: z.string().trim().min(1),
 })
 
 export const allocateOverheadSchema = z.object({
@@ -86,10 +86,10 @@ export const createLabourCostRecordSchema = z.object({
   employeeId: z.string().uuid('Please select an employee'),
   attendanceRecordId: z.string().uuid().optional().nullable(),
   operationalDate: z.string().min(1, 'Operational date is required'),
-  workedMinutes: z.coerce.number().int().min(0, 'Worked minutes must be non-negative'),
+  workedMinutes: z.number().int().min(0, 'Worked minutes must be non-negative'),
   compensationTypeSnapshot: z.enum(['HOURLY', 'MONTHLY_SALARY', 'PIECE_RATE']),
-  rateSnapshot: z.coerce.number().min(0, 'Rate snapshot must be non-negative'),
-  totalLabourCost: z.coerce.number().min(0, 'Total labour cost must be non-negative'),
+  rateSnapshot: z.number().min(0, 'Rate snapshot must be non-negative'),
+  totalLabourCost: z.number().min(0, 'Total labour cost must be non-negative'),
 })
 
 export type CreateLabourCostRecordInput = z.infer<typeof createLabourCostRecordSchema>
@@ -97,8 +97,8 @@ export type CreateLabourCostRecordInput = z.infer<typeof createLabourCostRecordS
 // 5. Labour Cost Allocation Schema
 export const allocateLabourItemSchema = z.object({
   productionBatchId: z.string().uuid('Please select a batch'),
-  allocatedCost: z.coerce.number().positive('Allocated cost must be greater than 0'),
-  allocationBasis: z.string().trim().min(1).default('HOURS_WORKED'),
+  allocatedCost: z.number().positive('Allocated cost must be greater than 0'),
+  allocationBasis: z.string().trim().min(1),
 })
 
 export const allocateLabourCostSchema = z.object({
