@@ -26,9 +26,10 @@ import { toast } from 'sonner'
 interface RegisterFormProps {
   onSuccess: (data: AuthContextResponse) => void
   onSwitchToLogin: () => void
+  onBackToLanding?: () => void
 }
 
-export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) {
+export function RegisterForm({ onSuccess, onSwitchToLogin, onBackToLanding }: RegisterFormProps) {
   const [serverError, setServerError] = useState<string | null>(null)
 
   const {
@@ -291,17 +292,28 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
             </button>
           </form>
 
-          <div className="mt-5 border-t border-border/60 pt-4 text-center">
+          <div className="mt-5 border-t border-border/60 pt-4 text-center space-y-2">
             <p className="text-xs text-muted-foreground">
               Already have an account?{' '}
               <button
                 type="button"
                 onClick={onSwitchToLogin}
-                className="font-medium text-foreground underline underline-offset-4 hover:opacity-80"
+                className="font-medium text-foreground underline underline-offset-4 hover:opacity-80 cursor-pointer"
               >
                 Sign in instead
               </button>
             </p>
+            {onBackToLanding && (
+              <p className="text-xs">
+                <button
+                  type="button"
+                  onClick={onBackToLanding}
+                  className="text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                >
+                  &larr; Back to KD PLC Overview
+                </button>
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>

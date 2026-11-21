@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { authApi, type AuthContextResponse } from '@/lib/api'
 import { LoginForm } from '@/components/auth/LoginForm'
 import { RegisterForm } from '@/components/auth/RegisterForm'
+import { LandingPage } from '@/components/landing/LandingPage'
 import { DemoDashboard } from '@/components/dashboard/DemoDashboard'
 import { BusinessSettingsView } from '@/components/business/BusinessSettingsView'
 import { BranchManagementView } from '@/components/business/BranchManagementView'
@@ -30,7 +31,7 @@ import { toast } from 'sonner'
 
 export function App() {
   const [auth, setAuth] = useState<AuthContextResponse | null>(null)
-  const [authView, setAuthView] = useState<'login' | 'register'>('login')
+  const [authView, setAuthView] = useState<'landing' | 'login' | 'register'>('landing')
   const [activeTab, setActiveTab] = useState<TabType>('workspace')
   const [isInitializing, setIsInitializing] = useState(true)
   const [isOnline, setIsOnline] = useState(
@@ -83,7 +84,7 @@ export function App() {
       console.error('Logout error:', err)
     } finally {
       setAuth(null)
-      setAuthView('login')
+      setAuthView('landing')
       setActiveTab('workspace')
     }
   }
@@ -121,8 +122,9 @@ export function App() {
                 {activeTab === 'team' && 'Staff Roster & Permissions'}
                 {activeTab === 'settings' && 'Bakery Business Settings'}
                 {activeTab === 'unslop' && 'Unslop AI Text Editor'}
+                {activeTab === 'landing' && 'KD PLC • Enterprise Bakery Operating System'}
                 {activeTab === 'workspace' &&
-                  (auth ? 'Workspace Overview & Security' : 'InjeraOS Commerce Platform')}
+                  (auth ? `${auth.business?.name ?? 'KD PLC'} Executive Operations Dashboard` : 'KD PLC • InjeraOS Platform')}
               </span>
             </div>
           </div>
@@ -168,16 +170,44 @@ export function App() {
             </div>
           ) : activeTab === 'unslop' ? (
             <UnslopTool />
+          ) : activeTab === 'landing' ? (
+            <LandingPage
+              onEnterWorkspace={() => setActiveTab('workspace')}
+              onOpenLogin={() => {
+                setActiveTab('workspace')
+                setAuthView('login')
+              }}
+              onOpenRegister={() => {
+                setActiveTab('workspace')
+                setAuthView('register')
+              }}
+              isAuthenticated={!!auth}
+            />
           ) : !auth ? (
-            authView === 'login' ? (
+            authView === 'landing' ? (
+              <LandingPage
+                onEnterWorkspace={() => setAuthView('login')}
+                onOpenLogin={() => setAuthView('login')}
+                onOpenRegister={() => setAuthView('register')}
+                isAuthenticated={false}
+              />
+            ) : authView === 'login' ? (
               <LoginForm
-                onSuccess={(data: AuthContextResponse) => setAuth(data)}
+                onSuccess={(data: AuthContextResponse) => {
+                  setAuth(data)
+                  setActiveTab('workspace')
+                }}
                 onSwitchToRegister={() => setAuthView('register')}
+                onBackToLanding={() => setAuthView('landing')}
               />
             ) : (
               <RegisterForm
-                onSuccess={(data: AuthContextResponse) => setAuth(data)}
+                onSuccess={(data: AuthContextResponse) => {
+                  setAuth(data)
+                  setActiveTab('workspace')
+                }}
                 onSwitchToLogin={() => setAuthView('login')}
+                onBackToLanding={() => setAuthView('landing')}
               />
             )
           ) : activeTab === 'branches' ? (
@@ -207,7 +237,11 @@ export function App() {
           ) : activeTab === 'settings' ? (
             <BusinessSettingsView />
           ) : (
-            <DemoDashboard auth={auth} onLogout={handleLogout} />
+            <DemoDashboard
+              auth={auth}
+              onLogout={handleLogout}
+              onNavigateTab={(tab) => setActiveTab(tab as TabType)}
+            />
           )}
         </main>
 

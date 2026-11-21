@@ -16,9 +16,10 @@ import { AlertCircle, ArrowRight, Loader2, Lock, Mail } from 'lucide-react'
 interface LoginFormProps {
   onSuccess: (data: AuthContextResponse) => void
   onSwitchToRegister: () => void
+  onBackToLanding?: () => void
 }
 
-export function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormProps) {
+export function LoginForm({ onSuccess, onSwitchToRegister, onBackToLanding }: LoginFormProps) {
   const [serverError, setServerError] = useState<string | null>(null)
 
   const {
@@ -164,17 +165,28 @@ export function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormProps) {
             </button>
           </form>
 
-          <div className="mt-6 border-t border-border/60 pt-4 text-center">
+          <div className="mt-6 border-t border-border/60 pt-4 text-center space-y-2">
             <p className="text-xs text-muted-foreground">
               Don't have an account yet?{' '}
               <button
                 type="button"
                 onClick={onSwitchToRegister}
-                className="font-medium text-foreground underline underline-offset-4 hover:opacity-80"
+                className="font-medium text-foreground underline underline-offset-4 hover:opacity-80 cursor-pointer"
               >
                 Create one now
               </button>
             </p>
+            {onBackToLanding && (
+              <p className="text-xs">
+                <button
+                  type="button"
+                  onClick={onBackToLanding}
+                  className="text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                >
+                  &larr; Back to KD PLC Overview
+                </button>
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>

@@ -21,6 +21,7 @@ import {
   Coins,
   Flame,
   GitBranch,
+  Globe2,
   LayoutDashboard,
   LogIn,
   LogOut,
@@ -39,6 +40,7 @@ import {
 
 export type TabType =
   | 'workspace'
+  | 'landing'
   | 'branches'
   | 'workforce'
   | 'materials'
@@ -58,8 +60,8 @@ interface AppSidebarProps {
   activeTab: TabType
   onSelectTab: (tab: TabType) => void
   auth: AuthContextResponse | null
-  authView: 'login' | 'register'
-  onSelectAuthView: (view: 'login' | 'register') => void
+  authView: 'landing' | 'login' | 'register'
+  onSelectAuthView: (view: 'landing' | 'login' | 'register') => void
   onLogout: () => void
 }
 
@@ -108,15 +110,20 @@ export function AppSidebar({
       {/* Sidebar Header: Brand & Business Name */}
       <SidebarHeader className="border-b border-sidebar-border px-3 py-3">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground text-background">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-forest text-oat shadow-xs">
             <Store className="h-4 w-4" />
           </div>
           <div className="flex flex-col overflow-hidden group-data-[collapsible=icon]:hidden">
-            <span className="truncate text-xs font-semibold tracking-tight text-sidebar-foreground">
-              {auth?.business?.name ?? 'InjeraOS'}
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="truncate text-xs font-bold tracking-tight text-sidebar-foreground">
+                KD PLC
+              </span>
+              <span className="rounded bg-sidebar-primary/20 px-1 py-0.2 text-[9px] font-semibold text-sidebar-primary">
+                InjeraOS
+              </span>
+            </div>
             <span className="truncate text-[10px] text-muted-foreground">
-              Bakery Commerce Platform
+              {auth?.business?.name ?? 'Commercial Bakery Hub'}
             </span>
           </div>
         </div>
@@ -372,6 +379,18 @@ export function AppSidebar({
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={activeTab === 'landing'}
+                  onClick={() => onSelectTab('landing')}
+                  tooltip="KD PLC Company & Platform Overview"
+                  className="cursor-pointer gap-2.5 text-xs"
+                >
+                  <Globe2 className="h-4 w-4 text-emerald-400" />
+                  <span>KD PLC Overview</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
               <SidebarMenuItem>
                 <SidebarMenuButton
                   isActive={activeTab === 'unslop'}
