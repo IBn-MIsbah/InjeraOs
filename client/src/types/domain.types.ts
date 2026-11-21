@@ -32,12 +32,26 @@ export interface BranchEntity {
   id: string
   businessId: string
   name: string
-  code?: string | null
+  code: string
   phone?: string | null
   address?: string | null
   isMain: boolean
   createdAt: string
   updatedAt: string
+}
+
+export interface TeamMemberEntity {
+  id: string
+  userId: string
+  name: string
+  email: string
+  phone?: string | null
+  roleId: string
+  roleName: string
+  roleDescription?: string | null
+  status: string
+  branchIds: string[]
+  createdAt: string
 }
 
 export interface UnitOfMeasureEntity {

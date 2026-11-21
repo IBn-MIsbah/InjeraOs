@@ -24,10 +24,10 @@ export const updateBusinessSchema = createBusinessSchema.partial()
 
 export const createBranchSchema = z.object({
   name: requiredString('Branch name', 2, 150),
-  code: z.string().trim().max(50).optional(),
+  code: z.string().trim().min(1, 'Branch code is required').max(50),
   phone: optionalPhoneSchema,
   address: z.string().trim().max(300).optional(),
-  isMain: z.boolean().default(false),
+  isMain: z.boolean(),
 })
 
 export const updateBranchSchema = createBranchSchema.partial()

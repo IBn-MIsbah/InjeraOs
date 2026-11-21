@@ -6,6 +6,9 @@ import type {
   RefreshTokenResponse,
   RoleEntity,
   PermissionEntity,
+  BusinessEntity,
+  BranchEntity,
+  TeamMemberEntity,
 } from '@/types'
 import type { LoginInput, RegisterInput } from '@/schemas'
 
@@ -17,6 +20,9 @@ export type {
   RefreshTokenResponse,
   RoleEntity,
   PermissionEntity,
+  BusinessEntity,
+  BranchEntity,
+  TeamMemberEntity,
 }
 
 // In-memory device identifier per browser tab session (no localStorage used)
@@ -172,4 +178,66 @@ export const rolesApi = {
     return res.data.data
   },
 }
+
+export const businessApi = {
+  async getBusiness() {
+    const res = await api.get<{ data: BusinessEntity }>('/business')
+    return res.data.data
+  },
+
+  async updateBusiness(data: Partial<BusinessEntity>) {
+    const res = await api.patch<{ data: BusinessEntity }>('/business', data)
+    return res.data.data
+  },
+
+  async getMembers() {
+    const res = await api.get<{ data: TeamMemberEntity[] }>('/business/members')
+    return res.data.data
+  },
+
+  async inviteMember(data: {
+    name: string
+    email: string
+    roleId: string
+    branchIds?: string[]
+  }) {
+    const res = await api.post<{ data: TeamMemberEntity }>(
+      '/business/members/invite',
+      data
+    )
+    return res.data.data
+  },
+}
+
+export const branchesApi = {
+  async getBranches() {
+    const res = await api.get<{ data: BranchEntity[] }>('/branches')
+    return res.data.data
+  },
+
+  async createBranch(data: {
+    name: string
+    code: string
+    address?: string
+    phone?: string
+    isMain?: boolean
+  }) {
+    const res = await api.post<{ data: BranchEntity }>('/branches', data)
+    return res.data.data
+  },
+
+  async updateBranch(branchId: string, data: Partial<BranchEntity>) {
+    const res = await api.patch<{ data: BranchEntity }>(
+      `/branches/${branchId}`,
+      data
+    )
+    return res.data.data
+  },
+
+  async deleteBranch(branchId: string) {
+    const res = await api.delete<{ data: BranchEntity }>(`/branches/${branchId}`)
+    return res.data.data
+  },
+}
+
 
