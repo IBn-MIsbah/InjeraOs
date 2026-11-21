@@ -1433,7 +1433,7 @@ export const dashboardsApi = {
 
   async createLayout(data: CreateDashboardLayoutInput) {
     const res = await api.post<{ message: string; data: DashboardLayoutEntity }>('/dashboards', data)
-    return res.data
+    return res.data.data
   },
 
   async getLayout(id: string) {
@@ -1443,7 +1443,7 @@ export const dashboardsApi = {
 
   async updateLayout(id: string, data: UpdateDashboardLayoutInput) {
     const res = await api.put<{ message: string; data: DashboardLayoutEntity }>(`/dashboards/${id}`, data)
-    return res.data
+    return res.data.data
   },
 
   async deleteLayout(id: string) {

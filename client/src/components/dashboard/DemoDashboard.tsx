@@ -3,10 +3,15 @@ import axios from 'axios'
 import {
   authApi,
   rolesApi,
+  reportsApi,
+  dashboardsApi,
   type ActiveSession,
   type AuthContextResponse,
   type PermissionEntity,
   type RoleEntity,
+  type DashboardSummaryResult,
+  type DashboardLayoutEntity,
+  type DashboardWidgetEntity,
 } from '@/lib/api'
 import { ROLE_OPTIONS } from '@/types/enums'
 import {
@@ -21,16 +26,20 @@ import {
   Clock,
   Key,
   Laptop,
-  Layers,
   Loader2,
   LogOut,
-  Package,
   RefreshCw,
   Shield,
-  ShieldCheck,
   Smartphone,
   Trash2,
-  Users,
+  DollarSign,
+  TrendingUp,
+  Truck,
+  Flame,
+  Layout,
+  Settings2,
+  Eye,
+  EyeOff,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -38,6 +47,14 @@ interface DemoDashboardProps {
   auth: AuthContextResponse
   onLogout: () => void
 }
+
+const DEFAULT_WIDGETS = [
+  { widgetType: 'revenue_summary', title: 'Revenue & Accruals', positionX: 0, positionY: 0, width: 6, height: 4, configuration: {} },
+  { widgetType: 'production_summary', title: 'Baking Operations', positionX: 6, positionY: 0, width: 6, height: 4, configuration: {} },
+  { widgetType: 'receivables_summary', title: 'Accounts Receivable', positionX: 0, positionY: 4, width: 6, height: 4, configuration: {} },
+  { widgetType: 'deliveries_summary', title: 'Distribution & Logistics', positionX: 6, positionY: 4, width: 6, height: 4, configuration: {} },
+  { widgetType: 'session_monitor', title: 'Active Device Sessions', positionX: 0, positionY: 8, width: 12, height: 6, configuration: {} },
+]
 
 export function DemoDashboard({ auth, onLogout }: DemoDashboardProps) {
   const [sessions, setSessions] = useState<ActiveSession[]>([])
@@ -48,6 +65,16 @@ export function DemoDashboard({ auth, onLogout }: DemoDashboardProps) {
   const [roles, setRoles] = useState<RoleEntity[]>([])
   const [loadingRoles, setLoadingRoles] = useState(true)
   const [selectedRoleName, setSelectedRoleName] = useState<string>('OWNER')
+
+  // Live Summary Metrics
+  const [summary, setSummary] = useState<DashboardSummaryResult | null>(null)
+  const [loadingSummary, setLoadingSummary] = useState(true)
+
+  // Customizable Dashboard Layouts
+  const [, setLayouts] = useState<DashboardLayoutEntity[]>([])
+  const [activeLayout, setActiveLayout] = useState<DashboardLayoutEntity | null>(null)
+  const [isCustomizing, setIsCustomizing] = useState(false)
+  const [savingLayout, setSavingLayout] = useState(false)
 
   const loadSessions = async (showToast = false) => {
     setLoadingSessions(true)
@@ -74,13 +101,9 @@ export function DemoDashboard({ auth, onLogout }: DemoDashboardProps) {
     authApi
       .getSessions()
       .then((data) => {
-        if (!ignore) {
-          setSessions(data)
-        }
+        if (!ignore) setSessions(data)
       })
-      .catch((err) => {
-        console.error('Failed to load active sessions:', err)
-      })
+      .catch((err) => console.error('Failed to load active sessions:', err))
 
     rolesApi
       .getRoles()
@@ -92,11 +115,52 @@ export function DemoDashboard({ auth, onLogout }: DemoDashboardProps) {
           }
         }
       })
-      .catch((err) => {
-        console.error('Failed to load roles:', err)
-      })
+      .catch((err) => console.error('Failed to load roles:', err))
       .finally(() => {
         if (!ignore) setLoadingRoles(false)
+      })
+
+    dashboardsApi
+      .getLayouts()
+      .then(async (list) => {
+        if (ignore) return
+        if (list.length > 0) {
+          setLayouts(list)
+          const defaultOne = list.find((l) => l.isDefault) ?? list[0]
+          setActiveLayout(defaultOne)
+        } else {
+          try {
+            const created = await dashboardsApi.createLayout({
+              name: 'Executive Overview',
+              isDefault: true,
+              widgets: DEFAULT_WIDGETS,
+            })
+            if (!ignore) {
+              setLayouts([created])
+              setActiveLayout(created)
+            }
+          } catch (err) {
+            console.error('Failed to create default layout:', err)
+          }
+        }
+      })
+      .catch((err) => {
+        if (!ignore) console.error('Failed to load layouts:', err)
+      })
+
+    reportsApi
+      .getDashboardSummary()
+      .then((data) => {
+        if (!ignore) {
+          setSummary(data)
+          setLoadingSummary(false)
+        }
+      })
+      .catch((err) => {
+        if (!ignore) {
+          console.error('Failed to load dashboard summary:', err)
+          setLoadingSummary(false)
+        }
       })
 
     return () => {
@@ -175,6 +239,55 @@ export function DemoDashboard({ auth, onLogout }: DemoDashboardProps) {
     }
   }
 
+  const handleToggleWidget = async (type: string, title: string) => {
+    if (!activeLayout) return
+    const currentWidgets: DashboardWidgetEntity[] = activeLayout.widgets || []
+    const exists = currentWidgets.find((w) => w.widgetType === type)
+
+    let updatedWidgets: DashboardWidgetEntity[]
+    if (exists) {
+      updatedWidgets = currentWidgets.filter((w) => w.widgetType !== type)
+    } else {
+      updatedWidgets = [
+        ...currentWidgets,
+        {
+          id: `w-${type}-${currentWidgets.length}`,
+          dashboardLayoutId: activeLayout.id,
+          widgetType: type,
+          title,
+          positionX: 0,
+          positionY: currentWidgets.length * 4,
+          width: 6,
+          height: 4,
+          configuration: {},
+          createdAt: new Date().toISOString(),
+        },
+      ]
+    }
+
+    setSavingLayout(true)
+    try {
+      const saved = await dashboardsApi.updateLayout(activeLayout.id, {
+        widgets: updatedWidgets.map((w, idx) => ({
+          widgetType: w.widgetType,
+          title: w.title,
+          positionX: w.positionX,
+          positionY: idx * 4,
+          width: w.width,
+          height: w.height,
+          configuration: w.configuration ?? {},
+        })),
+      })
+      setActiveLayout(saved)
+      toast.success('Dashboard layout updated')
+    } catch (err) {
+      console.error('Failed to update layout:', err)
+      toast.error('Could not save dashboard layout')
+    } finally {
+      setSavingLayout(false)
+    }
+  }
+
   const formatDate = (isoString: string) => {
     try {
       const date = new Date(isoString)
@@ -182,6 +295,19 @@ export function DemoDashboard({ auth, onLogout }: DemoDashboardProps) {
     } catch {
       return isoString
     }
+  }
+
+  const formatCurrency = (val: number | string | undefined | null) => {
+    const num = Number(val ?? 0)
+    return new Intl.NumberFormat('en-ET', {
+      style: 'currency',
+      currency: 'ETB',
+      minimumFractionDigits: 2,
+    }).format(num)
+  }
+
+  const isWidgetVisible = (type: string) => {
+    return activeLayout?.widgets ? activeLayout.widgets.some((w) => w.widgetType === type) : true
   }
 
   return (
@@ -210,6 +336,19 @@ export function DemoDashboard({ auth, onLogout }: DemoDashboardProps) {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsCustomizing(!isCustomizing)}
+            className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
+              isCustomizing
+                ? 'border-emerald-600 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+                : 'border-border bg-background text-foreground hover:bg-muted'
+            }`}
+          >
+            <Settings2 className="h-3.5 w-3.5" />
+            <span>{isCustomizing ? 'Done Customizing' : 'Customize Widgets'}</span>
+          </button>
+
           <button
             type="button"
             onClick={handleTestRotation}
@@ -244,227 +383,287 @@ export function DemoDashboard({ auth, onLogout }: DemoDashboardProps) {
         </div>
       )}
 
-      {/* Operational Metrics */}
+      {/* Customize Widget Tray (When customizing) */}
+      {isCustomizing && (
+        <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+              <Layout className="h-4 w-4 text-emerald-600" />
+              Toggle Dashboard Widgets
+            </span>
+            <span className="text-[11px] text-muted-foreground">
+              Layout saved automatically to your user profile
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { type: 'revenue_summary', label: 'Revenue Pulse' },
+              { type: 'production_summary', label: 'Baking Output' },
+              { type: 'receivables_summary', label: 'Accounts Receivable' },
+              { type: 'deliveries_summary', label: 'Logistics & Orders' },
+              { type: 'session_monitor', label: 'Security & Sessions' },
+            ].map((w) => {
+              const visible = isWidgetVisible(w.type)
+              return (
+                <button
+                  key={w.type}
+                  type="button"
+                  onClick={() => handleToggleWidget(w.type, w.label)}
+                  disabled={savingLayout}
+                  className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                    visible
+                      ? 'bg-emerald-600 text-white shadow-xs'
+                      : 'bg-muted text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {visible ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                  <span>{w.label}</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Live Operational & Financial Metrics Grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-border/80">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
-              Today's output
-            </CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl font-medium tracking-tight">1,420 injera</div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Morning shift complete &bull; Evening running
-            </p>
-          </CardContent>
-        </Card>
+        {isWidgetVisible('revenue_summary') && (
+          <Card className="border-border/80 shadow-xs">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-xs font-medium text-muted-foreground">
+                Today's Accrual Revenue
+              </CardTitle>
+              <DollarSign className="h-4 w-4 text-emerald-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-xl font-bold tracking-tight text-foreground">
+                {loadingSummary ? '…' : formatCurrency(summary?.today.revenue)}
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                MTD: {formatCurrency(summary?.currentMonth.revenue)} ({summary?.today.orderCount ?? 0} orders today)
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
-        <Card className="border-border/80">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
-              Flour lot on hand
-            </CardTitle>
-            <Layers className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl font-medium tracking-tight">48 quintals</div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Magna teff &bull; Lot #TF-2026-08
-            </p>
-          </CardContent>
-        </Card>
+        {isWidgetVisible('production_summary') && (
+          <Card className="border-border/80 shadow-xs">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-xs font-medium text-muted-foreground">
+                Baking Operations
+              </CardTitle>
+              <Flame className="h-4 w-4 text-amber-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-xl font-bold tracking-tight text-foreground">
+                {loadingSummary ? '…' : `${summary?.operations.activeBatchesCount ?? 0} active batches`}
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Active baking stations & shift production
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
-        <Card className="border-border/80">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
-              Active shifts
-            </CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl font-medium tracking-tight">6 bakers</div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Branch: Bole Main Bakery
-            </p>
-          </CardContent>
-        </Card>
+        {isWidgetVisible('receivables_summary') && (
+          <Card className="border-border/80 shadow-xs">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-xs font-medium text-muted-foreground">
+                Accounts Receivable
+              </CardTitle>
+              <TrendingUp className="h-4 w-4 text-violet-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-xl font-bold tracking-tight text-foreground">
+                {loadingSummary ? '…' : formatCurrency(summary?.operations.totalReceivables)}
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {summary?.operations.activeCustomersCount ?? 0} active accounts with balances
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
-        <Card className="border-border/80">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
-              Storage security
-            </CardTitle>
-            <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl font-medium tracking-tight">HttpOnly cookies</div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              0 tokens stored in localStorage
-            </p>
-          </CardContent>
-        </Card>
+        {isWidgetVisible('deliveries_summary') && (
+          <Card className="border-border/80 shadow-xs">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-xs font-medium text-muted-foreground">
+                Pending Deliveries
+              </CardTitle>
+              <Truck className="h-4 w-4 text-cyan-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-xl font-bold tracking-tight text-foreground">
+                {loadingSummary ? '…' : `${summary?.operations.pendingDeliveriesCount ?? 0} pending`}
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Wholesale & route logistics
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Main Content Grid: Active Sessions & Security Box */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Active Sessions Tracking */}
-        <div className="lg:col-span-2">
-          <Card className="border-border/80">
-            <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <CardTitle className="text-base font-medium">
-                  Active device sessions
-                </CardTitle>
-                <CardDescription className="text-xs">
-                  Real-time database tracking of authenticated clients and tokens.
-                </CardDescription>
-              </div>
+      {isWidgetVisible('session_monitor') && (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          {/* Active Sessions Tracking */}
+          <div className="lg:col-span-2">
+            <Card className="border-border/80">
+              <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <CardTitle className="text-base font-medium">
+                    Active device sessions
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    Real-time database tracking of authenticated clients and tokens.
+                  </CardDescription>
+                </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => loadSessions(true)}
-                  disabled={loadingSessions}
-                  className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:bg-muted"
-                >
-                  <RefreshCw className={`h-3 w-3 ${loadingSessions ? 'animate-spin' : ''}`} />
-                  <span>Refresh</span>
-                </button>
-                {sessions.length > 1 && (
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={handleRevokeOthers}
+                    onClick={() => loadSessions(true)}
                     disabled={loadingSessions}
-                    className="inline-flex items-center gap-1 rounded-md border border-destructive/30 bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive hover:bg-destructive/20"
+                    className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:bg-muted"
                   >
-                    <span>Revoke other devices</span>
+                    <RefreshCw className={`h-3 w-3 ${loadingSessions ? 'animate-spin' : ''}`} />
+                    <span>Refresh</span>
                   </button>
-                )}
-              </div>
-            </CardHeader>
-
-            <CardContent>
-              {loadingSessions && sessions.length === 0 ? (
-                <div className="flex items-center justify-center py-8 text-xs text-muted-foreground">
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Loading active sessions…
-                </div>
-              ) : sessions.length === 0 ? (
-                <p className="py-6 text-center text-xs text-muted-foreground">
-                  No active sessions found.
-                </p>
-              ) : (
-                <div className="divide-y divide-border/60">
-                  {sessions.map((session) => (
-                    <div
-                      key={session.id}
-                      className="flex items-center justify-between py-3.5 first:pt-0 last:pb-0"
+                  {sessions.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={handleRevokeOthers}
+                      disabled={loadingSessions}
+                      className="inline-flex items-center gap-1 rounded-md border border-destructive/30 bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive hover:bg-destructive/20"
                     >
-                      <div className="flex items-start gap-3">
-                        <div className="mt-0.5 rounded-md border border-border bg-muted p-1.5 text-muted-foreground">
-                          {session.userAgent?.includes('Mobile') ? (
-                            <Smartphone className="h-4 w-4" />
-                          ) : (
-                            <Laptop className="h-4 w-4" />
-                          )}
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-medium text-foreground">
-                              {session.userAgent?.split(' ')[0] ?? 'Web Browser'}
-                            </span>
-                            {session.isCurrent && (
-                              <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
-                                This device
-                              </span>
+                      <span>Revoke other devices</span>
+                    </button>
+                  )}
+                </div>
+              </CardHeader>
+
+              <CardContent>
+                {loadingSessions && sessions.length === 0 ? (
+                  <div className="flex items-center justify-center py-8 text-xs text-muted-foreground">
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Loading active sessions…
+                  </div>
+                ) : sessions.length === 0 ? (
+                  <p className="py-6 text-center text-xs text-muted-foreground">
+                    No active sessions found.
+                  </p>
+                ) : (
+                  <div className="divide-y divide-border/60">
+                    {sessions.map((session) => (
+                      <div
+                        key={session.id}
+                        className="flex items-center justify-between py-3.5 first:pt-0 last:pb-0"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="mt-0.5 rounded-md border border-border bg-muted p-1.5 text-muted-foreground">
+                            {session.userAgent?.includes('Mobile') ? (
+                              <Smartphone className="h-4 w-4" />
+                            ) : (
+                              <Laptop className="h-4 w-4" />
                             )}
                           </div>
-                          <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
-                            <span>IP: {session.ipAddress ?? '127.0.0.1'}</span>
-                            <span className="inline-flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
-                              Last active: {formatDate(session.lastUsedAt)}
-                            </span>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-medium text-foreground">
+                                {session.userAgent?.split(' ')[0] ?? 'Web Browser'}
+                              </span>
+                              {session.isCurrent && (
+                                <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                                  This device
+                                </span>
+                              )}
+                            </div>
+                            <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+                              <span>IP: {session.ipAddress ?? '127.0.0.1'}</span>
+                              <span className="inline-flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                Last active: {formatDate(session.lastUsedAt)}
+                              </span>
+                            </div>
                           </div>
                         </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleRevokeSession(session.id)}
+                          disabled={revokingId === session.id}
+                          className="rounded p-1 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                          title={session.isCurrent ? 'Sign out this session' : 'Revoke device session'}
+                        >
+                          {revokingId === session.id ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-3.5 w-3.5" />
+                          )}
+                        </button>
                       </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
 
-                      <button
-                        type="button"
-                        onClick={() => handleRevokeSession(session.id)}
-                        disabled={revokingId === session.id}
-                        className="rounded p-1 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-                        title={session.isCurrent ? 'Sign out this session' : 'Revoke device session'}
+          {/* Security Architecture Box */}
+          <div>
+            <Card className="border-border/80">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-medium">
+                  Security architecture
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  How this workspace protects identity and session keys.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3.5 text-xs">
+                <div className="rounded-lg border border-border/80 bg-muted/40 p-3">
+                  <p className="font-medium text-foreground">
+                    HttpOnly and SameSite cookies
+                  </p>
+                  <p className="mt-1 text-muted-foreground">
+                    Access and refresh tokens are managed entirely by browser cookie jars with
+                    <code className="mx-1 rounded bg-muted px-1 font-mono text-[11px]">httpOnly</code>
+                    and
+                    <code className="mx-1 rounded bg-muted px-1 font-mono text-[11px]">SameSite=Lax</code>.
+                    JavaScript cannot read these tokens, neutralizing token theft via XSS.
+                  </p>
+                </div>
+
+                <div className="rounded-lg border border-border/80 bg-muted/40 p-3">
+                  <p className="font-medium text-foreground">
+                    Automatic token rotation
+                  </p>
+                  <p className="mt-1 text-muted-foreground">
+                    Each refresh invalidates the previous refresh token and issues a fresh one. If an attacker presents an already-used token, the system detects token theft and immediately revokes all active sessions for that token family.
+                  </p>
+                </div>
+
+                <div className="rounded-lg border border-border/80 bg-muted/40 p-3">
+                  <p className="font-medium text-foreground">
+                    Assigned permissions
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {auth.permissions.map((p: string) => (
+                      <span
+                        key={p}
+                        className="rounded bg-background px-1.5 py-0.5 font-mono text-[10px] text-foreground border border-border"
                       >
-                        {revokingId === session.id ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <Trash2 className="h-3.5 w-3.5" />
-                        )}
-                      </button>
-                    </div>
-                  ))}
+                        {p}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-
-        {/* Security Architecture Box */}
-        <div>
-          <Card className="border-border/80">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base font-medium">
-                Security architecture
-              </CardTitle>
-              <CardDescription className="text-xs">
-                How this workspace protects identity and session keys.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3.5 text-xs">
-              <div className="rounded-lg border border-border/80 bg-muted/40 p-3">
-                <p className="font-medium text-foreground">
-                  HttpOnly and SameSite cookies
-                </p>
-                <p className="mt-1 text-muted-foreground">
-                  Access and refresh tokens are managed entirely by browser cookie jars with
-                  <code className="mx-1 rounded bg-muted px-1 font-mono text-[11px]">httpOnly</code>
-                  and
-                  <code className="mx-1 rounded bg-muted px-1 font-mono text-[11px]">SameSite=Lax</code>.
-                  JavaScript cannot read these tokens, neutralizing token theft via XSS.
-                </p>
-              </div>
-
-              <div className="rounded-lg border border-border/80 bg-muted/40 p-3">
-                <p className="font-medium text-foreground">
-                  Automatic token rotation
-                </p>
-                <p className="mt-1 text-muted-foreground">
-                  Each refresh invalidates the previous refresh token and issues a fresh one. If an attacker presents an already-used token, the system detects token theft and immediately revokes all active sessions for that token family.
-                </p>
-              </div>
-
-              <div className="rounded-lg border border-border/80 bg-muted/40 p-3">
-                <p className="font-medium text-foreground">
-                  Assigned permissions
-                </p>
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {auth.permissions.map((p: string) => (
-                    <span
-                      key={p}
-                      className="rounded bg-background px-1.5 py-0.5 font-mono text-[10px] text-foreground border border-border"
-                    >
-                      {p}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      )}
 
       {/* Specific Bakery Roles & Permission Matrix Section */}
       <Card className="border-border/80">

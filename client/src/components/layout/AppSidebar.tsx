@@ -22,10 +22,12 @@ import {
   LayoutDashboard,
   LogIn,
   LogOut,
+  Receipt,
   ShieldCheck,
   ShoppingCart,
   Sparkles,
   Store,
+  TrendingUp,
   UserCheck,
   UserPlus,
   Users,
@@ -42,6 +44,8 @@ export type TabType =
   | 'costing'
   | 'inventory'
   | 'sales'
+  | 'expenses'
+  | 'reports'
   | 'team'
   | 'settings'
   | 'unslop'
@@ -198,6 +202,30 @@ export function AppSidebar({
                     >
                       <ShoppingCart className="h-4 w-4 text-violet-500" />
                       <span>Sales & Distribution</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={activeTab === 'expenses'}
+                      onClick={() => onSelectTab('expenses')}
+                      tooltip="Operating Expenses & OPEX Ledger"
+                      className="cursor-pointer gap-2.5 text-xs"
+                    >
+                      <Receipt className="h-4 w-4 text-rose-500" />
+                      <span>Operating Expenses</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={activeTab === 'reports'}
+                      onClick={() => onSelectTab('reports')}
+                      tooltip="Financial Reports, P&L & Baker Productivity"
+                      className="cursor-pointer gap-2.5 text-xs"
+                    >
+                      <TrendingUp className="h-4 w-4 text-emerald-500" />
+                      <span>Financial Reports & P&L</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>

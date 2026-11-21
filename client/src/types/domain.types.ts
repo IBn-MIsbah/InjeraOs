@@ -1083,7 +1083,7 @@ export interface DashboardWidgetEntity {
   positionY: number
   width: number
   height: number
-  configuration: Record<string, any>
+  configuration: Record<string, unknown>
   createdAt: string
 }
 

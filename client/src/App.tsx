@@ -13,6 +13,8 @@ import { ProductionManagementView } from '@/components/production/ProductionMana
 import { CostingManagementView } from '@/components/costing/CostingManagementView'
 import { InventoryManagementView } from '@/components/inventory/InventoryManagementView'
 import { SalesManagementView } from '@/components/sales/SalesManagementView'
+import { ExpensesManagementView } from '@/components/expenses/ExpensesManagementView'
+import { FinancialReportsView } from '@/components/reports/FinancialReportsView'
 import { UnslopTool } from '@/components/unslop/UnslopTool'
 import { Toaster } from '@/components/ui/sonner'
 import { AppSidebar, type TabType } from '@/components/layout/AppSidebar'
@@ -95,6 +97,8 @@ export function App() {
                 {activeTab === 'costing' && 'Batch Costing, Labour & Overhead Allocation'}
                 {activeTab === 'inventory' && 'Finished Goods, FIFO Lots & Locations'}
                 {activeTab === 'sales' && 'Sales, POS, Customer Credit Ledger & Distribution'}
+                {activeTab === 'expenses' && 'Operating Expenses & OPEX Ledger'}
+                {activeTab === 'reports' && 'Financial Reports, P&L & Baker Productivity'}
                 {activeTab === 'team' && 'Staff Roster & Permissions'}
                 {activeTab === 'settings' && 'Bakery Business Settings'}
                 {activeTab === 'unslop' && 'Unslop AI Text Editor'}
@@ -155,6 +159,10 @@ export function App() {
             <InventoryManagementView />
           ) : activeTab === 'sales' ? (
             <SalesManagementView />
+          ) : activeTab === 'expenses' ? (
+            <ExpensesManagementView />
+          ) : activeTab === 'reports' ? (
+            <FinancialReportsView />
           ) : activeTab === 'team' ? (
             <TeamMembersView />
           ) : activeTab === 'settings' ? (
