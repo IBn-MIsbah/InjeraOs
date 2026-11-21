@@ -16,6 +16,7 @@ import {
   Boxes,
   Building2,
   ChefHat,
+  Flame,
   GitBranch,
   LayoutDashboard,
   LogIn,
@@ -34,6 +35,7 @@ export type TabType =
   | 'workforce'
   | 'materials'
   | 'recipes'
+  | 'production'
   | 'team'
   | 'settings'
   | 'unslop'
@@ -142,6 +144,18 @@ export function AppSidebar({
                     >
                       <ChefHat className="h-4 w-4" />
                       <span>Recipes & Formulations</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={activeTab === 'production'}
+                      onClick={() => onSelectTab('production')}
+                      tooltip="Production Sessions & Baking Batches"
+                      className="cursor-pointer gap-2.5 text-xs"
+                    >
+                      <Flame className="h-4 w-4 text-amber-500" />
+                      <span>Production & Baking</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>

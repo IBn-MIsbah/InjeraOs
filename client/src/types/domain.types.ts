@@ -7,8 +7,6 @@ import type {
   ExpenseStatus,
   PaymentMethod,
   PaymentStatus,
-  ProductionStatus,
-  RejectionReason,
   SaleStatus,
   DeliveryStatus,
 } from './enums'

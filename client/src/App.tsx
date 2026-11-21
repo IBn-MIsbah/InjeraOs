@@ -9,6 +9,7 @@ import { TeamMembersView } from '@/components/business/TeamMembersView'
 import { WorkforceManagementView } from '@/components/workforce/WorkforceManagementView'
 import { MaterialsManagementView } from '@/components/materials/MaterialsManagementView'
 import { RecipesManagementView } from '@/components/recipes/RecipesManagementView'
+import { ProductionManagementView } from '@/components/production/ProductionManagementView'
 import { UnslopTool } from '@/components/unslop/UnslopTool'
 import { Toaster } from '@/components/ui/sonner'
 import { AppSidebar, type TabType } from '@/components/layout/AppSidebar'
@@ -87,6 +88,7 @@ export function App() {
                 {activeTab === 'workforce' && 'Workforce, Shifts & Timesheets'}
                 {activeTab === 'materials' && 'Raw Materials, Purchasing & Inventory'}
                 {activeTab === 'recipes' && 'Recipes, Scaling & Pre-Mixed Teff'}
+                {activeTab === 'production' && 'Production Sessions & Mitad Baking'}
                 {activeTab === 'team' && 'Staff Roster & Permissions'}
                 {activeTab === 'settings' && 'Bakery Business Settings'}
                 {activeTab === 'unslop' && 'Unslop AI Text Editor'}
@@ -139,6 +141,8 @@ export function App() {
             <MaterialsManagementView />
           ) : activeTab === 'recipes' ? (
             <RecipesManagementView />
+          ) : activeTab === 'production' ? (
+            <ProductionManagementView />
           ) : activeTab === 'team' ? (
             <TeamMembersView />
           ) : activeTab === 'settings' ? (
