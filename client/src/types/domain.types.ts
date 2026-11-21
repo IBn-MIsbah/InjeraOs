@@ -244,3 +244,116 @@ export interface ExpenseEntity {
   status: ExpenseStatus
   createdAt: string
 }
+
+export interface DepartmentEntity {
+  id: string
+  businessId: string
+  name: string
+  description?: string | null
+  isActive: boolean
+}
+
+export interface JobPositionEntity {
+  id: string
+  businessId: string
+  name: string
+  departmentId?: string | null
+  departmentName?: string | null
+  description?: string | null
+  isActive: boolean
+}
+
+export interface EmployeeEntity {
+  id: string
+  businessId: string
+  branchId: string
+  branchName?: string
+  positionId: string
+  positionName?: string
+  userId?: string | null
+  employeeNumber: string
+  firstName: string
+  lastName: string
+  phone?: string | null
+  address?: string | null
+  employmentType: 'FULL_TIME' | 'PART_TIME' | 'TEMPORARY' | 'CONTRACT'
+  hireDate: string
+  terminationDate?: string | null
+  status: 'ACTIVE' | 'INACTIVE' | 'TERMINATED'
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ShiftEntity {
+  id: string
+  businessId: string
+  branchId: string
+  name: string
+  shiftType: 'DAY' | 'NIGHT' | 'CUSTOM'
+  startTime: string
+  endTime: string
+  crossesMidnight: boolean
+  breakMinutes: number
+  isActive: boolean
+  createdAt: string
+}
+
+export interface ShiftAssignmentEntity {
+  id: string
+  businessId: string
+  branchId: string
+  employeeId: string
+  shiftId: string
+  scheduledStart: string
+  scheduledEnd: string
+  assignedById?: string | null
+  status: 'SCHEDULED' | 'CONFIRMED' | 'CANCELLED'
+  createdAt: string
+}
+
+export interface AttendanceRecordEntity {
+  id: string
+  businessId: string
+  branchId: string
+  employeeId: string
+  shiftAssignmentId?: string | null
+  operationalDate: string
+  clockIn?: string | null
+  clockOut?: string | null
+  breakMinutes: number
+  overtimeMinutes: number
+  status: 'PRESENT' | 'LATE' | 'HALF_DAY' | 'ABSENT' | 'LEAVE'
+  notes?: string | null
+  totalWorkingMinutes?: number
+  recordedById?: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface LeaveRecordEntity {
+  id: string
+  businessId: string
+  employeeId: string
+  leaveType: string
+  startDate: string
+  endDate: string
+  reason?: string | null
+  status: string
+  approvedById?: string | null
+}
+
+export interface HeadcountReport {
+  totalEmployees: number
+  activeHeadcount: number
+  inactiveCount: number
+  terminatedCount: number
+  byBranch: { branchId: string; branchName: string; activeCount: number }[]
+  byPosition: { positionId: string; positionName: string; activeCount: number }[]
+  byDepartment: { departmentId: string; departmentName: string; activeCount: number }[]
+  byEmploymentType: {
+    FULL_TIME: number
+    PART_TIME: number
+    CONTRACT: number
+    TEMPORARY: number
+  }
+}

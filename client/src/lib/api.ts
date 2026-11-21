@@ -9,6 +9,14 @@ import type {
   BusinessEntity,
   BranchEntity,
   TeamMemberEntity,
+  DepartmentEntity,
+  JobPositionEntity,
+  EmployeeEntity,
+  ShiftEntity,
+  ShiftAssignmentEntity,
+  AttendanceRecordEntity,
+  LeaveRecordEntity,
+  HeadcountReport,
 } from '@/types'
 import type { LoginInput, RegisterInput } from '@/schemas'
 
@@ -23,6 +31,14 @@ export type {
   BusinessEntity,
   BranchEntity,
   TeamMemberEntity,
+  DepartmentEntity,
+  JobPositionEntity,
+  EmployeeEntity,
+  ShiftEntity,
+  ShiftAssignmentEntity,
+  AttendanceRecordEntity,
+  LeaveRecordEntity,
+  HeadcountReport,
 }
 
 // In-memory device identifier per browser tab session (no localStorage used)
@@ -236,6 +252,179 @@ export const branchesApi = {
 
   async deleteBranch(branchId: string) {
     const res = await api.delete<{ data: BranchEntity }>(`/branches/${branchId}`)
+    return res.data.data
+  },
+}
+
+export const workforceApi = {
+  async getDepartments() {
+    const res = await api.get<{ data: DepartmentEntity[] }>('/workforce/departments')
+    return res.data.data
+  },
+
+  async createDepartment(data: { name: string; description?: string }) {
+    const res = await api.post<{ data: DepartmentEntity }>('/workforce/departments', data)
+    return res.data.data
+  },
+
+  async getPositions() {
+    const res = await api.get<{ data: JobPositionEntity[] }>('/workforce/positions')
+    return res.data.data
+  },
+
+  async createPosition(data: { name: string; departmentId?: string; description?: string }) {
+    const res = await api.post<{ data: JobPositionEntity }>('/workforce/positions', data)
+    return res.data.data
+  },
+
+  async getEmployees(params?: {
+    branchId?: string
+    status?: string
+    positionId?: string
+    search?: string
+  }) {
+    const res = await api.get<{ data: EmployeeEntity[] }>('/workforce/employees', { params })
+    return res.data.data
+  },
+
+  async createEmployee(data: {
+    firstName: string
+    lastName: string
+    employeeNumber: string
+    branchId: string
+    positionId: string
+    employmentType: 'FULL_TIME' | 'PART_TIME' | 'TEMPORARY' | 'CONTRACT'
+    hireDate: string
+    phone?: string
+    address?: string
+    status?: 'ACTIVE' | 'INACTIVE' | 'TERMINATED'
+  }) {
+    const res = await api.post<{ data: EmployeeEntity }>('/workforce/employees', data)
+    return res.data.data
+  },
+
+  async getEmployee(employeeId: string) {
+    const res = await api.get<{ data: EmployeeEntity }>(`/workforce/employees/${employeeId}`)
+    return res.data.data
+  },
+
+  async updateEmployee(
+    employeeId: string,
+    data: Partial<{
+      firstName: string
+      lastName: string
+      branchId: string
+      positionId: string
+      employmentType: 'FULL_TIME' | 'PART_TIME' | 'TEMPORARY' | 'CONTRACT'
+      phone?: string | null
+      address?: string | null
+      status: 'ACTIVE' | 'INACTIVE' | 'TERMINATED'
+      terminationDate?: string | null
+    }>
+  ) {
+    const res = await api.patch<{ data: EmployeeEntity }>(`/workforce/employees/${employeeId}`, data)
+    return res.data.data
+  },
+
+  async getShifts(params?: { branchId?: string }) {
+    const res = await api.get<{ data: ShiftEntity[] }>('/workforce/shifts', { params })
+    return res.data.data
+  },
+
+  async createShift(data: {
+    branchId: string
+    name: string
+    shiftType: 'DAY' | 'NIGHT' | 'CUSTOM'
+    startTime: string
+    endTime: string
+    crossesMidnight?: boolean
+    breakMinutes?: number
+  }) {
+    const res = await api.post<{ data: ShiftEntity }>('/workforce/shifts', data)
+    return res.data.data
+  },
+
+  async getShiftAssignments(params?: {
+    branchId?: string
+    employeeId?: string
+    startDate?: string
+    endDate?: string
+  }) {
+    const res = await api.get<{ data: ShiftAssignmentEntity[] }>(
+      '/workforce/shifts/assignments',
+      { params }
+    )
+    return res.data.data
+  },
+
+  async createShiftAssignment(data: {
+    branchId: string
+    employeeId: string
+    shiftId: string
+    scheduledStart: string
+    scheduledEnd: string
+    status?: 'SCHEDULED' | 'CONFIRMED' | 'CANCELLED'
+  }) {
+    const res = await api.post<{ data: ShiftAssignmentEntity }>(
+      '/workforce/shifts/assignments',
+      data
+    )
+    return res.data.data
+  },
+
+  async getAttendance(params?: {
+    operationalDate?: string
+    branchId?: string
+    employeeId?: string
+  }) {
+    const res = await api.get<{ data: AttendanceRecordEntity[] }>('/workforce/attendance', {
+      params,
+    })
+    return res.data.data
+  },
+
+  async clockIn(data: {
+    branchId: string
+    employeeId: string
+    operationalDate: string
+    shiftAssignmentId?: string
+    clockIn?: string
+    notes?: string
+  }) {
+    const res = await api.post<{ data: AttendanceRecordEntity }>(
+      '/workforce/attendance/clock-in',
+      data
+    )
+    return res.data.data
+  },
+
+  async clockOut(data: {
+    attendanceId: string
+    clockOut?: string
+    breakMinutes?: number
+    notes?: string
+  }) {
+    const res = await api.post<{ data: AttendanceRecordEntity }>(
+      '/workforce/attendance/clock-out',
+      data
+    )
+    return res.data.data
+  },
+
+  async createLeave(data: {
+    employeeId: string
+    leaveType: string
+    startDate: string
+    endDate: string
+    reason?: string
+    status?: string
+  }) {
+    const res = await api.post<{ data: LeaveRecordEntity }>('/workforce/leaves', data)
+    return res.data.data
+  },
+
+  async getHeadcountReport() {
+    const res = await api.get<{ data: HeadcountReport }>('/workforce/reports/headcount')
     return res.data.data
   },
 }
