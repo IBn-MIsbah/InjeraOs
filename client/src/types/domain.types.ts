@@ -9,6 +9,7 @@ import type {
   PaymentStatus,
   SaleStatus,
   DeliveryStatus,
+  LedgerTransactionType,
 } from './enums'
 
 export interface BusinessEntity {
@@ -542,8 +543,6 @@ export interface SaleEntity {
   grossMarginPercent?: number
   createdById: string
 }
-
-export type LedgerTransactionType = 'SALE' | 'PAYMENT' | 'ADJUSTMENT' | 'REVERSAL'
 
 export interface CustomerLedgerEntryEntity {
   id: string

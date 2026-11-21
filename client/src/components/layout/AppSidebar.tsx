@@ -23,6 +23,7 @@ import {
   LogIn,
   LogOut,
   ShieldCheck,
+  ShoppingCart,
   Sparkles,
   Store,
   UserCheck,
@@ -40,6 +41,7 @@ export type TabType =
   | 'production'
   | 'costing'
   | 'inventory'
+  | 'sales'
   | 'team'
   | 'settings'
   | 'unslop'
@@ -184,6 +186,18 @@ export function AppSidebar({
                     >
                       <Warehouse className="h-4 w-4 text-cyan-500" />
                       <span>Finished Stock & FIFO</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={activeTab === 'sales'}
+                      onClick={() => onSelectTab('sales')}
+                      tooltip="Point of Sale, Customer Credit & Deliveries"
+                      className="cursor-pointer gap-2.5 text-xs"
+                    >
+                      <ShoppingCart className="h-4 w-4 text-violet-500" />
+                      <span>Sales & Distribution</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>

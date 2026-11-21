@@ -12,6 +12,7 @@ import { RecipesManagementView } from '@/components/recipes/RecipesManagementVie
 import { ProductionManagementView } from '@/components/production/ProductionManagementView'
 import { CostingManagementView } from '@/components/costing/CostingManagementView'
 import { InventoryManagementView } from '@/components/inventory/InventoryManagementView'
+import { SalesManagementView } from '@/components/sales/SalesManagementView'
 import { UnslopTool } from '@/components/unslop/UnslopTool'
 import { Toaster } from '@/components/ui/sonner'
 import { AppSidebar, type TabType } from '@/components/layout/AppSidebar'
@@ -93,6 +94,7 @@ export function App() {
                 {activeTab === 'production' && 'Production Sessions & Mitad Baking'}
                 {activeTab === 'costing' && 'Batch Costing, Labour & Overhead Allocation'}
                 {activeTab === 'inventory' && 'Finished Goods, FIFO Lots & Locations'}
+                {activeTab === 'sales' && 'Sales, POS, Customer Credit Ledger & Distribution'}
                 {activeTab === 'team' && 'Staff Roster & Permissions'}
                 {activeTab === 'settings' && 'Bakery Business Settings'}
                 {activeTab === 'unslop' && 'Unslop AI Text Editor'}
@@ -151,6 +153,8 @@ export function App() {
             <CostingManagementView />
           ) : activeTab === 'inventory' ? (
             <InventoryManagementView />
+          ) : activeTab === 'sales' ? (
+            <SalesManagementView />
           ) : activeTab === 'team' ? (
             <TeamMembersView />
           ) : activeTab === 'settings' ? (

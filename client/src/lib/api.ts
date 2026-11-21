@@ -67,6 +67,8 @@ import type {
   CustomerLedgerEntryEntity,
   CustomerStatementReport,
   DeliveryEntity,
+  SaleItemEntity,
+  DeliveryItemEntity,
 } from '@/types'
 import type {
   LoginInput,
@@ -149,6 +151,14 @@ export type {
   FinishedStockMovementEntity,
   RawMaterialStockSummary,
   LotReconciliationReport,
+  CustomerEntity,
+  SaleEntity,
+  PaymentEntity,
+  CustomerLedgerEntryEntity,
+  CustomerStatementReport,
+  DeliveryEntity,
+  SaleItemEntity,
+  DeliveryItemEntity,
 }
 
 // In-memory device identifier per browser tab session (no localStorage used)
