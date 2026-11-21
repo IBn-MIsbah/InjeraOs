@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/sidebar'
 import type { AuthContextResponse } from '@/lib/api'
 import {
+  Boxes,
   Building2,
   GitBranch,
   LayoutDashboard,
@@ -26,7 +27,14 @@ import {
   Users,
 } from 'lucide-react'
 
-export type TabType = 'workspace' | 'branches' | 'workforce' | 'team' | 'settings' | 'unslop'
+export type TabType =
+  | 'workspace'
+  | 'branches'
+  | 'workforce'
+  | 'materials'
+  | 'team'
+  | 'settings'
+  | 'unslop'
 
 interface AppSidebarProps {
   activeTab: TabType
@@ -108,6 +116,18 @@ export function AppSidebar({
                     >
                       <UserCheck className="h-4 w-4" />
                       <span>Workforce & Shifts</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={activeTab === 'materials'}
+                      onClick={() => onSelectTab('materials')}
+                      tooltip="Raw Materials, Purchasing & Lots"
+                      className="cursor-pointer gap-2.5 text-xs"
+                    >
+                      <Boxes className="h-4 w-4" />
+                      <span>Materials & Inventory</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>

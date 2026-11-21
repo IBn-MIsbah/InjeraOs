@@ -7,6 +7,7 @@ import { BusinessSettingsView } from '@/components/business/BusinessSettingsView
 import { BranchManagementView } from '@/components/business/BranchManagementView'
 import { TeamMembersView } from '@/components/business/TeamMembersView'
 import { WorkforceManagementView } from '@/components/workforce/WorkforceManagementView'
+import { MaterialsManagementView } from '@/components/materials/MaterialsManagementView'
 import { UnslopTool } from '@/components/unslop/UnslopTool'
 import { Toaster } from '@/components/ui/sonner'
 import { AppSidebar, type TabType } from '@/components/layout/AppSidebar'
@@ -131,6 +132,8 @@ export function App() {
             <BranchManagementView />
           ) : activeTab === 'workforce' ? (
             <WorkforceManagementView />
+          ) : activeTab === 'materials' ? (
+            <MaterialsManagementView />
           ) : activeTab === 'team' ? (
             <TeamMembersView />
           ) : activeTab === 'settings' ? (
