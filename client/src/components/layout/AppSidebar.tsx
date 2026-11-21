@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import {
   Sidebar,
   SidebarContent,
@@ -12,6 +13,7 @@ import {
   SidebarSeparator,
 } from '@/components/ui/sidebar'
 import type { AuthContextResponse } from '@/lib/api'
+import { syncEngine } from '@/lib/sync-engine'
 import {
   Boxes,
   Building2,
@@ -23,6 +25,7 @@ import {
   LogIn,
   LogOut,
   Receipt,
+  RefreshCw,
   ShieldCheck,
   ShoppingCart,
   Sparkles,
@@ -46,6 +49,7 @@ export type TabType =
   | 'sales'
   | 'expenses'
   | 'reports'
+  | 'sync'
   | 'team'
   | 'settings'
   | 'unslop'
@@ -67,6 +71,38 @@ export function AppSidebar({
   onSelectAuthView,
   onLogout,
 }: AppSidebarProps) {
+  const [isOnline, setIsOnline] = useState(
+    typeof navigator !== 'undefined' ? navigator.onLine : true
+  )
+  const [pendingCount, setPendingCount] = useState(0)
+
+  useEffect(() => {
+    const updatePending = () => {
+      void syncEngine.getPendingCount().then(setPendingCount)
+    }
+    updatePending()
+
+    const handleOnline = () => {
+      setIsOnline(true)
+      updatePending()
+    }
+    const handleOffline = () => {
+      setIsOnline(false)
+      updatePending()
+    }
+
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+    window.addEventListener('injera-queue-changed', updatePending)
+    window.addEventListener('injera-sync-completed', updatePending)
+
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+      window.removeEventListener('injera-queue-changed', updatePending)
+      window.removeEventListener('injera-sync-completed', updatePending)
+    }
+  }, [])
   return (
     <Sidebar variant="sidebar" collapsible="icon">
       {/* Sidebar Header: Brand & Business Name */}
@@ -228,6 +264,23 @@ export function AppSidebar({
                       <span>Financial Reports & P&L</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
+
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={activeTab === 'sync'}
+                      onClick={() => onSelectTab('sync')}
+                      tooltip="Offline Queue & Sync Engine"
+                      className="cursor-pointer gap-2.5 text-xs"
+                    >
+                      <RefreshCw className="h-4 w-4 text-sky-500" />
+                      <span className="flex-1">Offline Queue & Sync</span>
+                      {pendingCount > 0 && (
+                        <span className="rounded-full bg-amber-500/20 px-1.5 py-0.2 text-[9px] font-semibold text-amber-600 dark:text-amber-400">
+                          {pendingCount}
+                        </span>
+                      )}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
@@ -354,9 +407,18 @@ export function AppSidebar({
             </div>
 
             <div className="flex items-center justify-between gap-1 group-data-[collapsible=icon]:justify-center">
-              <div className="flex items-center gap-1 text-[10px] text-muted-foreground group-data-[collapsible=icon]:hidden">
-                <ShieldCheck className="h-3 w-3 text-emerald-500" />
-                <span>Encrypted Cookie</span>
+              <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground group-data-[collapsible=icon]:hidden">
+                {isOnline ? (
+                  <>
+                    <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block animate-pulse" />
+                    <span>Sync Online</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="h-2 w-2 rounded-full bg-amber-500 inline-block" />
+                    <span>Offline ({pendingCount})</span>
+                  </>
+                )}
               </div>
 
               <SidebarMenuButton

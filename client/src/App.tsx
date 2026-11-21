@@ -15,6 +15,7 @@ import { InventoryManagementView } from '@/components/inventory/InventoryManagem
 import { SalesManagementView } from '@/components/sales/SalesManagementView'
 import { ExpensesManagementView } from '@/components/expenses/ExpensesManagementView'
 import { FinancialReportsView } from '@/components/reports/FinancialReportsView'
+import { SyncManagementView } from '@/components/sync/SyncManagementView'
 import { UnslopTool } from '@/components/unslop/UnslopTool'
 import { Toaster } from '@/components/ui/sonner'
 import { AppSidebar, type TabType } from '@/components/layout/AppSidebar'
@@ -24,7 +25,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar'
 import { Separator } from '@/components/ui/separator'
-import { Loader2, ShieldCheck } from 'lucide-react'
+import { Loader2, ShieldCheck, WifiOff } from 'lucide-react'
 import { toast } from 'sonner'
 
 export function App() {
@@ -32,6 +33,23 @@ export function App() {
   const [authView, setAuthView] = useState<'login' | 'register'>('login')
   const [activeTab, setActiveTab] = useState<TabType>('workspace')
   const [isInitializing, setIsInitializing] = useState(true)
+  const [isOnline, setIsOnline] = useState(
+    typeof navigator !== 'undefined' ? navigator.onLine : true
+  )
+
+  // Listen to connectivity changes
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true)
+    const handleOffline = () => setIsOnline(false)
+
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [])
 
   // Verify session on page load using secure httpOnly cookies
   useEffect(() => {
@@ -99,6 +117,7 @@ export function App() {
                 {activeTab === 'sales' && 'Sales, POS, Customer Credit Ledger & Distribution'}
                 {activeTab === 'expenses' && 'Operating Expenses & OPEX Ledger'}
                 {activeTab === 'reports' && 'Financial Reports, P&L & Baker Productivity'}
+                {activeTab === 'sync' && 'Offline Queue & Synchronization Engine'}
                 {activeTab === 'team' && 'Staff Roster & Permissions'}
                 {activeTab === 'settings' && 'Bakery Business Settings'}
                 {activeTab === 'unslop' && 'Unslop AI Text Editor'}
@@ -121,6 +140,24 @@ export function App() {
             )}
           </div>
         </header>
+
+        {/* Global Offline Banner */}
+        {!isOnline && (
+          <div className="flex items-center justify-between border-b border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs text-amber-800 dark:text-amber-200">
+            <div className="flex items-center gap-2">
+              <WifiOff className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+              <span>
+                <strong>Working in Offline Mode.</strong> Operations will queue in IndexedDB and synchronize automatically upon reconnection.
+              </span>
+            </div>
+            <button
+              onClick={() => setActiveTab('sync')}
+              className="cursor-pointer font-medium underline hover:no-underline ml-2"
+            >
+              View Offline Queue
+            </button>
+          </div>
+        )}
 
         {/* Main Workspace Area */}
         <main className="flex-1 p-4 md:p-8">
@@ -163,6 +200,8 @@ export function App() {
             <ExpensesManagementView />
           ) : activeTab === 'reports' ? (
             <FinancialReportsView />
+          ) : activeTab === 'sync' ? (
+            <SyncManagementView />
           ) : activeTab === 'team' ? (
             <TeamMembersView />
           ) : activeTab === 'settings' ? (

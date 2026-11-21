@@ -10,6 +10,8 @@ import type {
   SaleStatus,
   DeliveryStatus,
   LedgerTransactionType,
+  SyncStatus,
+  ConflictStatus,
 } from './enums'
 
 export interface BusinessEntity {
@@ -1100,8 +1102,6 @@ export interface DashboardLayoutEntity {
 }
 
 // Milestone 10: Offline PWA & Synchronization Engine Types
-export type SyncStatus = 'PENDING' | 'PROCESSING' | 'PROCESSED' | 'FAILED' | 'CONFLICT'
-export type ConflictStatus = 'OPEN' | 'RESOLVED' | 'REJECTED'
 
 export interface SyncOperationEnvelopeEntity {
   id: string
