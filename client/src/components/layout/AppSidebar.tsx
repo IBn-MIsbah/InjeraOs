@@ -28,6 +28,7 @@ import {
   UserCheck,
   UserPlus,
   Users,
+  Warehouse,
 } from 'lucide-react'
 
 export type TabType =
@@ -38,6 +39,7 @@ export type TabType =
   | 'recipes'
   | 'production'
   | 'costing'
+  | 'inventory'
   | 'team'
   | 'settings'
   | 'unslop'
@@ -170,6 +172,18 @@ export function AppSidebar({
                     >
                       <Coins className="h-4 w-4 text-emerald-500" />
                       <span>Production Costing</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={activeTab === 'inventory'}
+                      onClick={() => onSelectTab('inventory')}
+                      tooltip="Finished Goods, FIFO Lots & Stock Locations"
+                      className="cursor-pointer gap-2.5 text-xs"
+                    >
+                      <Warehouse className="h-4 w-4 text-cyan-500" />
+                      <span>Finished Stock & FIFO</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>

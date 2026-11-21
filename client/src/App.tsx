@@ -11,6 +11,7 @@ import { MaterialsManagementView } from '@/components/materials/MaterialsManagem
 import { RecipesManagementView } from '@/components/recipes/RecipesManagementView'
 import { ProductionManagementView } from '@/components/production/ProductionManagementView'
 import { CostingManagementView } from '@/components/costing/CostingManagementView'
+import { InventoryManagementView } from '@/components/inventory/InventoryManagementView'
 import { UnslopTool } from '@/components/unslop/UnslopTool'
 import { Toaster } from '@/components/ui/sonner'
 import { AppSidebar, type TabType } from '@/components/layout/AppSidebar'
@@ -90,6 +91,8 @@ export function App() {
                 {activeTab === 'materials' && 'Raw Materials, Purchasing & Inventory'}
                 {activeTab === 'recipes' && 'Recipes, Scaling & Pre-Mixed Teff'}
                 {activeTab === 'production' && 'Production Sessions & Mitad Baking'}
+                {activeTab === 'costing' && 'Batch Costing, Labour & Overhead Allocation'}
+                {activeTab === 'inventory' && 'Finished Goods, FIFO Lots & Locations'}
                 {activeTab === 'team' && 'Staff Roster & Permissions'}
                 {activeTab === 'settings' && 'Bakery Business Settings'}
                 {activeTab === 'unslop' && 'Unslop AI Text Editor'}
@@ -146,6 +149,8 @@ export function App() {
             <ProductionManagementView />
           ) : activeTab === 'costing' ? (
             <CostingManagementView />
+          ) : activeTab === 'inventory' ? (
+            <InventoryManagementView />
           ) : activeTab === 'team' ? (
             <TeamMembersView />
           ) : activeTab === 'settings' ? (

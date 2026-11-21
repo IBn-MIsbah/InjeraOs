@@ -22,7 +22,7 @@ export const postProductionToStockSchema = z.object({
   productionBatchId: z.string().uuid('Valid production batch ID required'),
   productionOutputId: z.string().uuid('Valid output ID required').optional().nullable(),
   stockLocationId: z.string().uuid('Valid stock location ID required'),
-  expiryHours: z.number().int().min(1).max(720).optional().default(72),
+  expiryHours: z.number().int().min(1).max(720),
   customExpiryAt: z.string().datetime({ offset: true }).optional().nullable(),
   notes: z.string().trim().max(500).optional().nullable(),
 })

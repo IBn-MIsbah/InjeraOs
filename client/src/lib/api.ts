@@ -131,6 +131,11 @@ export type {
   ProductionCostRecordEntity,
   BatchCostingDetail,
   UnitCostTrendItem,
+  StockLocationEntity,
+  FinishedInventoryLotEntity,
+  FinishedStockMovementEntity,
+  RawMaterialStockSummary,
+  LotReconciliationReport,
 }
 
 // In-memory device identifier per browser tab session (no localStorage used)
