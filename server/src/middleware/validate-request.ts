@@ -45,6 +45,6 @@ export const validateQuery = <T extends Record<string, unknown>>(schema: ZodType
       return
     }
 
-    req.query = result.data as any
+    Object.assign(req.query, result.data)
     next()
   }

@@ -10,6 +10,7 @@ import { materialsRouter } from './modules/materials/index.js'
 import { recipesRouter } from './modules/recipes/index.js'
 import { productionRouter } from './modules/production/index.js'
 import { costingRouter } from './modules/costing/index.js'
+import { inventoryRouter } from './modules/inventory/index.js'
 
 export const createApp = (): Express => {
   const app = express()
@@ -55,6 +56,7 @@ export const createApp = (): Express => {
   app.use('/api/recipes', recipesRouter)
   app.use('/api/production', productionRouter)
   app.use('/api/costing', costingRouter)
+  app.use('/api/inventory', inventoryRouter)
 
   // 404 Route Not Found
   app.use((req, res) => {
