@@ -15,6 +15,7 @@ import { salesRouter } from './modules/sales/index.js'
 import { expensesRouter } from './modules/expenses/index.js'
 import { reportsRouter } from './modules/reports/index.js'
 import { dashboardsRouter } from './modules/dashboards/index.js'
+import { syncRouter } from './modules/sync/index.js'
 
 export const createApp = (): Express => {
   const app = express()
@@ -65,6 +66,7 @@ export const createApp = (): Express => {
   app.use('/api/expenses', expensesRouter)
   app.use('/api/reports', reportsRouter)
   app.use('/api/dashboards', dashboardsRouter)
+  app.use('/api/sync', syncRouter)
 
   // 404 Route Not Found
   app.use((req, res) => {
