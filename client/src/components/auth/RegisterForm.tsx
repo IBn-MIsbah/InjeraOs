@@ -1,7 +1,26 @@
-import React, { useState } from 'react'
-import { authApi, type AuthContextResponse } from '@/lib/api'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { AlertCircle, ArrowRight, Building, Loader2, Lock, Mail, Phone, User } from 'lucide-react'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { registerSchema, type RegisterInput } from '@/schemas/auth.schema'
+import { authApi } from '@/lib/api'
+import type { AuthContextResponse } from '@/types'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import {
+  AlertCircle,
+  ArrowRight,
+  Building,
+  Loader2,
+  Lock,
+  Mail,
+  Phone,
+  User,
+} from 'lucide-react'
 import { toast } from 'sonner'
 
 interface RegisterFormProps {
@@ -10,42 +29,46 @@ interface RegisterFormProps {
 }
 
 export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) {
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [phone, setPhone] = useState('')
-  const [businessName, setBusinessName] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [serverError, setServerError] = useState<string | null>(null)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setErrorMessage(null)
-    setIsLoading(true)
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterInput>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+      phone: '',
+      businessName: '',
+    },
+    mode: 'onTouched',
+  })
 
+  const onSubmit = async (data: RegisterInput) => {
+    setServerError(null)
     try {
-      const data = await authApi.register({
-        name: name.trim(),
-        email: email.trim(),
-        password,
-        phone: phone.trim() ? phone.trim() : undefined,
-        businessName: businessName.trim() ? businessName.trim() : undefined,
+      const authData = await authApi.register({
+        ...data,
+        phone: data.phone?.trim() ? data.phone.trim() : undefined,
+        businessName: data.businessName?.trim() ? data.businessName.trim() : undefined,
       })
       toast.success('Account created successfully', {
-        description: `Welcome to InjeraOS, ${data.user.name}.`,
+        description: `Welcome to InjeraOS, ${authData.user.name}.`,
       })
-      onSuccess(data)
+      onSuccess(authData)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       const message =
         err.response?.data?.message ??
         err.response?.data?.error ??
         'Failed to register account. Check input fields.'
-      setErrorMessage(message)
+      setServerError(message)
       toast.error('Registration failed', {
         description: message,
       })
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -70,14 +93,14 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
         </CardHeader>
 
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-3.5">
-            {errorMessage && (
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5" noValidate>
+            {serverError && (
               <div
                 role="alert"
                 className="flex items-start gap-2.5 rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-xs text-destructive"
               >
                 <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                <span>{errorMessage}</span>
+                <span>{serverError}</span>
               </div>
             )}
 
@@ -93,13 +116,23 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
                 <input
                   id="reg-name"
                   type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  autoComplete="name"
+                  {...register('name')}
                   placeholder="Almaz Tadesse"
-                  className="w-full rounded-lg border border-input bg-background py-2 pr-3 pl-9 text-sm text-foreground transition-colors placeholder:text-muted-foreground/60 focus:border-foreground focus:ring-1 focus:ring-foreground focus:outline-hidden"
+                  aria-invalid={errors.name ? 'true' : 'false'}
+                  aria-describedby={errors.name ? 'name-error' : undefined}
+                  className={`w-full rounded-lg border bg-background py-2 pr-3 pl-9 text-sm text-foreground transition-colors placeholder:text-muted-foreground/60 focus:ring-1 focus:outline-hidden ${
+                    errors.name
+                      ? 'border-destructive focus:border-destructive focus:ring-destructive'
+                      : 'border-input focus:border-foreground focus:ring-foreground'
+                  }`}
                 />
               </div>
+              {errors.name && (
+                <p id="name-error" className="text-xs text-destructive">
+                  {errors.name.message}
+                </p>
+              )}
             </div>
 
             <div className="space-y-1">
@@ -114,14 +147,23 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
                 <input
                   id="reg-email"
                   type="email"
-                  required
                   autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  {...register('email')}
                   placeholder="almaz@bakery.et"
-                  className="w-full rounded-lg border border-input bg-background py-2 pr-3 pl-9 text-sm text-foreground transition-colors placeholder:text-muted-foreground/60 focus:border-foreground focus:ring-1 focus:ring-foreground focus:outline-hidden"
+                  aria-invalid={errors.email ? 'true' : 'false'}
+                  aria-describedby={errors.email ? 'email-error' : undefined}
+                  className={`w-full rounded-lg border bg-background py-2 pr-3 pl-9 text-sm text-foreground transition-colors placeholder:text-muted-foreground/60 focus:ring-1 focus:outline-hidden ${
+                    errors.email
+                      ? 'border-destructive focus:border-destructive focus:ring-destructive'
+                      : 'border-input focus:border-foreground focus:ring-foreground'
+                  }`}
                 />
               </div>
+              {errors.email && (
+                <p id="email-error" className="text-xs text-destructive">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
 
             <div className="space-y-1">
@@ -136,15 +178,23 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
                 <input
                   id="reg-password"
                   type="password"
-                  required
-                  minLength={8}
                   autoComplete="new-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  {...register('password')}
                   placeholder="At least 8 characters"
-                  className="w-full rounded-lg border border-input bg-background py-2 pr-3 pl-9 text-sm text-foreground transition-colors placeholder:text-muted-foreground/60 focus:border-foreground focus:ring-1 focus:ring-foreground focus:outline-hidden"
+                  aria-invalid={errors.password ? 'true' : 'false'}
+                  aria-describedby={errors.password ? 'password-error' : undefined}
+                  className={`w-full rounded-lg border bg-background py-2 pr-3 pl-9 text-sm text-foreground transition-colors placeholder:text-muted-foreground/60 focus:ring-1 focus:outline-hidden ${
+                    errors.password
+                      ? 'border-destructive focus:border-destructive focus:ring-destructive'
+                      : 'border-input focus:border-foreground focus:ring-foreground'
+                  }`}
                 />
               </div>
+              {errors.password && (
+                <p id="password-error" className="text-xs text-destructive">
+                  {errors.password.message}
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -160,12 +210,23 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
                   <input
                     id="reg-phone"
                     type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    autoComplete="tel"
+                    {...register('phone')}
                     placeholder="+251 91 123 4567"
-                    className="w-full rounded-lg border border-input bg-background py-2 pr-3 pl-9 text-sm text-foreground transition-colors placeholder:text-muted-foreground/60 focus:border-foreground focus:ring-1 focus:ring-foreground focus:outline-hidden"
+                    aria-invalid={errors.phone ? 'true' : 'false'}
+                    aria-describedby={errors.phone ? 'phone-error' : undefined}
+                    className={`w-full rounded-lg border bg-background py-2 pr-3 pl-9 text-sm text-foreground transition-colors placeholder:text-muted-foreground/60 focus:ring-1 focus:outline-hidden ${
+                      errors.phone
+                        ? 'border-destructive focus:border-destructive focus:ring-destructive'
+                        : 'border-input focus:border-foreground focus:ring-foreground'
+                    }`}
                   />
                 </div>
+                {errors.phone && (
+                  <p id="phone-error" className="text-xs text-destructive">
+                    {errors.phone.message}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-1">
@@ -180,21 +241,31 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
                   <input
                     id="reg-business"
                     type="text"
-                    value={businessName}
-                    onChange={(e) => setBusinessName(e.target.value)}
+                    {...register('businessName')}
                     placeholder="Bole Injera Hub"
-                    className="w-full rounded-lg border border-input bg-background py-2 pr-3 pl-9 text-sm text-foreground transition-colors placeholder:text-muted-foreground/60 focus:border-foreground focus:ring-1 focus:ring-foreground focus:outline-hidden"
+                    aria-invalid={errors.businessName ? 'true' : 'false'}
+                    aria-describedby={errors.businessName ? 'business-error' : undefined}
+                    className={`w-full rounded-lg border bg-background py-2 pr-3 pl-9 text-sm text-foreground transition-colors placeholder:text-muted-foreground/60 focus:ring-1 focus:outline-hidden ${
+                      errors.businessName
+                        ? 'border-destructive focus:border-destructive focus:ring-destructive'
+                        : 'border-input focus:border-foreground focus:ring-foreground'
+                    }`}
                   />
                 </div>
+                {errors.businessName && (
+                  <p id="business-error" className="text-xs text-destructive">
+                    {errors.businessName.message}
+                  </p>
+                )}
               </div>
             </div>
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isSubmitting}
               className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-foreground px-4 py-2.5 text-xs font-medium text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isLoading ? (
+              {isSubmitting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span>Creating business workspace…</span>
