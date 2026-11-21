@@ -196,73 +196,88 @@ export function TeamMembersView() {
             </DialogHeader>
 
             <form onSubmit={handleSubmit(onInviteSubmit)} className="space-y-4 pt-2" noValidate>
-              <div className="space-y-1.5">
-                <label htmlFor="member-name" className="text-xs font-medium text-foreground">
-                  Full Name <span className="text-destructive">*</span>
-                </label>
-                <Input
-                  id="member-name"
-                  {...register('name')}
-                  placeholder="e.g. Mulugeta Tesfaye"
-                  aria-invalid={errors.name ? 'true' : 'false'}
-                />
-                {errors.name && (
-                  <p className="text-xs text-destructive">{errors.name.message}</p>
-                )}
+              {/* Field Group 1: Staff Identity */}
+              <div className="space-y-3 rounded-lg border border-border/80 bg-muted/20 p-3">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Staff Identity
+                </span>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <label htmlFor="member-name" className="text-xs font-medium text-foreground">
+                      Full Name <span className="text-destructive">*</span>
+                    </label>
+                    <Input
+                      id="member-name"
+                      {...register('name')}
+                      placeholder="e.g. Mulugeta Tesfaye"
+                      aria-invalid={errors.name ? 'true' : 'false'}
+                    />
+                    {errors.name && (
+                      <p className="text-xs text-destructive">{errors.name.message}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <label htmlFor="member-email" className="text-xs font-medium text-foreground">
+                      Work Email <span className="text-destructive">*</span>
+                    </label>
+                    <Input
+                      id="member-email"
+                      type="email"
+                      {...register('email')}
+                      placeholder="mulugeta@bakery.et"
+                      aria-invalid={errors.email ? 'true' : 'false'}
+                    />
+                    {errors.email && (
+                      <p className="text-xs text-destructive">{errors.email.message}</p>
+                    )}
+                  </div>
+                </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label htmlFor="member-email" className="text-xs font-medium text-foreground">
-                  Work Email <span className="text-destructive">*</span>
-                </label>
-                <Input
-                  id="member-email"
-                  type="email"
-                  {...register('email')}
-                  placeholder="mulugeta@bakery.et"
-                  aria-invalid={errors.email ? 'true' : 'false'}
-                />
-                {errors.email && (
-                  <p className="text-xs text-destructive">{errors.email.message}</p>
-                )}
+              {/* Field Group 2: Role & Security */}
+              <div className="space-y-3 rounded-lg border border-border/80 bg-muted/20 p-3">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Security Authorization
+                </span>
+                <div className="space-y-1.5">
+                  <label htmlFor="member-role" className="text-xs font-medium text-foreground">
+                    Assigned Bakery Role <span className="text-destructive">*</span>
+                  </label>
+                  <select
+                    id="member-role"
+                    {...register('roleId')}
+                    className="w-full rounded-lg border border-input bg-background py-2 px-3 text-xs text-foreground transition-colors focus:border-foreground focus:ring-1 focus:ring-foreground focus:outline-hidden"
+                  >
+                    {roles.map((r) => {
+                      const opt = ROLE_OPTIONS.find((o) => o.value === r.name)
+                      return (
+                        <option key={r.id} value={r.id}>
+                          {opt?.label ?? r.name} ({r.permissions.length} capabilities)
+                        </option>
+                      )
+                    })}
+                  </select>
+                  {errors.roleId && (
+                    <p className="text-xs text-destructive">{errors.roleId.message}</p>
+                  )}
+                </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label htmlFor="member-role" className="text-xs font-medium text-foreground">
-                  Assigned Bakery Role <span className="text-destructive">*</span>
-                </label>
-                <select
-                  id="member-role"
-                  {...register('roleId')}
-                  className="w-full rounded-lg border border-input bg-background py-2 px-3 text-xs text-foreground transition-colors focus:border-foreground focus:ring-1 focus:ring-foreground focus:outline-hidden"
-                >
-                  {roles.map((r) => {
-                    const opt = ROLE_OPTIONS.find((o) => o.value === r.name)
-                    return (
-                      <option key={r.id} value={r.id}>
-                        {opt?.label ?? r.name} ({r.permissions.length} capabilities)
-                      </option>
-                    )
-                  })}
-                </select>
-                {errors.roleId && (
-                  <p className="text-xs text-destructive">{errors.roleId.message}</p>
-                )}
-              </div>
-
+              {/* Field Group 3: Station Scoping */}
               {branches.length > 0 && (
                 <div className="space-y-2 rounded-lg border border-border/80 bg-muted/30 p-3">
-                  <span className="text-xs font-medium text-foreground">
-                    Branch Station Scoping (Optional)
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Station Scoping (Optional)
                   </span>
                   <p className="text-[11px] text-muted-foreground">
-                    Leave unchecked for all-branch access, or restrict to specific baking stations.
+                    Leave all unchecked to grant access to all baking stations, or select specific locations.
                   </p>
-                  <div className="space-y-1.5 pt-1">
+                  <div className="grid grid-cols-1 gap-2 pt-1 sm:grid-cols-2">
                     {branches.map((b) => (
                       <label
                         key={b.id}
-                        className="flex items-center gap-2 text-xs text-foreground cursor-pointer"
+                        className="flex items-center gap-2 rounded-md border border-border/60 bg-background/60 p-2 text-xs text-foreground cursor-pointer hover:bg-muted/40 transition-colors"
                       >
                         <input
                           type="checkbox"
@@ -270,7 +285,7 @@ export function TeamMembersView() {
                           onChange={() => handleBranchToggle(b.id)}
                           className="rounded border-input text-foreground focus:ring-foreground"
                         />
-                        <span>{b.name} ({b.code})</span>
+                        <span className="truncate">{b.name} ({b.code})</span>
                       </label>
                     ))}
                   </div>
@@ -307,6 +322,45 @@ export function TeamMembersView() {
             </form>
           </DialogContent>
         </Dialog>
+      </div>
+
+      {/* Team Metrics Overview Grouped */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <Card className="border-border/80">
+          <CardHeader className="p-4 pb-2">
+            <CardDescription className="text-xs">Authorized Staff</CardDescription>
+            <CardTitle className="text-2xl font-semibold tracking-tight">
+              {members.length}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 pt-0 text-[11px] text-muted-foreground">
+            Bakers, supervisors, cashiers, and admins
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/80">
+          <CardHeader className="p-4 pb-2">
+            <CardDescription className="text-xs">Available Roles</CardDescription>
+            <CardTitle className="text-2xl font-semibold tracking-tight">
+              {roles.length}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 pt-0 text-[11px] text-muted-foreground">
+            Fine-grained RBAC capability templates
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/80">
+          <CardHeader className="p-4 pb-2">
+            <CardDescription className="text-xs">Station Coverage</CardDescription>
+            <CardTitle className="text-2xl font-semibold tracking-tight">
+              {branches.length}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 pt-0 text-[11px] text-muted-foreground">
+            Baking and dispatch stations covered
+          </CardContent>
+        </Card>
       </div>
 
       {/* Members Table */}

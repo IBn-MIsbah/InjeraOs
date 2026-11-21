@@ -111,10 +111,10 @@ export function BusinessSettingsView() {
           <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
               <Building2 className="h-4 w-4 text-foreground" />
-              <CardTitle className="text-base font-medium">Bakery Identity</CardTitle>
+              <CardTitle className="text-base font-medium">Bakery & Legal Identity</CardTitle>
             </div>
             <CardDescription className="text-xs">
-              Commercial name and tax identification for receipts and wholesale invoices.
+              Trade brand name, legal corporate registration, and tax identification.
             </CardDescription>
           </CardHeader>
 
@@ -146,7 +146,7 @@ export function BusinessSettingsView() {
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 sm:col-span-2">
                 <label htmlFor="biz-tax" className="text-xs font-medium text-foreground">
                   Tax Identification Number (TIN)
                 </label>
@@ -155,11 +155,31 @@ export function BusinessSettingsView() {
                   {...register('taxId')}
                   placeholder="0012345678"
                 />
+                <p className="text-[11px] text-muted-foreground">
+                  Used on printed fiscal sales receipts and wholesale commercial invoices.
+                </p>
               </div>
+            </div>
+          </CardContent>
+        </Card>
 
+        {/* Calendar and Localization Card */}
+        <Card className="border-border/80">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-foreground" />
+              <CardTitle className="text-base font-medium">Fiscal & Regional Localization</CardTitle>
+            </div>
+            <CardDescription className="text-xs">
+              Base currency, operational timezone, and Ethiopian vs. Gregorian calendar system.
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <label htmlFor="biz-curr" className="text-xs font-medium text-foreground">
-                  Base Currency
+                  Base Accounting Currency
                 </label>
                 <div className="flex items-center gap-2">
                   <Input
@@ -171,28 +191,25 @@ export function BusinessSettingsView() {
                   <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
 
-        {/* Calendar and Localization Card */}
-        <Card className="border-border/80">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-foreground" />
-              <CardTitle className="text-base font-medium">Calendar & Localization</CardTitle>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-foreground">
+                  Operational Timezone
+                </label>
+                <div className="flex h-9 items-center gap-2 rounded-lg border border-input bg-muted/40 px-3">
+                  <Globe className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-xs font-mono text-foreground">
+                    Africa/Addis_Ababa (UTC+3, EAT)
+                  </span>
+                </div>
+              </div>
             </div>
-            <CardDescription className="text-xs">
-              Configure how dates and daily baking shifts are mapped across reports.
-            </CardDescription>
-          </CardHeader>
 
-          <CardContent className="space-y-4">
             <div className="flex flex-col gap-3 rounded-lg border border-border/80 bg-muted/30 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="space-y-0.5">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-medium text-foreground">
-                    Ethiopian Calendar Mode (ዓመተ ምሕረት)
+                    Ethiopian Calendar System (ዓመተ ምሕረት)
                   </span>
                   <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
                     Recommended for local bakeries
@@ -213,20 +230,6 @@ export function BusinessSettingsView() {
                     setCalendarPref(checked ? 'ETHIOPIAN' : 'GREGORIAN')
                   }
                 />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-foreground">
-                  Operational Timezone
-                </label>
-                <div className="flex items-center gap-2">
-                  <Globe className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-xs font-mono text-foreground">
-                    Africa/Addis_Ababa (UTC+3, EAT)
-                  </span>
-                </div>
               </div>
             </div>
           </CardContent>

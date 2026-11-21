@@ -93,7 +93,7 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
         </CardHeader>
 
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5" noValidate>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
             {serverError && (
               <div
                 role="alert"
@@ -104,130 +104,111 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
               </div>
             )}
 
-            <div className="space-y-1">
-              <label
-                htmlFor="reg-name"
-                className="block text-xs font-medium text-foreground"
-              >
-                Full name
-              </label>
-              <div className="relative">
-                <User className="absolute top-2.5 left-3 h-4 w-4 text-muted-foreground" />
-                <input
-                  id="reg-name"
-                  type="text"
-                  autoComplete="name"
-                  {...register('name')}
-                  placeholder="Almaz Tadesse"
-                  aria-invalid={errors.name ? 'true' : 'false'}
-                  aria-describedby={errors.name ? 'name-error' : undefined}
-                  className={`w-full rounded-lg border bg-background py-2 pr-3 pl-9 text-sm text-foreground transition-colors placeholder:text-muted-foreground/60 focus:ring-1 focus:outline-hidden ${
-                    errors.name
-                      ? 'border-destructive focus:border-destructive focus:ring-destructive'
-                      : 'border-input focus:border-foreground focus:ring-foreground'
-                  }`}
-                />
-              </div>
-              {errors.name && (
-                <p id="name-error" className="text-xs text-destructive">
-                  {errors.name.message}
-                </p>
-              )}
-            </div>
+            {/* Field Group 1: Account Credentials */}
+            <div className="space-y-3 rounded-lg border border-border/80 bg-muted/20 p-3">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Account Credentials
+              </span>
 
-            <div className="space-y-1">
-              <label
-                htmlFor="reg-email"
-                className="block text-xs font-medium text-foreground"
-              >
-                Work email
-              </label>
-              <div className="relative">
-                <Mail className="absolute top-2.5 left-3 h-4 w-4 text-muted-foreground" />
-                <input
-                  id="reg-email"
-                  type="email"
-                  autoComplete="email"
-                  {...register('email')}
-                  placeholder="almaz@bakery.et"
-                  aria-invalid={errors.email ? 'true' : 'false'}
-                  aria-describedby={errors.email ? 'email-error' : undefined}
-                  className={`w-full rounded-lg border bg-background py-2 pr-3 pl-9 text-sm text-foreground transition-colors placeholder:text-muted-foreground/60 focus:ring-1 focus:outline-hidden ${
-                    errors.email
-                      ? 'border-destructive focus:border-destructive focus:ring-destructive'
-                      : 'border-input focus:border-foreground focus:ring-foreground'
-                  }`}
-                />
-              </div>
-              {errors.email && (
-                <p id="email-error" className="text-xs text-destructive">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-1">
-              <label
-                htmlFor="reg-password"
-                className="block text-xs font-medium text-foreground"
-              >
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute top-2.5 left-3 h-4 w-4 text-muted-foreground" />
-                <input
-                  id="reg-password"
-                  type="password"
-                  autoComplete="new-password"
-                  {...register('password')}
-                  placeholder="At least 8 characters"
-                  aria-invalid={errors.password ? 'true' : 'false'}
-                  aria-describedby={errors.password ? 'password-error' : undefined}
-                  className={`w-full rounded-lg border bg-background py-2 pr-3 pl-9 text-sm text-foreground transition-colors placeholder:text-muted-foreground/60 focus:ring-1 focus:outline-hidden ${
-                    errors.password
-                      ? 'border-destructive focus:border-destructive focus:ring-destructive'
-                      : 'border-input focus:border-foreground focus:ring-foreground'
-                  }`}
-                />
-              </div>
-              {errors.password && (
-                <p id="password-error" className="text-xs text-destructive">
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
-
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-1">
                 <label
-                  htmlFor="reg-phone"
+                  htmlFor="reg-name"
                   className="block text-xs font-medium text-foreground"
                 >
-                  Phone <span className="text-muted-foreground">(optional)</span>
+                  Full name <span className="text-destructive">*</span>
                 </label>
                 <div className="relative">
-                  <Phone className="absolute top-2.5 left-3 h-4 w-4 text-muted-foreground" />
+                  <User className="absolute top-2.5 left-3 h-4 w-4 text-muted-foreground" />
                   <input
-                    id="reg-phone"
-                    type="tel"
-                    autoComplete="tel"
-                    {...register('phone')}
-                    placeholder="+251 91 123 4567"
-                    aria-invalid={errors.phone ? 'true' : 'false'}
-                    aria-describedby={errors.phone ? 'phone-error' : undefined}
+                    id="reg-name"
+                    type="text"
+                    autoComplete="name"
+                    {...register('name')}
+                    placeholder="Almaz Tadesse"
+                    aria-invalid={errors.name ? 'true' : 'false'}
+                    aria-describedby={errors.name ? 'name-error' : undefined}
                     className={`w-full rounded-lg border bg-background py-2 pr-3 pl-9 text-sm text-foreground transition-colors placeholder:text-muted-foreground/60 focus:ring-1 focus:outline-hidden ${
-                      errors.phone
+                      errors.name
                         ? 'border-destructive focus:border-destructive focus:ring-destructive'
                         : 'border-input focus:border-foreground focus:ring-foreground'
                     }`}
                   />
                 </div>
-                {errors.phone && (
-                  <p id="phone-error" className="text-xs text-destructive">
-                    {errors.phone.message}
+                {errors.name && (
+                  <p id="name-error" className="text-xs text-destructive">
+                    {errors.name.message}
                   </p>
                 )}
               </div>
+
+              <div className="space-y-1">
+                <label
+                  htmlFor="reg-email"
+                  className="block text-xs font-medium text-foreground"
+                >
+                  Work email <span className="text-destructive">*</span>
+                </label>
+                <div className="relative">
+                  <Mail className="absolute top-2.5 left-3 h-4 w-4 text-muted-foreground" />
+                  <input
+                    id="reg-email"
+                    type="email"
+                    autoComplete="email"
+                    {...register('email')}
+                    placeholder="almaz@bakery.et"
+                    aria-invalid={errors.email ? 'true' : 'false'}
+                    aria-describedby={errors.email ? 'email-error' : undefined}
+                    className={`w-full rounded-lg border bg-background py-2 pr-3 pl-9 text-sm text-foreground transition-colors placeholder:text-muted-foreground/60 focus:ring-1 focus:outline-hidden ${
+                      errors.email
+                        ? 'border-destructive focus:border-destructive focus:ring-destructive'
+                        : 'border-input focus:border-foreground focus:ring-foreground'
+                    }`}
+                  />
+                </div>
+                {errors.email && (
+                  <p id="email-error" className="text-xs text-destructive">
+                    {errors.email.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-1">
+                <label
+                  htmlFor="reg-password"
+                  className="block text-xs font-medium text-foreground"
+                >
+                  Password <span className="text-destructive">*</span>
+                </label>
+                <div className="relative">
+                  <Lock className="absolute top-2.5 left-3 h-4 w-4 text-muted-foreground" />
+                  <input
+                    id="reg-password"
+                    type="password"
+                    autoComplete="new-password"
+                    {...register('password')}
+                    placeholder="At least 8 characters"
+                    aria-invalid={errors.password ? 'true' : 'false'}
+                    aria-describedby={errors.password ? 'password-error' : undefined}
+                    className={`w-full rounded-lg border bg-background py-2 pr-3 pl-9 text-sm text-foreground transition-colors placeholder:text-muted-foreground/60 focus:ring-1 focus:outline-hidden ${
+                      errors.password
+                        ? 'border-destructive focus:border-destructive focus:ring-destructive'
+                        : 'border-input focus:border-foreground focus:ring-foreground'
+                    }`}
+                  />
+                </div>
+                {errors.password && (
+                  <p id="password-error" className="text-xs text-destructive">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Field Group 2: Bakery Setup */}
+            <div className="space-y-3 rounded-lg border border-border/80 bg-muted/20 p-3">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Bakery Workspace Setup
+              </span>
 
               <div className="space-y-1">
                 <label
@@ -255,6 +236,37 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
                 {errors.businessName && (
                   <p id="business-error" className="text-xs text-destructive">
                     {errors.businessName.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-1">
+                <label
+                  htmlFor="reg-phone"
+                  className="block text-xs font-medium text-foreground"
+                >
+                  Phone <span className="text-muted-foreground">(optional)</span>
+                </label>
+                <div className="relative">
+                  <Phone className="absolute top-2.5 left-3 h-4 w-4 text-muted-foreground" />
+                  <input
+                    id="reg-phone"
+                    type="tel"
+                    autoComplete="tel"
+                    {...register('phone')}
+                    placeholder="+251 91 123 4567"
+                    aria-invalid={errors.phone ? 'true' : 'false'}
+                    aria-describedby={errors.phone ? 'phone-error' : undefined}
+                    className={`w-full rounded-lg border bg-background py-2 pr-3 pl-9 text-sm text-foreground transition-colors placeholder:text-muted-foreground/60 focus:ring-1 focus:outline-hidden ${
+                      errors.phone
+                        ? 'border-destructive focus:border-destructive focus:ring-destructive'
+                        : 'border-input focus:border-foreground focus:ring-foreground'
+                    }`}
+                  />
+                </div>
+                {errors.phone && (
+                  <p id="phone-error" className="text-xs text-destructive">
+                    {errors.phone.message}
                   </p>
                 )}
               </div>

@@ -129,61 +129,90 @@ export function BranchManagementView() {
             </DialogHeader>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-2" noValidate>
-              <div className="space-y-1.5">
-                <label htmlFor="branch-name" className="text-xs font-medium text-foreground">
-                  Branch Name <span className="text-destructive">*</span>
-                </label>
-                <Input
-                  id="branch-name"
-                  {...register('name')}
-                  placeholder="e.g. Bole Medhanialem Bakery"
-                  aria-invalid={errors.name ? 'true' : 'false'}
-                />
-                {errors.name && (
-                  <p className="text-xs text-destructive">{errors.name.message}</p>
-                )}
+              {/* Field Group 1: Station Identity */}
+              <div className="space-y-3 rounded-lg border border-border/80 bg-muted/20 p-3">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Station Identity
+                </span>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <label htmlFor="branch-name" className="text-xs font-medium text-foreground">
+                      Branch Name <span className="text-destructive">*</span>
+                    </label>
+                    <Input
+                      id="branch-name"
+                      {...register('name')}
+                      placeholder="e.g. Bole Medhanialem Bakery"
+                      aria-invalid={errors.name ? 'true' : 'false'}
+                    />
+                    {errors.name && (
+                      <p className="text-xs text-destructive">{errors.name.message}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <label htmlFor="branch-code" className="text-xs font-medium text-foreground">
+                      Branch Identifier Code <span className="text-destructive">*</span>
+                    </label>
+                    <Input
+                      id="branch-code"
+                      {...register('code')}
+                      placeholder="e.g. BOLE-01"
+                      aria-invalid={errors.code ? 'true' : 'false'}
+                    />
+                    {errors.code ? (
+                      <p className="text-xs text-destructive">{errors.code.message}</p>
+                    ) : (
+                      <p className="text-[11px] text-muted-foreground">
+                        Short prefix used for lot tracking, orders, and inventory tags.
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label htmlFor="branch-code" className="text-xs font-medium text-foreground">
-                  Branch Identifier Code <span className="text-destructive">*</span>
-                </label>
-                <Input
-                  id="branch-code"
-                  {...register('code')}
-                  placeholder="e.g. BOLE-01"
-                  aria-invalid={errors.code ? 'true' : 'false'}
-                />
-                {errors.code && (
-                  <p className="text-xs text-destructive">{errors.code.message}</p>
-                )}
+              {/* Field Group 2: Contact & Location */}
+              <div className="space-y-3 rounded-lg border border-border/80 bg-muted/20 p-3">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Contact & Location
+                </span>
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <label htmlFor="branch-phone" className="text-xs font-medium text-foreground">
+                      Contact Phone
+                    </label>
+                    <div className="relative">
+                      <Phone className="absolute top-2.5 left-3 h-3.5 w-3.5 text-muted-foreground" />
+                      <Input
+                        id="branch-phone"
+                        className="pl-8"
+                        {...register('phone')}
+                        placeholder="+251 91 123 4567"
+                      />
+                    </div>
+                    {errors.phone && (
+                      <p className="text-xs text-destructive">{errors.phone.message}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label htmlFor="branch-address" className="text-xs font-medium text-foreground">
+                      Physical Address
+                    </label>
+                    <div className="relative">
+                      <MapPin className="absolute top-2.5 left-3 h-3.5 w-3.5 text-muted-foreground" />
+                      <Input
+                        id="branch-address"
+                        className="pl-8"
+                        {...register('address')}
+                        placeholder="Near Medhanialem Mall, Addis Ababa"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label htmlFor="branch-phone" className="text-xs font-medium text-foreground">
-                  Contact Phone
-                </label>
-                <Input
-                  id="branch-phone"
-                  {...register('phone')}
-                  placeholder="+251 91 123 4567"
-                />
-                {errors.phone && (
-                  <p className="text-xs text-destructive">{errors.phone.message}</p>
-                )}
-              </div>
-
-              <div className="space-y-1.5">
-                <label htmlFor="branch-address" className="text-xs font-medium text-foreground">
-                  Physical Address
-                </label>
-                <Input
-                  id="branch-address"
-                  {...register('address')}
-                  placeholder="Near Medhanialem Mall, Addis Ababa"
-                />
-              </div>
-
+              {/* Field Group 3: Operating Role */}
               <div className="flex items-center justify-between rounded-lg border border-border/80 bg-muted/40 p-3">
                 <div className="space-y-0.5">
                   <span className="text-xs font-medium text-foreground">
@@ -232,6 +261,48 @@ export function BranchManagementView() {
             </form>
           </DialogContent>
         </Dialog>
+      </div>
+
+      {/* Overview Metric Cards Grouped Together */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <Card className="border-border/80">
+          <CardHeader className="p-4 pb-2">
+            <CardDescription className="text-xs">Total Baking Stations</CardDescription>
+            <CardTitle className="text-2xl font-semibold tracking-tight">
+              {branches.length}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 pt-0 text-[11px] text-muted-foreground">
+            Production, ovens, and dispatch counters
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/80">
+          <CardHeader className="p-4 pb-2">
+            <CardDescription className="text-xs">Primary Bakery Hub</CardDescription>
+            <CardTitle className="text-sm font-semibold truncate tracking-tight text-foreground">
+              {branches.find((b) => b.isMain)?.name ?? 'None designated'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 pt-0 text-[11px] text-muted-foreground">
+            {branches.some((b) => b.isMain)
+              ? `Code: ${branches.find((b) => b.isMain)?.code}`
+              : 'Add a main facility for centralized reporting'}
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/80">
+          <CardHeader className="p-4 pb-2">
+            <CardDescription className="text-xs">Operational Status</CardDescription>
+            <CardTitle className="text-sm font-semibold tracking-tight text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+              <CheckCircle2 className="h-4 w-4" />
+              <span>All Stations Active</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 pt-0 text-[11px] text-muted-foreground">
+            Multi-branch tenant routing enabled
+          </CardContent>
+        </Card>
       </div>
 
       {/* Branches Table Card */}
