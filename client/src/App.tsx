@@ -6,6 +6,7 @@ import { DemoDashboard } from '@/components/dashboard/DemoDashboard'
 import { BusinessSettingsView } from '@/components/business/BusinessSettingsView'
 import { BranchManagementView } from '@/components/business/BranchManagementView'
 import { TeamMembersView } from '@/components/business/TeamMembersView'
+import { WorkforceManagementView } from '@/components/workforce/WorkforceManagementView'
 import { UnslopTool } from '@/components/unslop/UnslopTool'
 import { Toaster } from '@/components/ui/sonner'
 import { AppSidebar, type TabType } from '@/components/layout/AppSidebar'
@@ -81,6 +82,7 @@ export function App() {
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <span className="font-medium text-foreground">
                 {activeTab === 'branches' && 'Baking Stations & Locations'}
+                {activeTab === 'workforce' && 'Workforce, Shifts & Timesheets'}
                 {activeTab === 'team' && 'Staff Roster & Permissions'}
                 {activeTab === 'settings' && 'Bakery Business Settings'}
                 {activeTab === 'unslop' && 'Unslop AI Text Editor'}
@@ -127,6 +129,8 @@ export function App() {
             )
           ) : activeTab === 'branches' ? (
             <BranchManagementView />
+          ) : activeTab === 'workforce' ? (
+            <WorkforceManagementView />
           ) : activeTab === 'team' ? (
             <TeamMembersView />
           ) : activeTab === 'settings' ? (

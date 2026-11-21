@@ -21,11 +21,12 @@ import {
   ShieldCheck,
   Sparkles,
   Store,
+  UserCheck,
   UserPlus,
   Users,
 } from 'lucide-react'
 
-export type TabType = 'workspace' | 'branches' | 'team' | 'settings' | 'unslop'
+export type TabType = 'workspace' | 'branches' | 'workforce' | 'team' | 'settings' | 'unslop'
 
 interface AppSidebarProps {
   activeTab: TabType
@@ -95,6 +96,18 @@ export function AppSidebar({
                     >
                       <GitBranch className="h-4 w-4" />
                       <span>Baking Stations</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={activeTab === 'workforce'}
+                      onClick={() => onSelectTab('workforce')}
+                      tooltip="Workforce, Shifts & Attendance"
+                      className="cursor-pointer gap-2.5 text-xs"
+                    >
+                      <UserCheck className="h-4 w-4" />
+                      <span>Workforce & Shifts</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>
