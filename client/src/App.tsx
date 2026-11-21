@@ -8,18 +8,15 @@ import { BranchManagementView } from '@/components/business/BranchManagementView
 import { TeamMembersView } from '@/components/business/TeamMembersView'
 import { UnslopTool } from '@/components/unslop/UnslopTool'
 import { Toaster } from '@/components/ui/sonner'
+import { AppSidebar, type TabType } from '@/components/layout/AppSidebar'
 import {
-  Building2,
-  GitBranch,
-  Loader2,
-  ShieldCheck,
-  Sparkles,
-  Store,
-  Users,
-} from 'lucide-react'
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/ui/sidebar'
+import { Separator } from '@/components/ui/separator'
+import { Loader2, ShieldCheck } from 'lucide-react'
 import { toast } from 'sonner'
-
-type TabType = 'workspace' | 'branches' | 'team' | 'settings' | 'unslop'
 
 export function App() {
   const [auth, setAuth] = useState<AuthContextResponse | null>(null)
@@ -65,94 +62,32 @@ export function App() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground antialiased selection:bg-foreground selection:text-background">
-      {/* Top Navigation */}
-      <header className="sticky top-0 z-50 border-b border-border/80 bg-background/95 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-3">
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault()
-                setActiveTab('workspace')
-              }}
-              className="flex items-center gap-2 text-sm font-medium tracking-tight text-foreground hover:opacity-90"
-            >
-              <Store className="h-4 w-4" />
-              <span>InjeraOS</span>
-            </a>
+    <SidebarProvider defaultOpen={true}>
+      <AppSidebar
+        activeTab={activeTab}
+        onSelectTab={setActiveTab}
+        auth={auth}
+        authView={authView}
+        onSelectAuthView={setAuthView}
+        onLogout={handleLogout}
+      />
 
-            <div className="hidden h-4 w-px bg-border sm:block" />
-
-            <nav className="flex items-center gap-1 overflow-x-auto py-0.5">
-              <button
-                type="button"
-                onClick={() => setActiveTab('workspace')}
-                className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                  activeTab === 'workspace'
-                    ? 'bg-muted text-foreground'
-                    : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
-                }`}
-              >
-                Overview
-              </button>
-
-              {auth && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('branches')}
-                    className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                      activeTab === 'branches'
-                        ? 'bg-muted text-foreground'
-                        : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
-                    }`}
-                  >
-                    <GitBranch className="h-3 w-3" />
-                    <span>Branches</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('team')}
-                    className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                      activeTab === 'team'
-                        ? 'bg-muted text-foreground'
-                        : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
-                    }`}
-                  >
-                    <Users className="h-3 w-3" />
-                    <span>Team</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('settings')}
-                    className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                      activeTab === 'settings'
-                        ? 'bg-muted text-foreground'
-                        : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
-                    }`}
-                  >
-                    <Building2 className="h-3 w-3" />
-                    <span>Business Profile</span>
-                  </button>
-                </>
-              )}
-
-              <button
-                type="button"
-                onClick={() => setActiveTab('unslop')}
-                className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                  activeTab === 'unslop'
-                    ? 'bg-muted text-foreground'
-                    : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
-                }`}
-              >
-                <Sparkles className="h-3 w-3" />
-                <span>Unslop editor</span>
-              </button>
-            </nav>
+      <SidebarInset className="min-h-screen flex flex-col bg-background">
+        {/* Top Header inside Sidebar Layout */}
+        <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between border-b border-border/80 bg-background/95 px-4 backdrop-blur-sm">
+          <div className="flex items-center gap-2">
+            <SidebarTrigger className="-ml-1" />
+            <Separator orientation="vertical" className="mr-2 h-4" />
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <span className="font-medium text-foreground">
+                {activeTab === 'branches' && 'Baking Stations & Locations'}
+                {activeTab === 'team' && 'Staff Roster & Permissions'}
+                {activeTab === 'settings' && 'Bakery Business Settings'}
+                {activeTab === 'unslop' && 'Unslop AI Text Editor'}
+                {activeTab === 'workspace' &&
+                  (auth ? 'Workspace Overview & Security' : 'InjeraOS Commerce Platform')}
+              </span>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
@@ -167,48 +102,48 @@ export function App() {
               </span>
             )}
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Main Content Area */}
-      <main>
-        {activeTab === 'unslop' ? (
-          <UnslopTool />
-        ) : isInitializing ? (
-          <div className="flex min-h-[70vh] flex-col items-center justify-center gap-3 text-xs text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin" />
-            <span>Checking active cookie session…</span>
-          </div>
-        ) : !auth ? (
-          authView === 'login' ? (
-            <LoginForm
-              onSuccess={(data: AuthContextResponse) => setAuth(data)}
-              onSwitchToRegister={() => setAuthView('register')}
-            />
+        {/* Main Workspace Area */}
+        <main className="flex-1 p-4 md:p-8">
+          {isInitializing ? (
+            <div className="flex min-h-[70vh] flex-col items-center justify-center gap-3 text-xs text-muted-foreground">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              <span>Checking active cookie session…</span>
+            </div>
+          ) : activeTab === 'unslop' ? (
+            <UnslopTool />
+          ) : !auth ? (
+            authView === 'login' ? (
+              <LoginForm
+                onSuccess={(data: AuthContextResponse) => setAuth(data)}
+                onSwitchToRegister={() => setAuthView('register')}
+              />
+            ) : (
+              <RegisterForm
+                onSuccess={(data: AuthContextResponse) => setAuth(data)}
+                onSwitchToLogin={() => setAuthView('login')}
+              />
+            )
+          ) : activeTab === 'branches' ? (
+            <BranchManagementView />
+          ) : activeTab === 'team' ? (
+            <TeamMembersView />
+          ) : activeTab === 'settings' ? (
+            <BusinessSettingsView />
           ) : (
-            <RegisterForm
-              onSuccess={(data: AuthContextResponse) => setAuth(data)}
-              onSwitchToLogin={() => setAuthView('login')}
-            />
-          )
-        ) : activeTab === 'branches' ? (
-          <BranchManagementView />
-        ) : activeTab === 'team' ? (
-          <TeamMembersView />
-        ) : activeTab === 'settings' ? (
-          <BusinessSettingsView />
-        ) : (
-          <DemoDashboard auth={auth} onLogout={handleLogout} />
-        )}
-      </main>
+            <DemoDashboard auth={auth} onLogout={handleLogout} />
+          )}
+        </main>
 
-      <footer className="border-t border-border/60 py-6 text-center text-xs text-muted-foreground">
-        <p>Injera Bakery Commerce Platform &bull; Multi-Tenant Operating System</p>
-      </footer>
+        <footer className="border-t border-border/60 py-4 text-center text-xs text-muted-foreground">
+          <p>Injera Bakery Commerce Platform &bull; Multi-Tenant Operating System</p>
+        </footer>
+      </SidebarInset>
 
       {/* Shadcn Sonner Toaster */}
       <Toaster />
-    </div>
+    </SidebarProvider>
   )
 }
 
