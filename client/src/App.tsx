@@ -8,6 +8,7 @@ import { BranchManagementView } from '@/components/business/BranchManagementView
 import { TeamMembersView } from '@/components/business/TeamMembersView'
 import { WorkforceManagementView } from '@/components/workforce/WorkforceManagementView'
 import { MaterialsManagementView } from '@/components/materials/MaterialsManagementView'
+import { RecipesManagementView } from '@/components/recipes/RecipesManagementView'
 import { UnslopTool } from '@/components/unslop/UnslopTool'
 import { Toaster } from '@/components/ui/sonner'
 import { AppSidebar, type TabType } from '@/components/layout/AppSidebar'
@@ -84,6 +85,8 @@ export function App() {
               <span className="font-medium text-foreground">
                 {activeTab === 'branches' && 'Baking Stations & Locations'}
                 {activeTab === 'workforce' && 'Workforce, Shifts & Timesheets'}
+                {activeTab === 'materials' && 'Raw Materials, Purchasing & Inventory'}
+                {activeTab === 'recipes' && 'Recipes, Scaling & Pre-Mixed Teff'}
                 {activeTab === 'team' && 'Staff Roster & Permissions'}
                 {activeTab === 'settings' && 'Bakery Business Settings'}
                 {activeTab === 'unslop' && 'Unslop AI Text Editor'}
@@ -134,6 +137,8 @@ export function App() {
             <WorkforceManagementView />
           ) : activeTab === 'materials' ? (
             <MaterialsManagementView />
+          ) : activeTab === 'recipes' ? (
+            <RecipesManagementView />
           ) : activeTab === 'team' ? (
             <TeamMembersView />
           ) : activeTab === 'settings' ? (

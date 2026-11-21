@@ -15,6 +15,7 @@ import type { AuthContextResponse } from '@/lib/api'
 import {
   Boxes,
   Building2,
+  ChefHat,
   GitBranch,
   LayoutDashboard,
   LogIn,
@@ -32,6 +33,7 @@ export type TabType =
   | 'branches'
   | 'workforce'
   | 'materials'
+  | 'recipes'
   | 'team'
   | 'settings'
   | 'unslop'
@@ -128,6 +130,18 @@ export function AppSidebar({
                     >
                       <Boxes className="h-4 w-4" />
                       <span>Materials & Inventory</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={activeTab === 'recipes'}
+                      onClick={() => onSelectTab('recipes')}
+                      tooltip="Recipes, Scaling & Teff Blending"
+                      className="cursor-pointer gap-2.5 text-xs"
+                    >
+                      <ChefHat className="h-4 w-4" />
+                      <span>Recipes & Formulations</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>

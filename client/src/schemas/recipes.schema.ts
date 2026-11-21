@@ -7,7 +7,7 @@ export const createFinishedProductSchema = z.object({
   size: z.string().trim().max(100).optional(),
   unitId: z.string().uuid('Please select a unit of measure'),
   defaultSellingPrice: z.number().min(0, 'Selling price cannot be negative'),
-  isActive: z.boolean().default(true),
+  isActive: z.boolean(),
 })
 
 export type CreateFinishedProductInput = z.infer<typeof createFinishedProductSchema>
