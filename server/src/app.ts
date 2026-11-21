@@ -12,6 +12,9 @@ import { productionRouter } from './modules/production/index.js'
 import { costingRouter } from './modules/costing/index.js'
 import { inventoryRouter } from './modules/inventory/index.js'
 import { salesRouter } from './modules/sales/index.js'
+import { expensesRouter } from './modules/expenses/index.js'
+import { reportsRouter } from './modules/reports/index.js'
+import { dashboardsRouter } from './modules/dashboards/index.js'
 
 export const createApp = (): Express => {
   const app = express()
@@ -37,7 +40,7 @@ export const createApp = (): Express => {
         'Access-Control-Allow-Headers',
         'Content-Type, Authorization, X-Device-Id, X-Device-Name, X-Request-Id'
       )
-      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS')
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
     }
     if (req.method === 'OPTIONS') return res.sendStatus(204)
     next()
@@ -59,6 +62,9 @@ export const createApp = (): Express => {
   app.use('/api/costing', costingRouter)
   app.use('/api/inventory', inventoryRouter)
   app.use('/api/sales', salesRouter)
+  app.use('/api/expenses', expensesRouter)
+  app.use('/api/reports', reportsRouter)
+  app.use('/api/dashboards', dashboardsRouter)
 
   // 404 Route Not Found
   app.use((req, res) => {
