@@ -20,7 +20,7 @@ import { ExpensesManagementView } from '@/components/expenses/ExpensesManagement
 import { FinancialReportsView } from '@/components/reports/FinancialReportsView'
 import { SyncManagementView } from '@/components/sync/SyncManagementView'
 import { SystemSettingsView } from '@/components/system/SystemSettingsView'
-import { OnboardingGuideModal } from '@/components/onboarding/OnboardingGuide'
+import { OnboardingGuideModal, SetupProgressionBanner } from '@/components/onboarding/OnboardingGuide'
 import { Toaster } from '@/components/ui/sonner'
 import { AppSidebar, type TabType } from '@/components/layout/AppSidebar'
 import {
@@ -588,6 +588,15 @@ export function App() {
               View Offline Queue
             </button>
           </div>
+        )}
+
+        {/* Persistent Setup Order Progression Banner (Admin & Owner) */}
+        {auth && (auth.role === 'OWNER' || auth.role === 'ADMIN') && (
+          <SetupProgressionBanner
+            activeTab={activeTab}
+            onNavigateTab={navigateToTab}
+            onOpenFullGuide={() => setOnboardingOpen(true)}
+          />
         )}
 
         {/* Main Workspace Area */}
