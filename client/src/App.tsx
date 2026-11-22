@@ -28,7 +28,32 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar'
 import { Separator } from '@/components/ui/separator'
-import { ChevronDown, History, Loader2, LogOut, ShieldCheck, Sliders, User, WifiOff } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { syncEngine } from '@/lib/sync-engine'
+import {
+  Boxes,
+  ChevronDown,
+  Coins,
+  Flame,
+  History,
+  LayoutDashboard,
+  Loader2,
+  LogOut,
+  Plus,
+  RefreshCw,
+  ShieldCheck,
+  ShoppingCart,
+  Sliders,
+  Sparkles,
+  User,
+  WifiOff,
+} from 'lucide-react'
 import { toast } from 'sonner'
 
 export function App() {
@@ -41,6 +66,22 @@ export function App() {
   )
   const [userDropdownOpen, setUserDropdownOpen] = useState(false)
   const userDropdownRef = useRef<HTMLDivElement>(null)
+  const [mobileQuickActionsOpen, setMobileQuickActionsOpen] = useState(false)
+  const [pendingSyncCount, setPendingSyncCount] = useState(0)
+
+  // Track pending offline queue items
+  useEffect(() => {
+    const updateCount = () => {
+      void syncEngine.getPendingCount().then(setPendingSyncCount)
+    }
+    updateCount()
+    window.addEventListener('injera-queue-changed', updateCount)
+    window.addEventListener('injera-sync-completed', updateCount)
+    return () => {
+      window.removeEventListener('injera-queue-changed', updateCount)
+      window.removeEventListener('injera-sync-completed', updateCount)
+    }
+  }, [])
 
   // Close dropdown on click outside or escape
   useEffect(() => {
@@ -393,7 +434,7 @@ export function App() {
         )}
 
         {/* Main Workspace Area */}
-        <main className="flex-1 p-4 md:p-8">
+        <main className="flex-1 p-4 md:p-8 pb-24 md:pb-8">
           {activeTab === 'branches' ? (
             <BranchManagementView />
           ) : activeTab === 'workforce' ? (
@@ -435,9 +476,209 @@ export function App() {
           )}
         </main>
 
-        <footer className="border-t border-border/60 py-4 text-center text-xs text-muted-foreground">
+        <footer className="border-t border-border/60 py-4 text-center text-xs text-muted-foreground mb-16 md:mb-0">
           <p>KD PLC &bull; Injera Commercial Bakery Operating System</p>
         </footer>
+
+        {/* Mobile Fixed Bottom Navigation Bar & Priority Action Dock */}
+        {auth && (
+          <nav
+            aria-label="Mobile Navigation Dock"
+            className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/80 px-2 py-1.5 flex items-center justify-around shadow-lg pb-[max(0.5rem,env(safe-area-inset-bottom))]"
+          >
+            {/* Overview / Home */}
+            <button
+              type="button"
+              onClick={() => setActiveTab('workspace')}
+              className={`flex flex-col items-center justify-center flex-1 py-1 text-[10px] font-medium transition-colors cursor-pointer ${
+                activeTab === 'workspace'
+                  ? 'text-forest dark:text-oat font-bold'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <LayoutDashboard className="h-4 w-4 mb-0.5" />
+              <span>Overview</span>
+            </button>
+
+            {/* Mitad Baking */}
+            <button
+              type="button"
+              onClick={() => setActiveTab('production')}
+              className={`flex flex-col items-center justify-center flex-1 py-1 text-[10px] font-medium transition-colors cursor-pointer ${
+                activeTab === 'production'
+                  ? 'text-forest dark:text-oat font-bold'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Flame className="h-4 w-4 mb-0.5 text-amber-500" />
+              <span>Baking</span>
+            </button>
+
+            {/* Center Floating Priority Action Button (FAB) */}
+            <div className="flex flex-col items-center justify-center flex-1 -mt-5">
+              <button
+                type="button"
+                onClick={() => setMobileQuickActionsOpen(true)}
+                className="h-12 w-12 rounded-full bg-forest text-oat shadow-lg flex items-center justify-center border-2 border-background active:scale-95 transition-transform cursor-pointer hover:bg-forest/90 dark:bg-oat dark:text-forest"
+                title="Open Quick Actions"
+                aria-label="Open Quick Priority Actions"
+              >
+                <Plus className="h-6 w-6 stroke-[2.5]" />
+              </button>
+              <span className="text-[9px] font-bold text-forest dark:text-oat mt-0.5 uppercase tracking-wider">
+                Action
+              </span>
+            </div>
+
+            {/* Sales / POS */}
+            <button
+              type="button"
+              onClick={() => setActiveTab('sales')}
+              className={`flex flex-col items-center justify-center flex-1 py-1 text-[10px] font-medium transition-colors cursor-pointer ${
+                activeTab === 'sales'
+                  ? 'text-forest dark:text-oat font-bold'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <ShoppingCart className="h-4 w-4 mb-0.5 text-emerald-600" />
+              <span>POS Sales</span>
+            </button>
+
+            {/* My Profile */}
+            <button
+              type="button"
+              onClick={() => setActiveTab('profile')}
+              className={`flex flex-col items-center justify-center flex-1 py-1 text-[10px] font-medium transition-colors cursor-pointer ${
+                activeTab === 'profile'
+                  ? 'text-forest dark:text-oat font-bold'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <div
+                className={`h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold mb-0.5 ${
+                  activeTab === 'profile'
+                    ? 'bg-forest text-oat dark:bg-oat dark:text-forest'
+                    : 'bg-muted text-muted-foreground'
+                }`}
+              >
+                {auth.user.name ? auth.user.name[0].toUpperCase() : 'U'}
+              </div>
+              <span>Profile</span>
+            </button>
+          </nav>
+        )}
+
+        {/* Mobile Priority Actions Bottom Sheet / Modal */}
+        <Dialog open={mobileQuickActionsOpen} onOpenChange={setMobileQuickActionsOpen}>
+          <DialogContent className="sm:max-w-md max-w-[92vw] rounded-2xl p-5">
+            <DialogHeader className="pb-2 border-b">
+              <DialogTitle className="text-base font-bold flex items-center gap-2 text-foreground">
+                <Sparkles className="h-4 w-4 text-forest dark:text-oat" />
+                Quick Priority Actions
+              </DialogTitle>
+              <DialogDescription className="text-xs">
+                One-tap shortcuts for bakery operations on mobile.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="grid grid-cols-2 gap-2.5 pt-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('production')
+                  setMobileQuickActionsOpen(false)
+                }}
+                className="flex flex-col items-start p-3 rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/15 text-left transition-colors cursor-pointer"
+              >
+                <div className="h-8 w-8 rounded-lg bg-amber-500/20 text-amber-600 flex items-center justify-center mb-1.5">
+                  <Flame className="h-4 w-4" />
+                </div>
+                <span className="font-bold text-xs text-foreground">Start Mitad Baking</span>
+                <span className="text-[10px] text-muted-foreground">New baking batch</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('sales')
+                  setMobileQuickActionsOpen(false)
+                }}
+                className="flex flex-col items-start p-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/15 text-left transition-colors cursor-pointer"
+              >
+                <div className="h-8 w-8 rounded-lg bg-emerald-500/20 text-emerald-600 flex items-center justify-center mb-1.5">
+                  <ShoppingCart className="h-4 w-4" />
+                </div>
+                <span className="font-bold text-xs text-foreground">Record POS Sale</span>
+                <span className="text-[10px] text-muted-foreground">Cash & wholesale</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('materials')
+                  setMobileQuickActionsOpen(false)
+                }}
+                className="flex flex-col items-start p-3 rounded-xl border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/15 text-left transition-colors cursor-pointer"
+              >
+                <div className="h-8 w-8 rounded-lg bg-sky-500/20 text-sky-600 flex items-center justify-center mb-1.5">
+                  <Boxes className="h-4 w-4" />
+                </div>
+                <span className="font-bold text-xs text-foreground">Receive Teff Lot</span>
+                <span className="text-[10px] text-muted-foreground">Grain intake</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('sync')
+                  setMobileQuickActionsOpen(false)
+                }}
+                className="flex flex-col items-start p-3 rounded-xl border border-border/80 bg-muted/40 hover:bg-muted/70 text-left transition-colors cursor-pointer relative"
+              >
+                <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-1.5">
+                  <RefreshCw className="h-4 w-4" />
+                </div>
+                <span className="font-bold text-xs text-foreground">Offline Queue</span>
+                <span className="text-[10px] text-muted-foreground">
+                  {pendingSyncCount > 0 ? `${pendingSyncCount} pending ops` : 'Synchronized'}
+                </span>
+                {pendingSyncCount > 0 && (
+                  <span className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-amber-500" />
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('expenses')
+                  setMobileQuickActionsOpen(false)
+                }}
+                className="flex flex-col items-start p-3 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/15 text-left transition-colors cursor-pointer"
+              >
+                <div className="h-8 w-8 rounded-lg bg-rose-500/20 text-rose-600 flex items-center justify-center mb-1.5">
+                  <Coins className="h-4 w-4" />
+                </div>
+                <span className="font-bold text-xs text-foreground">Log Expense</span>
+                <span className="text-[10px] text-muted-foreground">Bakery OPEX</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('profile')
+                  setMobileQuickActionsOpen(false)
+                }}
+                className="flex flex-col items-start p-3 rounded-xl border border-forest/30 bg-forest/10 hover:bg-forest/15 dark:bg-oat/15 text-left transition-colors cursor-pointer"
+              >
+                <div className="h-8 w-8 rounded-lg bg-forest text-oat flex items-center justify-center mb-1.5 font-bold text-xs">
+                  {auth.user.name ? auth.user.name[0].toUpperCase() : 'U'}
+                </div>
+                <span className="font-bold text-xs text-foreground">My Profile</span>
+                <span className="text-[10px] text-muted-foreground">Settings & security</span>
+              </button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </SidebarInset>
 
       {/* Shadcn Sonner Toaster */}
