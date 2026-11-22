@@ -79,7 +79,45 @@ const VALID_TABS = new Set<TabType>([
   'system',
 ])
 
-const ADMIN_ONLY_TABS = new Set<TabType>(['roles', 'system'])
+function canAccessTab(role: string | null | undefined, tab: TabType): boolean {
+  const userRole = (role || 'MEMBER').toUpperCase()
+  const isOwnerOrAdmin = userRole === 'OWNER' || userRole === 'ADMIN'
+  const isManager = isOwnerOrAdmin || userRole === 'BRANCH_MANAGER'
+  const isFinancial = isOwnerOrAdmin || userRole === 'ACCOUNTANT'
+  const isBaker = isOwnerOrAdmin || userRole.includes('BAKER') || userRole.includes('PRODUCTION')
+  const isCashier = isOwnerOrAdmin || userRole.includes('CASHIER') || userRole.includes('SALES')
+  const isStore = isOwnerOrAdmin || userRole.includes('STORE') || userRole.includes('INVENTORY')
+
+  switch (tab) {
+    case 'workspace':
+    case 'landing':
+    case 'profile':
+    case 'sync':
+      return true
+    case 'roles':
+    case 'system':
+    case 'settings':
+      return isOwnerOrAdmin
+    case 'costing':
+    case 'expenses':
+    case 'reports':
+      return isFinancial
+    case 'team':
+    case 'workforce':
+    case 'branches':
+      return isManager
+    case 'production':
+    case 'recipes':
+      return isBaker || isManager
+    case 'sales':
+      return isCashier || isManager || isFinancial
+    case 'materials':
+    case 'inventory':
+      return isStore || isManager || isBaker
+    default:
+      return false
+  }
+}
 
 export function App() {
   const [auth, setAuth] = useState<AuthContextResponse | null>(null)
@@ -97,9 +135,9 @@ export function App() {
 
   // Navigate with URL Hash synchronization
   const navigateToTab = (tab: TabType) => {
-    if (auth && ADMIN_ONLY_TABS.has(tab) && auth.role !== 'OWNER' && auth.role !== 'ADMIN') {
+    if (auth && !canAccessTab(auth.role, tab)) {
       toast.error('Access Restricted', {
-        description: 'Roles, security and enterprise system settings require Administrator privileges.',
+        description: 'Your assigned role does not have permission to access this area.',
       })
       return
     }
@@ -157,9 +195,9 @@ export function App() {
           return
         }
 
-        if (ADMIN_ONLY_TABS.has(target) && auth.role !== 'OWNER' && auth.role !== 'ADMIN') {
+        if (!canAccessTab(auth.role, target)) {
           toast.error('Access Restricted', {
-            description: 'Roles, security and system settings require Administrator privileges.',
+            description: 'Your assigned role does not have permission to access that workspace area.',
           })
           window.location.hash = '#/workspace'
           setActiveTab('workspace')
@@ -498,17 +536,19 @@ export function App() {
                         </>
                       )}
 
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setUserDropdownOpen(false)
-                          setOnboardingOpen(true)
-                        }}
-                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-colors hover:bg-muted text-foreground cursor-pointer text-xs"
-                      >
-                        <BookOpen className="h-4 w-4 text-forest dark:text-oat shrink-0" />
-                        <span>Onboarding Guide</span>
-                      </button>
+                      {(auth.role === 'OWNER' || auth.role === 'ADMIN') && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setUserDropdownOpen(false)
+                            setOnboardingOpen(true)
+                          }}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-colors hover:bg-muted text-foreground cursor-pointer text-xs"
+                        >
+                          <BookOpen className="h-4 w-4 text-forest dark:text-oat shrink-0" />
+                          <span>Onboarding Guide</span>
+                        </button>
+                      )}
                     </div>
 
                     {/* Sign Out Action */}
@@ -552,7 +592,13 @@ export function App() {
 
         {/* Main Workspace Area */}
         <main className="flex-1 p-4 md:p-8 pb-24 md:pb-8">
-          {activeTab === 'branches' ? (
+          {!canAccessTab(auth?.role, activeTab) ? (
+            <DemoDashboard
+              auth={auth}
+              onLogout={handleLogout}
+              onNavigateTab={(tab) => navigateToTab(tab as TabType)}
+            />
+          ) : activeTab === 'branches' ? (
             <BranchManagementView />
           ) : activeTab === 'workforce' ? (
             <WorkforceManagementView />
@@ -698,117 +744,139 @@ export function App() {
               </DialogDescription>
             </DialogHeader>
 
-            <div className="grid grid-cols-2 gap-2.5 pt-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileQuickActionsOpen(false)
-                  navigateToTab('production')
-                }}
-                className="flex flex-col items-start p-3 rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/15 text-left transition-colors cursor-pointer"
-              >
-                <div className="h-8 w-8 rounded-lg bg-amber-500/20 text-amber-600 flex items-center justify-center mb-1.5">
-                  <Flame className="h-4 w-4" />
-                </div>
-                <span className="font-bold text-xs text-foreground">Start Mitad Baking</span>
-                <span className="text-[10px] text-muted-foreground">New baking batch</span>
-              </button>
+            {(() => {
+              const uRole = (auth?.role || 'MEMBER').toUpperCase()
+              const isOwnerOrAdmin = uRole === 'OWNER' || uRole === 'ADMIN'
+              const isManager = isOwnerOrAdmin || uRole === 'BRANCH_MANAGER'
+              const isFinancial = isOwnerOrAdmin || uRole === 'ACCOUNTANT'
+              const isBaker = isOwnerOrAdmin || uRole.includes('BAKER') || uRole.includes('PRODUCTION')
+              const isCashier = isOwnerOrAdmin || uRole.includes('CASHIER') || uRole.includes('SALES')
+              const isStore = isOwnerOrAdmin || uRole.includes('STORE') || uRole.includes('INVENTORY')
 
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileQuickActionsOpen(false)
-                  navigateToTab('sales')
-                }}
-                className="flex flex-col items-start p-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/15 text-left transition-colors cursor-pointer"
-              >
-                <div className="h-8 w-8 rounded-lg bg-emerald-500/20 text-emerald-600 flex items-center justify-center mb-1.5">
-                  <ShoppingCart className="h-4 w-4" />
-                </div>
-                <span className="font-bold text-xs text-foreground">Record POS Sale</span>
-                <span className="text-[10px] text-muted-foreground">Cash & wholesale</span>
-              </button>
+              return (
+                <div className="grid grid-cols-2 gap-2.5 pt-3">
+                  {(isBaker || isManager) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileQuickActionsOpen(false)
+                        navigateToTab('production')
+                      }}
+                      className="flex flex-col items-start p-3 rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/15 text-left transition-colors cursor-pointer"
+                    >
+                      <div className="h-8 w-8 rounded-lg bg-amber-500/20 text-amber-600 flex items-center justify-center mb-1.5">
+                        <Flame className="h-4 w-4" />
+                      </div>
+                      <span className="font-bold text-xs text-foreground">Start Mitad Baking</span>
+                      <span className="text-[10px] text-muted-foreground">New baking batch</span>
+                    </button>
+                  )}
 
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileQuickActionsOpen(false)
-                  navigateToTab('materials')
-                }}
-                className="flex flex-col items-start p-3 rounded-xl border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/15 text-left transition-colors cursor-pointer"
-              >
-                <div className="h-8 w-8 rounded-lg bg-sky-500/20 text-sky-600 flex items-center justify-center mb-1.5">
-                  <Boxes className="h-4 w-4" />
-                </div>
-                <span className="font-bold text-xs text-foreground">Receive Teff Lot</span>
-                <span className="text-[10px] text-muted-foreground">Grain intake</span>
-              </button>
+                  {(isCashier || isManager || isFinancial) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileQuickActionsOpen(false)
+                        navigateToTab('sales')
+                      }}
+                      className="flex flex-col items-start p-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/15 text-left transition-colors cursor-pointer"
+                    >
+                      <div className="h-8 w-8 rounded-lg bg-emerald-500/20 text-emerald-600 flex items-center justify-center mb-1.5">
+                        <ShoppingCart className="h-4 w-4" />
+                      </div>
+                      <span className="font-bold text-xs text-foreground">Record POS Sale</span>
+                      <span className="text-[10px] text-muted-foreground">Cash & wholesale</span>
+                    </button>
+                  )}
 
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileQuickActionsOpen(false)
-                  navigateToTab('sync')
-                }}
-                className="flex flex-col items-start p-3 rounded-xl border border-border/80 bg-muted/40 hover:bg-muted/70 text-left transition-colors cursor-pointer relative"
-              >
-                <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-1.5">
-                  <RefreshCw className="h-4 w-4" />
-                </div>
-                <span className="font-bold text-xs text-foreground">Offline Queue</span>
-                <span className="text-[10px] text-muted-foreground">
-                  {pendingSyncCount > 0 ? `${pendingSyncCount} pending ops` : 'Synchronized'}
-                </span>
-                {pendingSyncCount > 0 && (
-                  <span className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-amber-500" />
-                )}
-              </button>
+                  {(isStore || isManager || isBaker) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileQuickActionsOpen(false)
+                        navigateToTab('materials')
+                      }}
+                      className="flex flex-col items-start p-3 rounded-xl border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/15 text-left transition-colors cursor-pointer"
+                    >
+                      <div className="h-8 w-8 rounded-lg bg-sky-500/20 text-sky-600 flex items-center justify-center mb-1.5">
+                        <Boxes className="h-4 w-4" />
+                      </div>
+                      <span className="font-bold text-xs text-foreground">Receive Teff Lot</span>
+                      <span className="text-[10px] text-muted-foreground">Grain intake</span>
+                    </button>
+                  )}
 
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileQuickActionsOpen(false)
-                  navigateToTab('expenses')
-                }}
-                className="flex flex-col items-start p-3 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/15 text-left transition-colors cursor-pointer"
-              >
-                <div className="h-8 w-8 rounded-lg bg-rose-500/20 text-rose-600 flex items-center justify-center mb-1.5">
-                  <Coins className="h-4 w-4" />
-                </div>
-                <span className="font-bold text-xs text-foreground">Log Expense</span>
-                <span className="text-[10px] text-muted-foreground">Bakery OPEX</span>
-              </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileQuickActionsOpen(false)
+                      navigateToTab('sync')
+                    }}
+                    className="flex flex-col items-start p-3 rounded-xl border border-border/80 bg-muted/40 hover:bg-muted/70 text-left transition-colors cursor-pointer relative"
+                  >
+                    <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-1.5">
+                      <RefreshCw className="h-4 w-4" />
+                    </div>
+                    <span className="font-bold text-xs text-foreground">Offline Queue</span>
+                    <span className="text-[10px] text-muted-foreground">
+                      {pendingSyncCount > 0 ? `${pendingSyncCount} pending ops` : 'Synchronized'}
+                    </span>
+                    {pendingSyncCount > 0 && (
+                      <span className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-amber-500" />
+                    )}
+                  </button>
 
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileQuickActionsOpen(false)
-                  navigateToTab('profile')
-                }}
-                className="flex flex-col items-start p-3 rounded-xl border border-forest/30 bg-forest/10 hover:bg-forest/15 dark:bg-oat/15 text-left transition-colors cursor-pointer"
-              >
-                <div className="h-8 w-8 rounded-lg bg-forest text-oat flex items-center justify-center mb-1.5 font-bold text-xs">
-                  {auth.user.name ? auth.user.name[0].toUpperCase() : 'U'}
-                </div>
-                <span className="font-bold text-xs text-foreground">My Profile</span>
-                <span className="text-[10px] text-muted-foreground">Settings & security</span>
-              </button>
+                  {isFinancial && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileQuickActionsOpen(false)
+                        navigateToTab('expenses')
+                      }}
+                      className="flex flex-col items-start p-3 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/15 text-left transition-colors cursor-pointer"
+                    >
+                      <div className="h-8 w-8 rounded-lg bg-rose-500/20 text-rose-600 flex items-center justify-center mb-1.5">
+                        <Coins className="h-4 w-4" />
+                      </div>
+                      <span className="font-bold text-xs text-foreground">Log Expense</span>
+                      <span className="text-[10px] text-muted-foreground">Bakery OPEX</span>
+                    </button>
+                  )}
 
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileQuickActionsOpen(false)
-                  setOnboardingOpen(true)
-                }}
-                className="flex flex-col items-start p-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/15 text-left transition-colors cursor-pointer"
-              >
-                <div className="h-8 w-8 rounded-lg bg-emerald-500/20 text-emerald-600 flex items-center justify-center mb-1.5">
-                  <BookOpen className="h-4 w-4" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileQuickActionsOpen(false)
+                      navigateToTab('profile')
+                    }}
+                    className="flex flex-col items-start p-3 rounded-xl border border-forest/30 bg-forest/10 hover:bg-forest/15 dark:bg-oat/15 text-left transition-colors cursor-pointer"
+                  >
+                    <div className="h-8 w-8 rounded-lg bg-forest text-oat flex items-center justify-center mb-1.5 font-bold text-xs">
+                      {auth.user.name ? auth.user.name[0].toUpperCase() : 'U'}
+                    </div>
+                    <span className="font-bold text-xs text-foreground">My Profile</span>
+                    <span className="text-[10px] text-muted-foreground">Settings & security</span>
+                  </button>
+
+                  {isOwnerOrAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileQuickActionsOpen(false)
+                        setOnboardingOpen(true)
+                      }}
+                      className="flex flex-col items-start p-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/15 text-left transition-colors cursor-pointer"
+                    >
+                      <div className="h-8 w-8 rounded-lg bg-emerald-500/20 text-emerald-600 flex items-center justify-center mb-1.5">
+                        <BookOpen className="h-4 w-4" />
+                      </div>
+                      <span className="font-bold text-xs text-foreground">Onboarding Guide</span>
+                      <span className="text-[10px] text-muted-foreground">Checklist & guides</span>
+                    </button>
+                  )}
                 </div>
-                <span className="font-bold text-xs text-foreground">Onboarding Guide</span>
-                <span className="text-[10px] text-muted-foreground">Checklist & guides</span>
-              </button>
-            </div>
+              )
+            })()}
           </DialogContent>
         </Dialog>
       </SidebarInset>

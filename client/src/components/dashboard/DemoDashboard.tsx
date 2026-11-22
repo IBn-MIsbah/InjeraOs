@@ -44,6 +44,9 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
 
   // Default role perspective
   const userRole = (auth.role || 'OWNER').toUpperCase()
+  const isOwnerOrAdmin = userRole === 'OWNER' || userRole === 'ADMIN'
+  const isFinancial = isOwnerOrAdmin || userRole === 'ACCOUNTANT' || userRole.includes('CASHIER') || userRole.includes('SALES')
+
   const initialPerspective: PerspectiveType = userRole.includes('BAKER')
     ? 'BAKER'
     : userRole.includes('CASHIER') || userRole.includes('SALES')
@@ -113,47 +116,51 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Minimal Perspective Switcher */}
-          <div className="inline-flex rounded-lg border border-border/80 bg-muted/40 p-0.5 text-xs">
-            {(['EXECUTIVE', 'BAKER', 'CASHIER', 'STOREKEEPER'] as const).map((p) => (
-              <button
-                key={p}
-                type="button"
-                onClick={() => setPerspective(p)}
-                className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all cursor-pointer ${
-                  perspective === p
-                    ? 'bg-forest text-oat shadow-xs dark:bg-oat dark:text-forest font-semibold'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {p === 'EXECUTIVE'
-                  ? 'Executive'
-                  : p === 'BAKER'
-                    ? 'Baker'
-                    : p === 'CASHIER'
-                      ? 'Cashier'
-                      : 'Store'}
-              </button>
-            ))}
-          </div>
+        {isOwnerOrAdmin && (
+          <div className="flex items-center gap-2">
+            {/* Minimal Perspective Switcher */}
+            <div className="inline-flex rounded-lg border border-border/80 bg-muted/40 p-0.5 text-xs">
+              {(['EXECUTIVE', 'BAKER', 'CASHIER', 'STOREKEEPER'] as const).map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setPerspective(p)}
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all cursor-pointer ${
+                    perspective === p
+                      ? 'bg-forest text-oat shadow-xs dark:bg-oat dark:text-forest font-semibold'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {p === 'EXECUTIVE'
+                    ? 'Executive'
+                    : p === 'BAKER'
+                      ? 'Baker'
+                      : p === 'CASHIER'
+                        ? 'Cashier'
+                        : 'Store'}
+                </button>
+              ))}
+            </div>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setGuideOpen(true)}
-            className="h-8 text-xs gap-1.5 border-border/80 cursor-pointer text-forest dark:text-oat"
-          >
-            <BookOpen className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Onboarding Guide</span>
-          </Button>
-        </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setGuideOpen(true)}
+              className="h-8 text-xs gap-1.5 border-border/80 cursor-pointer text-forest dark:text-oat"
+            >
+              <BookOpen className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Onboarding Guide</span>
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Minimal Onboarding Setup Progress Widget */}
-      <OnboardingDashboardWidget
-        onNavigateTab={(tab) => onNavigateTab?.(tab)}
-      />
+      {isOwnerOrAdmin && (
+        <OnboardingDashboardWidget
+          onNavigateTab={(tab) => onNavigateTab?.(tab)}
+        />
+      )}
 
       {/* 4 Minimal Top Status / KPI Cards - Adaptive by Perspective */}
       <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
@@ -515,65 +522,67 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
         )}
       </div>
 
-      {/* Row 1: 7-Day Revenue Velocity & Quality Yield Breakdown */}
+      {/* Row 1: 7-Day Revenue Velocity (for Financial/Admin roles) & Quality Yield Breakdown */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-        {/* 7-Day Revenue Bar Chart */}
-        <Card className="lg:col-span-7 border-border/80 shadow-2xs">
-          <CardHeader className="pb-2 pt-4 px-4 flex flex-row items-center justify-between">
-            <CardTitle className="text-xs font-bold flex items-center gap-2 text-foreground">
-              <BarChart3 className="h-4 w-4 text-forest dark:text-oat" />
-              7-Day Revenue Trend
-            </CardTitle>
-            <span className="text-xs font-mono font-semibold text-muted-foreground">
-              {summary?.sevenDayRevenue && summary.sevenDayRevenue.length > 0
-                ? formatCurrency(summary.sevenDayRevenue.reduce((s, d) => s + d.revenue, 0))
-                : ''}
-            </span>
-          </CardHeader>
-          <CardContent className="pb-4 px-4">
-            {loadingSummary ? (
-              <div className="h-36 flex items-end justify-between gap-2 pt-4 border-b border-border/60">
-                {[30, 50, 40, 70, 60, 90, 65].map((h, i) => (
-                  <div key={i} className="flex-1 flex flex-col items-center gap-1 h-full justify-end">
-                    <Skeleton className="w-full max-w-[32px] rounded-t-sm" style={{ height: `${h}%` }} />
-                    <Skeleton className="h-3 w-6" />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="h-36 flex items-end justify-between gap-2 pt-4 border-b border-border/60">
-                {revenueTrendDays.map((item, idx) => {
-                  const maxRev = Math.max(...revenueTrendDays.map((d) => d.revenue), 1)
-                  const barHeight = Math.max(Math.round((item.revenue / maxRev) * 100), item.revenue > 0 ? 12 : 6)
-                  const isToday = idx === revenueTrendDays.length - 1
-
-                  return (
-                    <div key={idx} className="flex-1 flex flex-col items-center gap-1 h-full justify-end group">
-                      <span className="text-[10px] font-mono text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
-                        {item.revenue > 0 ? `${(item.revenue / 1000).toFixed(1)}k` : '0'}
-                      </span>
-                      <div
-                        style={{ height: `${barHeight}%` }}
-                        className={`w-full max-w-[32px] rounded-t transition-all ${
-                          isToday
-                            ? 'bg-forest dark:bg-oat shadow-xs'
-                            : 'bg-forest/50 hover:bg-forest/75 dark:bg-oat/40 dark:hover:bg-oat/70'
-                        }`}
-                        title={`${item.day}: ${formatCurrency(item.revenue)}`}
-                      />
-                      <span className="text-[10px] font-medium text-muted-foreground truncate w-full text-center">
-                        {item.day}
-                      </span>
+        {/* 7-Day Revenue Bar Chart - Only visible to financial / admin perspectives */}
+        {isFinancial && (
+          <Card className="lg:col-span-7 border-border/80 shadow-2xs">
+            <CardHeader className="pb-2 pt-4 px-4 flex flex-row items-center justify-between">
+              <CardTitle className="text-xs font-bold flex items-center gap-2 text-foreground">
+                <BarChart3 className="h-4 w-4 text-forest dark:text-oat" />
+                7-Day Revenue Trend
+              </CardTitle>
+              <span className="text-xs font-mono font-semibold text-muted-foreground">
+                {summary?.sevenDayRevenue && summary.sevenDayRevenue.length > 0
+                  ? formatCurrency(summary.sevenDayRevenue.reduce((s, d) => s + d.revenue, 0))
+                  : ''}
+              </span>
+            </CardHeader>
+            <CardContent className="pb-4 px-4">
+              {loadingSummary ? (
+                <div className="h-36 flex items-end justify-between gap-2 pt-4 border-b border-border/60">
+                  {[30, 50, 40, 70, 60, 90, 65].map((h, i) => (
+                    <div key={i} className="flex-1 flex flex-col items-center gap-1 h-full justify-end">
+                      <Skeleton className="w-full max-w-[32px] rounded-t-sm" style={{ height: `${h}%` }} />
+                      <Skeleton className="h-3 w-6" />
                     </div>
-                  )
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="h-36 flex items-end justify-between gap-2 pt-4 border-b border-border/60">
+                  {revenueTrendDays.map((item, idx) => {
+                    const maxRev = Math.max(...revenueTrendDays.map((d) => d.revenue), 1)
+                    const barHeight = Math.max(Math.round((item.revenue / maxRev) * 100), item.revenue > 0 ? 12 : 6)
+                    const isToday = idx === revenueTrendDays.length - 1
+
+                    return (
+                      <div key={idx} className="flex-1 flex flex-col items-center gap-1 h-full justify-end group">
+                        <span className="text-[10px] font-mono text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                          {item.revenue > 0 ? `${(item.revenue / 1000).toFixed(1)}k` : '0'}
+                        </span>
+                        <div
+                          style={{ height: `${barHeight}%` }}
+                          className={`w-full max-w-[32px] rounded-t transition-all ${
+                            isToday
+                              ? 'bg-forest dark:bg-oat shadow-xs'
+                              : 'bg-forest/50 hover:bg-forest/75 dark:bg-oat/40 dark:hover:bg-oat/70'
+                          }`}
+                          title={`${item.day}: ${formatCurrency(item.revenue)}`}
+                        />
+                        <span className="text-[10px] font-medium text-muted-foreground truncate w-full text-center">
+                          {item.day}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Quality Yield & Rejection Breakdown */}
-        <Card className="lg:col-span-5 border-border/80 shadow-2xs">
+        <Card className={`${isFinancial ? 'lg:col-span-5' : 'lg:col-span-12'} border-border/80 shadow-2xs`}>
           <CardHeader className="pb-2 pt-4 px-4">
             <CardTitle className="text-xs font-bold flex items-center gap-2 text-foreground">
               <ChefHat className="h-4 w-4 text-amber-500" />

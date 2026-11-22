@@ -134,226 +134,265 @@ export function AppSidebar({
       {/* Sidebar Content: Grouped Navigation */}
       <SidebarContent className="px-2 py-1.5 overflow-y-auto">
         {auth ? (
-          <>
-            {/* Group 1: Operations */}
-            <SidebarGroup>
-              <SidebarGroupLabel className="text-[10px] font-medium tracking-wider text-muted-foreground uppercase">
-                Operations
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      isActive={activeTab === 'workspace'}
-                      onClick={() => onSelectTab('workspace')}
-                      tooltip="Overview & Security"
-                      className="cursor-pointer gap-2.5 text-xs"
-                    >
-                      <LayoutDashboard className="h-4 w-4" />
-                      <span>Overview</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+          (() => {
+            const userRole = (auth?.role || 'MEMBER').toUpperCase()
+            const isOwnerOrAdmin = userRole === 'OWNER' || userRole === 'ADMIN'
+            const isManager = isOwnerOrAdmin || userRole === 'BRANCH_MANAGER'
+            const isFinancial = isOwnerOrAdmin || userRole === 'ACCOUNTANT'
+            const isBaker = isOwnerOrAdmin || userRole.includes('BAKER') || userRole.includes('PRODUCTION')
+            const isCashier = isOwnerOrAdmin || userRole.includes('CASHIER') || userRole.includes('SALES')
+            const isStore = isOwnerOrAdmin || userRole.includes('STORE') || userRole.includes('INVENTORY')
 
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      isActive={activeTab === 'branches'}
-                      onClick={() => onSelectTab('branches')}
-                      tooltip="Branches & Baking Stations"
-                      className="cursor-pointer gap-2.5 text-xs"
-                    >
-                      <GitBranch className="h-4 w-4" />
-                      <span>Baking Stations</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+            return (
+              <>
+                {/* Group 1: Operations */}
+                <SidebarGroup>
+                  <SidebarGroupLabel className="text-[10px] font-medium tracking-wider text-muted-foreground uppercase">
+                    Operations
+                  </SidebarGroupLabel>
+                  <SidebarGroupContent>
+                    <SidebarMenu>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton
+                          isActive={activeTab === 'workspace'}
+                          onClick={() => onSelectTab('workspace')}
+                          tooltip="Overview"
+                          className="cursor-pointer gap-2.5 text-xs"
+                        >
+                          <LayoutDashboard className="h-4 w-4" />
+                          <span>Overview</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
 
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      isActive={activeTab === 'workforce'}
-                      onClick={() => onSelectTab('workforce')}
-                      tooltip="Workforce, Shifts & Attendance"
-                      className="cursor-pointer gap-2.5 text-xs"
-                    >
-                      <UserCheck className="h-4 w-4" />
-                      <span>Workforce & Shifts</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      isActive={activeTab === 'materials'}
-                      onClick={() => onSelectTab('materials')}
-                      tooltip="Raw Materials, Purchasing & Lots"
-                      className="cursor-pointer gap-2.5 text-xs"
-                    >
-                      <Boxes className="h-4 w-4" />
-                      <span>Materials & Inventory</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      isActive={activeTab === 'recipes'}
-                      onClick={() => onSelectTab('recipes')}
-                      tooltip="Recipes, Scaling & Teff Blending"
-                      className="cursor-pointer gap-2.5 text-xs"
-                    >
-                      <ChefHat className="h-4 w-4" />
-                      <span>Recipes & Formulations</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      isActive={activeTab === 'production'}
-                      onClick={() => onSelectTab('production')}
-                      tooltip="Production Sessions & Baking Batches"
-                      className="cursor-pointer gap-2.5 text-xs"
-                    >
-                      <Flame className="h-4 w-4 text-amber-500" />
-                      <span>Production & Baking</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      isActive={activeTab === 'costing'}
-                      onClick={() => onSelectTab('costing')}
-                      tooltip="Batch Costing, Labour & Overhead Absorption"
-                      className="cursor-pointer gap-2.5 text-xs"
-                    >
-                      <Coins className="h-4 w-4 text-emerald-500" />
-                      <span>Production Costing</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      isActive={activeTab === 'inventory'}
-                      onClick={() => onSelectTab('inventory')}
-                      tooltip="Finished Goods, FIFO Lots & Stock Locations"
-                      className="cursor-pointer gap-2.5 text-xs"
-                    >
-                      <Warehouse className="h-4 w-4 text-cyan-500" />
-                      <span>Finished Stock & FIFO</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      isActive={activeTab === 'sales'}
-                      onClick={() => onSelectTab('sales')}
-                      tooltip="Point of Sale, Customer Credit & Deliveries"
-                      className="cursor-pointer gap-2.5 text-xs"
-                    >
-                      <ShoppingCart className="h-4 w-4 text-violet-500" />
-                      <span>Sales & Distribution</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      isActive={activeTab === 'expenses'}
-                      onClick={() => onSelectTab('expenses')}
-                      tooltip="Operating Expenses & OPEX Ledger"
-                      className="cursor-pointer gap-2.5 text-xs"
-                    >
-                      <Receipt className="h-4 w-4 text-rose-500" />
-                      <span>Operating Expenses</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      isActive={activeTab === 'reports'}
-                      onClick={() => onSelectTab('reports')}
-                      tooltip="Financial Reports, P&L & Baker Productivity"
-                      className="cursor-pointer gap-2.5 text-xs"
-                    >
-                      <TrendingUp className="h-4 w-4 text-emerald-500" />
-                      <span>Financial Reports & P&L</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      isActive={activeTab === 'sync'}
-                      onClick={() => onSelectTab('sync')}
-                      tooltip="Offline Queue & Sync Engine"
-                      className="cursor-pointer gap-2.5 text-xs"
-                    >
-                      <RefreshCw className="h-4 w-4 text-sky-500" />
-                      <span className="flex-1">Offline Queue & Sync</span>
-                      {pendingCount > 0 && (
-                        <span className="rounded-full bg-amber-500/20 px-1.5 py-0.2 text-[9px] font-semibold text-amber-600 dark:text-amber-400">
-                          {pendingCount}
-                        </span>
+                      {isManager && (
+                        <SidebarMenuItem>
+                          <SidebarMenuButton
+                            isActive={activeTab === 'branches'}
+                            onClick={() => onSelectTab('branches')}
+                            tooltip="Branches & Baking Stations"
+                            className="cursor-pointer gap-2.5 text-xs"
+                          >
+                            <GitBranch className="h-4 w-4" />
+                            <span>Baking Stations</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
                       )}
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
 
-            <SidebarSeparator className="my-1" />
+                      {isManager && (
+                        <SidebarMenuItem>
+                          <SidebarMenuButton
+                            isActive={activeTab === 'workforce'}
+                            onClick={() => onSelectTab('workforce')}
+                            tooltip="Workforce, Shifts & Attendance"
+                            className="cursor-pointer gap-2.5 text-xs"
+                          >
+                            <UserCheck className="h-4 w-4" />
+                            <span>Workforce & Shifts</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      )}
 
-            {/* Group 2: Organization & Administration */}
-            <SidebarGroup>
-              <SidebarGroupLabel className="text-[10px] font-medium tracking-wider text-muted-foreground uppercase">
-                Organization
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      isActive={activeTab === 'team'}
-                      onClick={() => onSelectTab('team')}
-                      tooltip="Staff Roster & Permissions"
-                      className="cursor-pointer gap-2.5 text-xs"
-                    >
-                      <Users className="h-4 w-4" />
-                      <span>Team & Staff</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+                      {(isStore || isManager) && (
+                        <SidebarMenuItem>
+                          <SidebarMenuButton
+                            isActive={activeTab === 'materials'}
+                            onClick={() => onSelectTab('materials')}
+                            tooltip="Raw Materials, Purchasing & Lots"
+                            className="cursor-pointer gap-2.5 text-xs"
+                          >
+                            <Boxes className="h-4 w-4" />
+                            <span>Materials & Inventory</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      )}
 
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      isActive={activeTab === 'roles'}
-                      onClick={() => onSelectTab('roles')}
-                      tooltip="Roles & Permissions Governance"
-                      className="cursor-pointer gap-2.5 text-xs"
-                    >
-                      <ShieldCheck className="h-4 w-4 text-emerald-500" />
-                      <span>Roles & Permissions</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+                      {(isBaker || isManager) && (
+                        <SidebarMenuItem>
+                          <SidebarMenuButton
+                            isActive={activeTab === 'recipes'}
+                            onClick={() => onSelectTab('recipes')}
+                            tooltip="Recipes, Scaling & Teff Blending"
+                            className="cursor-pointer gap-2.5 text-xs"
+                          >
+                            <ChefHat className="h-4 w-4" />
+                            <span>Recipes & Formulations</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      )}
 
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      isActive={activeTab === 'settings'}
-                      onClick={() => onSelectTab('settings')}
-                      tooltip="Business Profile & Calendar"
-                      className="cursor-pointer gap-2.5 text-xs"
-                    >
-                      <Building2 className="h-4 w-4" />
-                      <span>Business Settings</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+                      {(isBaker || isManager) && (
+                        <SidebarMenuItem>
+                          <SidebarMenuButton
+                            isActive={activeTab === 'production'}
+                            onClick={() => onSelectTab('production')}
+                            tooltip="Production Sessions & Baking Batches"
+                            className="cursor-pointer gap-2.5 text-xs"
+                          >
+                            <Flame className="h-4 w-4 text-amber-500" />
+                            <span>Production & Baking</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      )}
 
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      isActive={activeTab === 'system'}
-                      onClick={() => onSelectTab('system')}
-                      tooltip="System Settings, Status & Audit Trail"
-                      className="cursor-pointer gap-2.5 text-xs"
-                    >
-                      <Sliders className="h-4 w-4 text-forest dark:text-oat" />
-                      <span>System & Audit</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </>
+                      {isFinancial && (
+                        <SidebarMenuItem>
+                          <SidebarMenuButton
+                            isActive={activeTab === 'costing'}
+                            onClick={() => onSelectTab('costing')}
+                            tooltip="Batch Costing, Labour & Overhead Absorption"
+                            className="cursor-pointer gap-2.5 text-xs"
+                          >
+                            <Coins className="h-4 w-4 text-emerald-500" />
+                            <span>Production Costing</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      )}
+
+                      {(isStore || isManager || isBaker) && (
+                        <SidebarMenuItem>
+                          <SidebarMenuButton
+                            isActive={activeTab === 'inventory'}
+                            onClick={() => onSelectTab('inventory')}
+                            tooltip="Finished Goods, FIFO Lots & Stock Locations"
+                            className="cursor-pointer gap-2.5 text-xs"
+                          >
+                            <Warehouse className="h-4 w-4 text-cyan-500" />
+                            <span>Finished Stock & FIFO</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      )}
+
+                      {(isCashier || isManager || isFinancial) && (
+                        <SidebarMenuItem>
+                          <SidebarMenuButton
+                            isActive={activeTab === 'sales'}
+                            onClick={() => onSelectTab('sales')}
+                            tooltip="Point of Sale, Customer Credit & Deliveries"
+                            className="cursor-pointer gap-2.5 text-xs"
+                          >
+                            <ShoppingCart className="h-4 w-4 text-violet-500" />
+                            <span>Sales & Distribution</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      )}
+
+                      {isFinancial && (
+                        <SidebarMenuItem>
+                          <SidebarMenuButton
+                            isActive={activeTab === 'expenses'}
+                            onClick={() => onSelectTab('expenses')}
+                            tooltip="Operating Expenses & OPEX Ledger"
+                            className="cursor-pointer gap-2.5 text-xs"
+                          >
+                            <Receipt className="h-4 w-4 text-rose-500" />
+                            <span>Operating Expenses</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      )}
+
+                      {isFinancial && (
+                        <SidebarMenuItem>
+                          <SidebarMenuButton
+                            isActive={activeTab === 'reports'}
+                            onClick={() => onSelectTab('reports')}
+                            tooltip="Financial Reports, P&L & Baker Productivity"
+                            className="cursor-pointer gap-2.5 text-xs"
+                          >
+                            <TrendingUp className="h-4 w-4 text-emerald-500" />
+                            <span>Financial Reports & P&L</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      )}
+
+                      <SidebarMenuItem>
+                        <SidebarMenuButton
+                          isActive={activeTab === 'sync'}
+                          onClick={() => onSelectTab('sync')}
+                          tooltip="Offline Queue & Sync Engine"
+                          className="cursor-pointer gap-2.5 text-xs"
+                        >
+                          <RefreshCw className="h-4 w-4 text-sky-500" />
+                          <span className="flex-1">Offline Queue & Sync</span>
+                          {pendingCount > 0 && (
+                            <span className="rounded-full bg-amber-500/20 px-1.5 py-0.2 text-[9px] font-semibold text-amber-600 dark:text-amber-400">
+                              {pendingCount}
+                            </span>
+                          )}
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    </SidebarMenu>
+                  </SidebarGroupContent>
+                </SidebarGroup>
+
+                {/* Group 2: Organization & Administration - Hidden from normal operational staff */}
+                {isManager && (
+                  <>
+                    <SidebarSeparator className="my-1" />
+                    <SidebarGroup>
+                      <SidebarGroupLabel className="text-[10px] font-medium tracking-wider text-muted-foreground uppercase">
+                        Organization
+                      </SidebarGroupLabel>
+                      <SidebarGroupContent>
+                        <SidebarMenu>
+                          <SidebarMenuItem>
+                            <SidebarMenuButton
+                              isActive={activeTab === 'team'}
+                              onClick={() => onSelectTab('team')}
+                              tooltip="Staff Roster & Permissions"
+                              className="cursor-pointer gap-2.5 text-xs"
+                            >
+                              <Users className="h-4 w-4" />
+                              <span>Team & Staff</span>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+
+                          {isOwnerOrAdmin && (
+                            <>
+                              <SidebarMenuItem>
+                                <SidebarMenuButton
+                                  isActive={activeTab === 'roles'}
+                                  onClick={() => onSelectTab('roles')}
+                                  tooltip="Roles & Permissions Governance"
+                                  className="cursor-pointer gap-2.5 text-xs"
+                                >
+                                  <ShieldCheck className="h-4 w-4 text-emerald-500" />
+                                  <span>Roles & Permissions</span>
+                                </SidebarMenuButton>
+                              </SidebarMenuItem>
+
+                              <SidebarMenuItem>
+                                <SidebarMenuButton
+                                  isActive={activeTab === 'settings'}
+                                  onClick={() => onSelectTab('settings')}
+                                  tooltip="Business Profile & Calendar"
+                                  className="cursor-pointer gap-2.5 text-xs"
+                                >
+                                  <Building2 className="h-4 w-4" />
+                                  <span>Business Settings</span>
+                                </SidebarMenuButton>
+                              </SidebarMenuItem>
+
+                              <SidebarMenuItem>
+                                <SidebarMenuButton
+                                  isActive={activeTab === 'system'}
+                                  onClick={() => onSelectTab('system')}
+                                  tooltip="System Settings, Status & Audit Trail"
+                                  className="cursor-pointer gap-2.5 text-xs"
+                                >
+                                  <Sliders className="h-4 w-4 text-forest dark:text-oat" />
+                                  <span>System & Audit</span>
+                                </SidebarMenuButton>
+                              </SidebarMenuItem>
+                            </>
+                          )}
+                        </SidebarMenu>
+                      </SidebarGroupContent>
+                    </SidebarGroup>
+                  </>
+                )}
+              </>
+            )
+          })()
         ) : (
           /* Unauthenticated Navigation Group */
           <SidebarGroup>
@@ -405,7 +444,7 @@ export function AppSidebar({
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {onOpenOnboarding && (
+              {auth && (auth.role === 'OWNER' || auth.role === 'ADMIN') && onOpenOnboarding && (
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     onClick={onOpenOnboarding}

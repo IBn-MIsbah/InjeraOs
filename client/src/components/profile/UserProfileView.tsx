@@ -783,7 +783,7 @@ export function UserProfileView({ auth, onLogout }: UserProfileViewProps) {
                   {auth.business?.name ?? 'KD PLC'}
                 </span>
                 <span className="text-[11px] text-muted-foreground">
-                  ID: <code className="font-mono">{auth.businessId.slice(0, 8)}…</code>
+                  Licensed Injera Production Facility
                 </span>
               </div>
 
@@ -799,10 +799,10 @@ export function UserProfileView({ auth, onLogout }: UserProfileViewProps) {
             <div className="p-4 rounded-xl border bg-card space-y-2">
               <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                 <Clock className="h-3.5 w-3.5 text-forest dark:text-oat" />
-                Shift & Attendance Rules
+                Station Attendance
               </span>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Attendance clock-in records are tracked under your profile when you start a shift at your station. Clock-ins within 15 minutes of scheduled shift start are marked on time; later arrivals are noted for supervisor review.
+                Attendance clock-in records track your shift start and conclusion at your assigned station. For schedule adjustments or leave requests, speak with your shift supervisor.
               </p>
             </div>
           </CardContent>
