@@ -1183,6 +1183,107 @@ export interface SyncBatchResult {
   }[]
 }
 
+export interface SystemStatusResult {
+  health: 'HEALTHY' | 'DEGRADED' | 'MAINTENANCE'
+  database: {
+    status: 'CONNECTED' | 'DISCONNECTED'
+    latencyMs: number
+    provider: string
+    poolStatus: string
+  }
+  runtime: {
+    uptimeSeconds: number
+    uptimeFormatted: string
+    platform: string
+    nodeVersion: string
+    environment: string
+    architecture: string
+  }
+  memory: {
+    heapUsedMb: number
+    heapTotalMb: number
+    rssMb: number
+    externalMb: number
+    usagePercent: number
+  }
+  syncEngine: {
+    pendingOperations: number
+    openConflicts: number
+    status: 'SYNCHRONIZING' | 'SYNCHRONIZED'
+    autoSyncIntervalSeconds: number
+  }
+  security: {
+    activeUserSessions: number
+    registeredDevices: number
+    cookieMode: string
+    sessionDurationMinutes: number
+  }
+  business: {
+    id: string
+    name: string
+    status: string
+  }
+  timestamp: string
+}
+
+export interface SystemSettingsEntity {
+  businessId: string
+  employeeNumberPrefix: string
+  minQualityYieldPercent: number
+  tokenSessionDurationMinutes: number
+  maintenanceMode: boolean
+  autoSyncIntervalSeconds: number
+  enforceShiftClockInGraceMinutes: number
+  allowOfflineTransactions: boolean
+  currency: string
+  timezone: string
+  dateCalendar: 'GREGORIAN' | 'ETHIOPIAN'
+  updatedAt: string
+}
+
+export interface UpdateSystemSettingsInput {
+  employeeNumberPrefix?: string
+  minQualityYieldPercent?: number
+  tokenSessionDurationMinutes?: number
+  maintenanceMode?: boolean
+  autoSyncIntervalSeconds?: number
+  enforceShiftClockInGraceMinutes?: number
+  allowOfflineTransactions?: boolean
+  currency?: string
+  timezone?: string
+  dateCalendar?: 'GREGORIAN' | 'ETHIOPIAN'
+}
+
+export interface AuditLogEntity {
+  id: string
+  businessId: string
+  actorId?: string | null
+  action: string
+  entityType: string
+  entityId: string
+  beforeData?: Record<string, unknown> | null
+  afterData?: Record<string, unknown> | null
+  reason?: string | null
+  source: 'WEB' | 'MOBILE' | 'OFFLINE_SYNC' | 'SYSTEM'
+  occurredAt: string
+  actor?: {
+    id: string
+    name: string
+    email: string
+  }
+}
+
+export interface AuditLogListResponse {
+  data: AuditLogEntity[]
+  pagination: {
+    total: number
+    page: number
+    limit: number
+    totalPages: number
+  }
+}
+
+
 
 
 

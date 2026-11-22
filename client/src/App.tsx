@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { authApi, type AuthContextResponse } from '@/lib/api'
 import { LoginForm } from '@/components/auth/LoginForm'
 import { RegisterForm } from '@/components/auth/RegisterForm'
@@ -19,6 +19,7 @@ import { SalesManagementView } from '@/components/sales/SalesManagementView'
 import { ExpensesManagementView } from '@/components/expenses/ExpensesManagementView'
 import { FinancialReportsView } from '@/components/reports/FinancialReportsView'
 import { SyncManagementView } from '@/components/sync/SyncManagementView'
+import { SystemSettingsView } from '@/components/system/SystemSettingsView'
 import { Toaster } from '@/components/ui/sonner'
 import { AppSidebar, type TabType } from '@/components/layout/AppSidebar'
 import {
@@ -27,8 +28,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar'
 import { Separator } from '@/components/ui/separator'
-import { Button } from '@/components/ui/button'
-import { Loader2, LogOut, ShieldCheck, WifiOff } from 'lucide-react'
+import { ChevronDown, History, Loader2, LogOut, ShieldCheck, Sliders, User, WifiOff } from 'lucide-react'
 import { toast } from 'sonner'
 
 export function App() {
@@ -39,6 +39,30 @@ export function App() {
   const [isOnline, setIsOnline] = useState(
     typeof navigator !== 'undefined' ? navigator.onLine : true
   )
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false)
+  const userDropdownRef = useRef<HTMLDivElement>(null)
+
+  // Close dropdown on click outside or escape
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userDropdownRef.current && !userDropdownRef.current.contains(e.target as Node)) {
+        setUserDropdownOpen(false)
+      }
+    }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setUserDropdownOpen(false)
+      }
+    }
+    if (userDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('keydown', handleKeyDown)
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [userDropdownOpen])
 
   // Listen to connectivity changes
   useEffect(() => {
@@ -191,6 +215,7 @@ export function App() {
                 {activeTab === 'roles' && 'Roles, Permissions & Security Governance'}
                 {activeTab === 'profile' && 'My Profile & Account Security'}
                 {activeTab === 'settings' && 'Bakery Business Settings'}
+                {activeTab === 'system' && 'Enterprise System Status, Operational Tweaks & Audit Trail'}
                 {activeTab === 'workspace' &&
                   (auth ? `${auth.business?.name ?? 'KD PLC'} Executive Operations Dashboard` : 'KD PLC • InjeraOS Platform')}
               </span>
@@ -204,40 +229,147 @@ export function App() {
             </span>
 
             {auth && (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setActiveTab('profile')}
-                  className={`h-8 gap-2 px-2.5 rounded-full text-xs transition-colors cursor-pointer border shadow-2xs ${
-                    activeTab === 'profile'
-                      ? 'border-forest/50 bg-forest/10 text-forest dark:border-oat/40 dark:bg-oat/15 dark:text-oat'
-                      : 'border-border/80 bg-background hover:bg-muted/60 text-foreground'
+              <div className="relative" ref={userDropdownRef}>
+                {/* Trigger Button: User Avatar + Name + Role Badge + Chevron */}
+                <button
+                  type="button"
+                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                  className={`flex h-9 items-center gap-2 rounded-full border px-2.5 text-xs transition-all cursor-pointer shadow-2xs select-none ${
+                    userDropdownOpen
+                      ? 'border-forest bg-forest/10 text-forest dark:border-oat/50 dark:bg-oat/15 dark:text-oat'
+                      : 'border-border/80 bg-background hover:bg-muted/70 text-foreground'
                   }`}
-                  title="My Profile & Security Settings"
+                  aria-expanded={userDropdownOpen}
+                  aria-haspopup="true"
                 >
-                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-forest text-oat text-[10px] font-bold">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-forest text-oat text-[11px] font-bold shadow-xs">
                     {auth.user.name ? auth.user.name[0].toUpperCase() : 'U'}
                   </div>
-                  <span className="font-semibold hidden sm:inline max-w-[130px] truncate">
+                  <span className="font-semibold hidden sm:inline max-w-[120px] truncate text-foreground">
                     {auth.user.name || auth.user.email}
                   </span>
-                  <span className="rounded bg-forest/10 px-1.5 py-0.2 text-[9px] font-bold text-forest dark:bg-oat/15 dark:text-oat uppercase">
+                  <span className="rounded bg-forest/10 px-1.5 py-0.5 text-[9px] font-bold text-forest dark:bg-oat/15 dark:text-oat uppercase tracking-wide">
                     {auth.role ?? 'MEMBER'}
                   </span>
-                </Button>
+                  <ChevronDown
+                    className={`h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 ${
+                      userDropdownOpen ? 'rotate-180 text-foreground' : ''
+                    }`}
+                  />
+                </button>
 
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleLogout}
-                  className="h-8 px-2.5 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive gap-1.5 cursor-pointer rounded-full"
-                  title="Sign out of InjeraOS"
-                >
-                  <LogOut className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline font-medium">Sign Out</span>
-                </Button>
-              </>
+                {/* Dropdown Menu Panel */}
+                {userDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-64 rounded-xl border border-border/80 bg-popover/98 p-1.5 text-popover-foreground shadow-lg backdrop-blur-md z-50 animate-in fade-in-0 zoom-in-95">
+                    {/* User Profile Header Card */}
+                    <div className="px-3 py-2.5 border-b border-border/60 mb-1">
+                      <div className="flex items-center gap-2.5">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-forest text-oat text-sm font-bold shadow-xs shrink-0">
+                          {auth.user.name ? auth.user.name[0].toUpperCase() : 'U'}
+                        </div>
+                        <div className="overflow-hidden">
+                          <p className="font-semibold text-xs text-foreground truncate">
+                            {auth.user.name || 'KD PLC User'}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground truncate font-mono">
+                            {auth.user.email}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-2 flex items-center justify-between text-[10px] text-muted-foreground pt-1.5 border-t border-border/40">
+                        <span className="truncate max-w-[120px] font-medium text-foreground">
+                          {auth.business?.name ?? 'KD PLC'}
+                        </span>
+                        <span className="rounded bg-forest/10 px-1.5 py-0.2 font-bold text-forest dark:bg-oat/15 dark:text-oat uppercase">
+                          {auth.role ?? 'MEMBER'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Navigation Actions */}
+                    <div className="space-y-0.5 text-xs">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveTab('profile')
+                          setUserDropdownOpen(false)
+                        }}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-colors cursor-pointer ${
+                          activeTab === 'profile'
+                            ? 'bg-forest/10 text-forest font-semibold dark:bg-oat/15 dark:text-oat'
+                            : 'hover:bg-muted text-foreground'
+                        }`}
+                      >
+                        <User className="h-4 w-4 text-forest dark:text-oat shrink-0" />
+                        <span>My Profile & Account</span>
+                      </button>
+
+                      {(auth.role === 'OWNER' || auth.role === 'ADMIN') && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveTab('roles')
+                              setUserDropdownOpen(false)
+                            }}
+                            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-colors cursor-pointer ${
+                              activeTab === 'roles'
+                                ? 'bg-forest/10 text-forest font-semibold dark:bg-oat/15 dark:text-oat'
+                                : 'hover:bg-muted text-foreground'
+                            }`}
+                          >
+                            <ShieldCheck className="h-4 w-4 text-emerald-500 shrink-0" />
+                            <span>Roles & Permissions</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveTab('system')
+                              setUserDropdownOpen(false)
+                            }}
+                            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-colors cursor-pointer ${
+                              activeTab === 'system'
+                                ? 'bg-forest/10 text-forest font-semibold dark:bg-oat/15 dark:text-oat'
+                                : 'hover:bg-muted text-foreground'
+                            }`}
+                          >
+                            <Sliders className="h-4 w-4 text-forest dark:text-oat shrink-0" />
+                            <span>System Settings & Status</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveTab('system')
+                              setUserDropdownOpen(false)
+                            }}
+                            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-colors hover:bg-muted text-foreground cursor-pointer"
+                          >
+                            <History className="h-4 w-4 text-forest dark:text-oat shrink-0" />
+                            <span>Audit Trail</span>
+                          </button>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Sign Out Action */}
+                    <div className="border-t border-border/60 mt-1 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUserDropdownOpen(false)
+                          handleLogout()
+                        }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left text-destructive hover:bg-destructive/10 transition-colors cursor-pointer font-medium text-xs"
+                      >
+                        <LogOut className="h-4 w-4 shrink-0" />
+                        <span>Sign Out of InjeraOS</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </header>
@@ -292,6 +424,8 @@ export function App() {
             <UserProfileView auth={auth} onLogout={handleLogout} />
           ) : activeTab === 'settings' ? (
             <BusinessSettingsView />
+          ) : activeTab === 'system' ? (
+            <SystemSettingsView />
           ) : (
             <DemoDashboard
               auth={auth}

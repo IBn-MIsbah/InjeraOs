@@ -82,6 +82,11 @@ import type {
   SyncBatchResult,
   SyncStatus,
   ConflictStatus,
+  SystemStatusResult,
+  SystemSettingsEntity,
+  UpdateSystemSettingsInput,
+  AuditLogEntity,
+  AuditLogListResponse,
 } from '@/types'
 import type {
   LoginInput,
@@ -1516,6 +1521,53 @@ export const syncApi = {
     return res.data
   },
 }
+
+export const systemApi = {
+  async getStatus() {
+    const res = await api.get<{ data: SystemStatusResult }>('/system/status')
+    return res.data.data
+  },
+
+  async getSettings() {
+    const res = await api.get<{ data: SystemSettingsEntity }>('/system/settings')
+    return res.data.data
+  },
+
+  async updateSettings(data: UpdateSystemSettingsInput) {
+    const res = await api.patch<{ data: SystemSettingsEntity; message: string }>(
+      '/system/settings',
+      data
+    )
+    return res.data
+  },
+}
+
+export const auditApi = {
+  async getLogs(params?: {
+    page?: number
+    limit?: number
+    action?: string
+    entityType?: string
+    source?: string
+  }) {
+    const res = await api.get<AuditLogListResponse>('/audit-logs', { params })
+    return res.data
+  },
+
+  async createLog(data: {
+    action: string
+    entityType: string
+    entityId?: string
+    beforeData?: Record<string, unknown>
+    afterData?: Record<string, unknown>
+    reason?: string
+    source?: 'WEB' | 'MOBILE' | 'OFFLINE_SYNC' | 'SYSTEM'
+  }) {
+    const res = await api.post<{ data: AuditLogEntity }>('/audit-logs', data)
+    return res.data.data
+  },
+}
+
 
 
 

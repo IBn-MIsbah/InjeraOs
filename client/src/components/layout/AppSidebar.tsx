@@ -28,6 +28,7 @@ import {
   RefreshCw,
   ShieldCheck,
   ShoppingCart,
+  Sliders,
   Store,
   TrendingUp,
   UserCheck,
@@ -54,6 +55,7 @@ export type TabType =
   | 'roles'
   | 'profile'
   | 'settings'
+  | 'system'
 
 interface AppSidebarProps {
   activeTab: TabType
@@ -331,6 +333,18 @@ export function AppSidebar({
                     >
                       <Building2 className="h-4 w-4" />
                       <span>Business Settings</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={activeTab === 'system'}
+                      onClick={() => onSelectTab('system')}
+                      tooltip="System Settings, Status & Audit Trail"
+                      className="cursor-pointer gap-2.5 text-xs"
+                    >
+                      <Sliders className="h-4 w-4 text-forest dark:text-oat" />
+                      <span>System & Audit</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>

@@ -2,6 +2,7 @@ import { Router, type Request, type Response, type Router as ExpressRouter } fro
 import { prisma } from '../../lib/prisma.js'
 import { validateBody, validateParams } from '../../middleware/validate-request.js'
 import { authenticate, requireRole } from '../auth/index.js'
+import { getSystemSettings } from '../system/system.service.js'
 import {
   clockInSchema,
   clockOutSchema,
@@ -207,9 +208,11 @@ workforceRouter.post(
     // Determine or auto-generate employeeNumber
     let assignedEmployeeNumber = input.employeeNumber?.trim()
     if (!assignedEmployeeNumber) {
+      const settings = await getSystemSettings(businessId)
+      const prefix = settings.employeeNumberPrefix || 'EMP'
       const count = await prisma.employee.count({ where: { businessId } })
       let candidateNum = count + 1
-      let candidate = `EMP-${String(candidateNum).padStart(4, '0')}`
+      let candidate = `${prefix}-${String(candidateNum).padStart(4, '0')}`
       while (
         await prisma.employee.findUnique({
           where: {
@@ -221,7 +224,7 @@ workforceRouter.post(
         })
       ) {
         candidateNum++
-        candidate = `EMP-${String(candidateNum).padStart(4, '0')}`
+        candidate = `${prefix}-${String(candidateNum).padStart(4, '0')}`
       }
       assignedEmployeeNumber = candidate
     } else {

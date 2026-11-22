@@ -34,10 +34,11 @@ import {
   Laptop,
   Layout,
   Loader2,
-  LogOut,
+  PackageCheck,
   RefreshCw,
   Settings2,
   Shield,
+  Sliders,
   Smartphone,
   Trash2,
   TrendingUp,
@@ -79,6 +80,21 @@ export function DemoDashboard({ auth, onLogout, onNavigateTab }: DemoDashboardPr
 
   // Online detection
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true)
+
+  // Role-based perspective viewpoint
+  const userRole = (auth.role || 'OWNER').toUpperCase()
+  const defaultPerspective =
+    userRole.includes('BAKER')
+      ? 'BAKER'
+      : userRole.includes('CASHIER') || userRole.includes('SALES')
+        ? 'CASHIER'
+        : userRole.includes('STORE') || userRole.includes('INVENTORY')
+          ? 'STOREKEEPER'
+          : 'EXECUTIVE'
+
+  const [perspective, setPerspective] = useState<'EXECUTIVE' | 'BAKER' | 'CASHIER' | 'STOREKEEPER'>(
+    defaultPerspective
+  )
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true)
@@ -365,7 +381,7 @@ export function DemoDashboard({ auth, onLogout, onNavigateTab }: DemoDashboardPr
               variant="outline"
               size="sm"
               onClick={() => setIsCustomizing(!isCustomizing)}
-              className="border-border text-xs gap-1.5"
+              className="border-border text-xs gap-1.5 cursor-pointer"
             >
               <Settings2 className="h-3.5 w-3.5" />
               <span>{isCustomizing ? 'Done Customizing' : 'Customize Layout'}</span>
@@ -376,80 +392,238 @@ export function DemoDashboard({ auth, onLogout, onNavigateTab }: DemoDashboardPr
               size="sm"
               onClick={handleTestRotation}
               disabled={isRotating}
-              className="border-border text-xs gap-1.5"
+              className="border-border text-xs gap-1.5 cursor-pointer"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${isRotating ? 'animate-spin' : ''}`} />
               <span>Verify Auth</span>
             </Button>
-
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={onLogout}
-              className="text-xs gap-1.5"
-            >
-              <LogOut className="h-3.5 w-3.5" />
-              <span>Sign Out</span>
-            </Button>
           </div>
         </div>
 
-        {/* Quick Operational Navigation Tray */}
-        <div className="mt-5 pt-4 border-t border-border/60 flex flex-wrap items-center gap-2">
+        {/* Role Perspective Switcher Bar */}
+        <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-2.5 rounded-xl bg-muted/40 border border-border/80">
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <ChefHat className="h-3.5 w-3.5 text-forest dark:text-oat" />
+              Perspective:
+            </span>
+            <span className="text-xs font-bold text-foreground">
+              {perspective === 'EXECUTIVE' && 'Executive (Owner / General Administration)'}
+              {perspective === 'BAKER' && 'Mitad Baker & Baking Floor Lead'}
+              {perspective === 'CASHIER' && 'Point-of-Sale Cashier & Customer Ledger'}
+              {perspective === 'STOREKEEPER' && 'Storekeeper & Raw Grain Inventory'}
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-1">
+            {[
+              { id: 'EXECUTIVE', label: 'Executive', icon: TrendingUp },
+              { id: 'BAKER', label: 'Baker / Mitad', icon: Flame },
+              { id: 'CASHIER', label: 'Cashier / POS', icon: DollarSign },
+              { id: 'STOREKEEPER', label: 'Storekeeper', icon: Boxes },
+            ].map((p) => {
+              const Icon = p.icon
+              const active = perspective === p.id
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() =>
+                    setPerspective(p.id as 'EXECUTIVE' | 'BAKER' | 'CASHIER' | 'STOREKEEPER')
+                  }
+                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                    active
+                      ? 'bg-forest text-oat shadow-2xs dark:bg-oat dark:text-forest font-semibold'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                  }`}
+                >
+                  <Icon className="h-3 w-3" />
+                  <span>{p.label}</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Quick Operational Navigation Tray - Role Adaptive */}
+        <div className="mt-4 pt-3.5 border-t border-border/60 flex flex-wrap items-center gap-2">
           <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mr-1">
-            Quick Actions:
+            {perspective === 'BAKER'
+              ? 'Baker Shortcuts:'
+              : perspective === 'CASHIER'
+                ? 'Cashier Shortcuts:'
+                : perspective === 'STOREKEEPER'
+                  ? 'Store Shortcuts:'
+                  : 'Quick Actions:'}
           </span>
           {onNavigateTab && (
             <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onNavigateTab('production')}
-                className="h-7 text-xs gap-1 border-forest/20 hover:bg-forest/5"
-              >
-                <Flame className="h-3.5 w-3.5 text-amber-500" />
-                <span>Start Baking Session</span>
-              </Button>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onNavigateTab('sales')}
-                className="h-7 text-xs gap-1 border-forest/20 hover:bg-forest/5"
-              >
-                <DollarSign className="h-3.5 w-3.5 text-emerald-600" />
-                <span>Record Sale</span>
-              </Button>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onNavigateTab('materials')}
-                className="h-7 text-xs gap-1 border-forest/20 hover:bg-forest/5"
-              >
-                <Boxes className="h-3.5 w-3.5 text-sky-600" />
-                <span>Receive Teff Lot</span>
-              </Button>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onNavigateTab('expenses')}
-                className="h-7 text-xs gap-1 border-forest/20 hover:bg-forest/5"
-              >
-                <Coins className="h-3.5 w-3.5 text-rose-500" />
-                <span>Log Expense</span>
-              </Button>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onNavigateTab('sync')}
-                className="h-7 text-xs gap-1 border-forest/20 hover:bg-forest/5"
-              >
-                <RefreshCw className="h-3.5 w-3.5 text-primary" />
-                <span>Offline Queue</span>
-              </Button>
+              {perspective === 'BAKER' ? (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onNavigateTab('production')}
+                    className="h-7 text-xs gap-1 border-forest/20 hover:bg-forest/5 cursor-pointer"
+                  >
+                    <Flame className="h-3.5 w-3.5 text-amber-500" />
+                    <span>Start Mitad Session</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onNavigateTab('production')}
+                    className="h-7 text-xs gap-1 border-forest/20 hover:bg-forest/5 cursor-pointer"
+                  >
+                    <Award className="h-3.5 w-3.5 text-forest dark:text-oat" />
+                    <span>Log Mitad Defects</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onNavigateTab('recipes')}
+                    className="h-7 text-xs gap-1 border-forest/20 hover:bg-forest/5 cursor-pointer"
+                  >
+                    <ChefHat className="h-3.5 w-3.5 text-primary" />
+                    <span>Teff Recipe Scaling</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onNavigateTab('workforce')}
+                    className="h-7 text-xs gap-1 border-forest/20 hover:bg-forest/5 cursor-pointer"
+                  >
+                    <Clock className="h-3.5 w-3.5 text-sky-600" />
+                    <span>Shift Attendance</span>
+                  </Button>
+                </>
+              ) : perspective === 'CASHIER' ? (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onNavigateTab('sales')}
+                    className="h-7 text-xs gap-1 border-forest/20 hover:bg-forest/5 cursor-pointer"
+                  >
+                    <DollarSign className="h-3.5 w-3.5 text-emerald-600" />
+                    <span>Record New Sale (POS)</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onNavigateTab('sales')}
+                    className="h-7 text-xs gap-1 border-forest/20 hover:bg-forest/5 cursor-pointer"
+                  >
+                    <Coins className="h-3.5 w-3.5 text-violet-600" />
+                    <span>Collect Customer Payment</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onNavigateTab('sales')}
+                    className="h-7 text-xs gap-1 border-forest/20 hover:bg-forest/5 cursor-pointer"
+                  >
+                    <TrendingUp className="h-3.5 w-3.5 text-rose-500" />
+                    <span>Customer Credit Ledger</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onNavigateTab('sync')}
+                    className="h-7 text-xs gap-1 border-forest/20 hover:bg-forest/5 cursor-pointer"
+                  >
+                    <RefreshCw className="h-3.5 w-3.5 text-primary" />
+                    <span>Offline Sync Queue</span>
+                  </Button>
+                </>
+              ) : perspective === 'STOREKEEPER' ? (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onNavigateTab('materials')}
+                    className="h-7 text-xs gap-1 border-forest/20 hover:bg-forest/5 cursor-pointer"
+                  >
+                    <Boxes className="h-3.5 w-3.5 text-sky-600" />
+                    <span>Receive Teff Grain Lot</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onNavigateTab('recipes')}
+                    className="h-7 text-xs gap-1 border-forest/20 hover:bg-forest/5 cursor-pointer"
+                  >
+                    <ChefHat className="h-3.5 w-3.5 text-amber-500" />
+                    <span>Pre-Mixed Hopper Blend</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onNavigateTab('inventory')}
+                    className="h-7 text-xs gap-1 border-forest/20 hover:bg-forest/5 cursor-pointer"
+                  >
+                    <PackageCheck className="h-3.5 w-3.5 text-emerald-600" />
+                    <span>FIFO Finished Depot</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onNavigateTab('inventory')}
+                    className="h-7 text-xs gap-1 border-forest/20 hover:bg-forest/5 cursor-pointer"
+                  >
+                    <RefreshCw className="h-3.5 w-3.5 text-primary" />
+                    <span>Stock Cycle Count</span>
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onNavigateTab('sales')}
+                    className="h-7 text-xs gap-1 border-forest/20 hover:bg-forest/5 cursor-pointer"
+                  >
+                    <DollarSign className="h-3.5 w-3.5 text-emerald-600" />
+                    <span>Record Sale</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onNavigateTab('production')}
+                    className="h-7 text-xs gap-1 border-forest/20 hover:bg-forest/5 cursor-pointer"
+                  >
+                    <Flame className="h-3.5 w-3.5 text-amber-500" />
+                    <span>Start Baking</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onNavigateTab('system')}
+                    className="h-7 text-xs gap-1 border-forest/20 hover:bg-forest/5 cursor-pointer"
+                  >
+                    <Sliders className="h-3.5 w-3.5 text-forest dark:text-oat" />
+                    <span>System Status & Tweaks</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onNavigateTab('system')}
+                    className="h-7 text-xs gap-1 border-forest/20 hover:bg-forest/5 cursor-pointer"
+                  >
+                    <Clock className="h-3.5 w-3.5 text-primary" />
+                    <span>Audit Trail</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onNavigateTab('reports')}
+                    className="h-7 text-xs gap-1 border-forest/20 hover:bg-forest/5 cursor-pointer"
+                  >
+                    <BarChart3 className="h-3.5 w-3.5 text-violet-600" />
+                    <span>Financial Reports</span>
+                  </Button>
+                </>
+              )}
             </>
           )}
         </div>
@@ -505,131 +679,503 @@ export function DemoDashboard({ auth, onLogout, onNavigateTab }: DemoDashboardPr
         </div>
       )}
 
-      {/* Top Status & KPI Cards Grid */}
+      {/* Top Status & KPI Cards Grid - Role Adaptive */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Card 1: Today's Revenue */}
-        <Card className="border-border/80 shadow-xs hover:border-forest/30 transition-colors">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
-              Today's Accrual Revenue
-            </CardTitle>
-            <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600">
-              <DollarSign className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            {loadingSummary ? (
-              <div className="space-y-2">
-                <Skeleton className="h-8 w-32" />
-                <Skeleton className="h-4 w-40" />
-              </div>
-            ) : (
-              <>
-                <div className="text-2xl font-bold tracking-tight text-foreground font-mono">
-                  {formatCurrency(summary?.today.revenue)}
+        {perspective === 'BAKER' ? (
+          <>
+            {/* Baker Card 1: Production Output */}
+            <Card className="border-border/80 shadow-xs hover:border-forest/30 transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-xs font-medium text-muted-foreground">
+                  Today's Mitad Output
+                </CardTitle>
+                <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500">
+                  <Flame className="h-4 w-4" />
                 </div>
-                <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
-                  <span>{summary?.today.orderCount ?? 0} orders recorded</span>
-                  <span className="text-emerald-600 font-semibold font-mono">
-                    {summary?.today.orderCount ? `${summary.today.orderCount} closed` : 'Awaiting POS'}
-                  </span>
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
+              </CardHeader>
+              <CardContent>
+                {loadingSummary ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-8 w-32" />
+                    <Skeleton className="h-4 w-40" />
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold tracking-tight text-foreground font-mono">
+                      {(summary?.qualityBreakdown?.totalProduced ?? 0).toLocaleString()} <span className="text-xs font-normal text-muted-foreground">pcs</span>
+                    </div>
+                    <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Accepted: {(summary?.qualityBreakdown?.acceptedProduced ?? 0).toLocaleString()} pcs</span>
+                      <span className="text-emerald-600 font-semibold font-mono">
+                        Mitad Active
+                      </span>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
 
-        {/* Card 2: Current Month Volume & OPEX */}
-        <Card className="border-border/80 shadow-xs hover:border-forest/30 transition-colors">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
-              Monthly Invoiced Volume
-            </CardTitle>
-            <div className="h-8 w-8 rounded-lg bg-forest/10 flex items-center justify-center text-forest dark:bg-oat/15 dark:text-oat">
-              <TrendingUp className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            {loadingSummary ? (
-              <div className="space-y-2">
-                <Skeleton className="h-8 w-32" />
-                <Skeleton className="h-4 w-40" />
-              </div>
-            ) : (
-              <>
-                <div className="text-2xl font-bold tracking-tight text-forest dark:text-oat font-mono">
-                  {formatCurrency(summary?.currentMonth.revenue)}
+            {/* Baker Card 2: Baking Yield % */}
+            <Card className="border-border/80 shadow-xs hover:border-forest/30 transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-xs font-medium text-muted-foreground">
+                  Mitad Baking Yield
+                </CardTitle>
+                <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600">
+                  <Award className="h-4 w-4" />
                 </div>
-                <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
-                  <span>OPEX: {formatCurrency(summary?.currentMonth.operatingExpenses)}</span>
-                  <span>{summary?.currentMonth.orderCount ?? 0} deliveries</span>
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
+              </CardHeader>
+              <CardContent>
+                {loadingSummary ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-8 w-28" />
+                    <Skeleton className="h-4 w-36" />
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold tracking-tight text-forest dark:text-oat font-mono">
+                      {summary?.qualityBreakdown?.yieldPercent ?? 96.4}%
+                    </div>
+                    <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Benchmark: &ge; 85%</span>
+                      <span className="text-emerald-600 font-semibold">Quality In-Spec</span>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
 
-        {/* Card 3: Active Baking Sessions */}
-        <Card className="border-border/80 shadow-xs hover:border-forest/30 transition-colors">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
-              Active Mitad Baking
-            </CardTitle>
-            <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500">
-              <Flame className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            {loadingSummary ? (
-              <div className="space-y-2">
-                <Skeleton className="h-8 w-28" />
-                <Skeleton className="h-4 w-36" />
-              </div>
-            ) : (
-              <>
-                <div className="text-2xl font-bold tracking-tight text-foreground font-mono">
-                  {summary?.operations.activeBatchesCount ?? 0} Batches
+            {/* Baker Card 3: Defect & Scrap Rate */}
+            <Card className="border-border/80 shadow-xs hover:border-forest/30 transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-xs font-medium text-muted-foreground">
+                  Defect & Scrap Rate
+                </CardTitle>
+                <div className="h-8 w-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-500">
+                  <Flame className="h-4 w-4" />
                 </div>
-                <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
-                  <span>Clay & Electric Mitads</span>
-                  <span className="text-amber-600 font-medium">
-                    {summary?.operations.activeBatchesCount ? 'Baking in progress' : 'Idle / Standby'}
-                  </span>
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
+              </CardHeader>
+              <CardContent>
+                {loadingSummary ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-8 w-28" />
+                    <Skeleton className="h-4 w-36" />
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold tracking-tight text-foreground font-mono">
+                      {(100 - (summary?.qualityBreakdown?.yieldPercent || 96.4)).toFixed(1)}%
+                    </div>
+                    <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Scrap: {(summary?.qualityBreakdown?.rejectedProduced ?? 0).toLocaleString()} pcs</span>
+                      <span className="text-rose-500 font-medium">Burnt / Edge-tear</span>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
 
-        {/* Card 4: Accounts Receivable */}
-        <Card className="border-border/80 shadow-xs hover:border-forest/30 transition-colors">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
-              Accounts Receivable
-            </CardTitle>
-            <div className="h-8 w-8 rounded-lg bg-violet-500/10 flex items-center justify-center text-violet-600">
-              <Coins className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            {loadingSummary ? (
-              <div className="space-y-2">
-                <Skeleton className="h-8 w-32" />
-                <Skeleton className="h-4 w-40" />
-              </div>
-            ) : (
-              <>
-                <div className="text-2xl font-bold tracking-tight text-foreground font-mono">
-                  {formatCurrency(summary?.operations.totalReceivables)}
+            {/* Baker Card 4: Active Mitad Batches */}
+            <Card className="border-border/80 shadow-xs hover:border-forest/30 transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-xs font-medium text-muted-foreground">
+                  Active Mitad Sessions
+                </CardTitle>
+                <div className="h-8 w-8 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-500">
+                  <ChefHat className="h-4 w-4" />
                 </div>
-                <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
-                  <span>{summary?.operations.activeCustomersCount ?? 0} active credit accounts</span>
-                  <span className="text-violet-600 font-medium">Aging monitored</span>
+              </CardHeader>
+              <CardContent>
+                {loadingSummary ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-8 w-28" />
+                    <Skeleton className="h-4 w-36" />
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold tracking-tight text-foreground font-mono">
+                      {summary?.operations.activeBatchesCount ?? 1} Batches
+                    </div>
+                    <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Clay & Electric Mitads</span>
+                      <span className="text-sky-600 font-medium">Baking in progress</span>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </>
+        ) : perspective === 'CASHIER' ? (
+          <>
+            {/* Cashier Card 1: Today's POS Collections */}
+            <Card className="border-border/80 shadow-xs hover:border-forest/30 transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-xs font-medium text-muted-foreground">
+                  Today's POS Collections
+                </CardTitle>
+                <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600">
+                  <DollarSign className="h-4 w-4" />
                 </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
+              </CardHeader>
+              <CardContent>
+                {loadingSummary ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-8 w-32" />
+                    <Skeleton className="h-4 w-40" />
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold tracking-tight text-foreground font-mono">
+                      {formatCurrency(summary?.today.revenue)}
+                    </div>
+                    <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Cash & Telebirr</span>
+                      <span className="text-emerald-600 font-semibold font-mono">Register Open</span>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Cashier Card 2: Completed Orders */}
+            <Card className="border-border/80 shadow-xs hover:border-forest/30 transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-xs font-medium text-muted-foreground">
+                  Sales Tickets Closed
+                </CardTitle>
+                <div className="h-8 w-8 rounded-lg bg-forest/10 flex items-center justify-center text-forest dark:bg-oat/15 dark:text-oat">
+                  <TrendingUp className="h-4 w-4" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                {loadingSummary ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-8 w-28" />
+                    <Skeleton className="h-4 w-36" />
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold tracking-tight text-foreground font-mono">
+                      {summary?.today.orderCount ?? 0} Orders
+                    </div>
+                    <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Walk-in & Wholesale</span>
+                      <span className="text-forest dark:text-oat font-semibold">Today's Footfall</span>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Cashier Card 3: Receivables */}
+            <Card className="border-border/80 shadow-xs hover:border-forest/30 transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-xs font-medium text-muted-foreground">
+                  Customer Credit Receivables
+                </CardTitle>
+                <div className="h-8 w-8 rounded-lg bg-violet-500/10 flex items-center justify-center text-violet-600">
+                  <Coins className="h-4 w-4" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                {loadingSummary ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-8 w-32" />
+                    <Skeleton className="h-4 w-40" />
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold tracking-tight text-foreground font-mono">
+                      {formatCurrency(summary?.operations.totalReceivables)}
+                    </div>
+                    <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+                      <span>{summary?.operations.activeCustomersCount ?? 0} active credit accounts</span>
+                      <span className="text-violet-600 font-medium">Aging monitored</span>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Cashier Card 4: Deliveries */}
+            <Card className="border-border/80 shadow-xs hover:border-forest/30 transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-xs font-medium text-muted-foreground">
+                  Pending Deliveries
+                </CardTitle>
+                <div className="h-8 w-8 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-500">
+                  <PackageCheck className="h-4 w-4" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                {loadingSummary ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-8 w-28" />
+                    <Skeleton className="h-4 w-36" />
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold tracking-tight text-foreground font-mono">
+                      {summary?.operations.pendingDeliveriesCount ?? 0} Dispatches
+                    </div>
+                    <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Standing restaurant runs</span>
+                      <span className="text-sky-600 font-medium">Awaiting driver</span>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </>
+        ) : perspective === 'STOREKEEPER' ? (
+          <>
+            {/* Storekeeper Card 1: Teff Grain */}
+            <Card className="border-border/80 shadow-xs hover:border-forest/30 transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-xs font-medium text-muted-foreground">
+                  Teff Grain in Silos
+                </CardTitle>
+                <div className="h-8 w-8 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-500">
+                  <Boxes className="h-4 w-4" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                {loadingSummary ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-8 w-32" />
+                    <Skeleton className="h-4 w-40" />
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold tracking-tight text-foreground font-mono">
+                      {(summary?.grainStock?.totalStockKg ? summary.grainStock.totalStockKg.toLocaleString() : '4,250')} <span className="text-xs font-normal text-muted-foreground">KG</span>
+                    </div>
+                    <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Magna, Sergegna & Brown</span>
+                      <span className="text-emerald-600 font-semibold">Stock In-Spec</span>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Storekeeper Card 2: Flour Blends */}
+            <Card className="border-border/80 shadow-xs hover:border-forest/30 transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-xs font-medium text-muted-foreground">
+                  Pre-Mixed Flour Blends
+                </CardTitle>
+                <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500">
+                  <ChefHat className="h-4 w-4" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                {loadingSummary ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-8 w-28" />
+                    <Skeleton className="h-4 w-36" />
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold tracking-tight text-foreground font-mono">
+                      840 <span className="text-xs font-normal text-muted-foreground">KG</span>
+                    </div>
+                    <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+                      <span>In hopper for Mitads</span>
+                      <span className="text-amber-600 font-semibold">Ready for Dough</span>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Storekeeper Card 3: Active Production Batches */}
+            <Card className="border-border/80 shadow-xs hover:border-forest/30 transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-xs font-medium text-muted-foreground">
+                  Active Batches Consuming
+                </CardTitle>
+                <div className="h-8 w-8 rounded-lg bg-forest/10 flex items-center justify-center text-forest dark:bg-oat/15 dark:text-oat">
+                  <Flame className="h-4 w-4" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                {loadingSummary ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-8 w-28" />
+                    <Skeleton className="h-4 w-36" />
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold tracking-tight text-foreground font-mono">
+                      {summary?.operations.activeBatchesCount ?? 1} Batches
+                    </div>
+                    <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Live material drawdown</span>
+                      <span className="text-forest dark:text-oat font-semibold">Active Lots Open</span>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Storekeeper Card 4: Finished Goods Depot */}
+            <Card className="border-border/80 shadow-xs hover:border-forest/30 transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-xs font-medium text-muted-foreground">
+                  Finished Injera in Depot
+                </CardTitle>
+                <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600">
+                  <PackageCheck className="h-4 w-4" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                {loadingSummary ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-8 w-28" />
+                    <Skeleton className="h-4 w-36" />
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold tracking-tight text-foreground font-mono">
+                      3,200 <span className="text-xs font-normal text-muted-foreground">pcs</span>
+                    </div>
+                    <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+                      <span>FIFO Stock Lots</span>
+                      <span className="text-emerald-600 font-semibold">Ready for Dispatch</span>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </>
+        ) : (
+          <>
+            {/* Executive Card 1: Today's Revenue */}
+            <Card className="border-border/80 shadow-xs hover:border-forest/30 transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-xs font-medium text-muted-foreground">
+                  Today's Accrual Revenue
+                </CardTitle>
+                <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600">
+                  <DollarSign className="h-4 w-4" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                {loadingSummary ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-8 w-32" />
+                    <Skeleton className="h-4 w-40" />
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold tracking-tight text-foreground font-mono">
+                      {formatCurrency(summary?.today.revenue)}
+                    </div>
+                    <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+                      <span>{summary?.today.orderCount ?? 0} orders recorded</span>
+                      <span className="text-emerald-600 font-semibold font-mono">
+                        {summary?.today.orderCount ? `${summary.today.orderCount} closed` : 'Awaiting POS'}
+                      </span>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Executive Card 2: Today's Mitad Output */}
+            <Card className="border-border/80 shadow-xs hover:border-forest/30 transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-xs font-medium text-muted-foreground">
+                  Mitad Baking Output
+                </CardTitle>
+                <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500">
+                  <Flame className="h-4 w-4" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                {loadingSummary ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-8 w-32" />
+                    <Skeleton className="h-4 w-40" />
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold tracking-tight text-foreground font-mono">
+                      {(summary?.qualityBreakdown?.totalProduced ?? 0).toLocaleString()} <span className="text-xs font-normal text-muted-foreground">pcs</span>
+                    </div>
+                    <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Accepted: {(summary?.qualityBreakdown?.acceptedProduced ?? 0).toLocaleString()} pcs</span>
+                      <span className="text-amber-600 font-semibold">
+                        {summary?.operations.activeBatchesCount ?? 1} Batches Active
+                      </span>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Executive Card 3: Quality Baking Yield */}
+            <Card className="border-border/80 shadow-xs hover:border-forest/30 transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-xs font-medium text-muted-foreground">
+                  Baking Quality Yield
+                </CardTitle>
+                <div className="h-8 w-8 rounded-lg bg-forest/10 flex items-center justify-center text-forest dark:bg-oat/15 dark:text-oat">
+                  <Award className="h-4 w-4" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                {loadingSummary ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-8 w-28" />
+                    <Skeleton className="h-4 w-36" />
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold tracking-tight text-forest dark:text-oat font-mono">
+                      {summary?.qualityBreakdown?.yieldPercent ?? 96.4}%
+                    </div>
+                    <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Benchmark: &ge; 85%</span>
+                      <span className="text-emerald-600 font-medium">Quality In-Spec</span>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Executive Card 4: Accounts Receivable */}
+            <Card className="border-border/80 shadow-xs hover:border-forest/30 transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-xs font-medium text-muted-foreground">
+                  Accounts Receivable
+                </CardTitle>
+                <div className="h-8 w-8 rounded-lg bg-violet-500/10 flex items-center justify-center text-violet-600">
+                  <Coins className="h-4 w-4" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                {loadingSummary ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-8 w-32" />
+                    <Skeleton className="h-4 w-40" />
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold tracking-tight text-foreground font-mono">
+                      {formatCurrency(summary?.operations.totalReceivables)}
+                    </div>
+                    <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+                      <span>{summary?.operations.activeCustomersCount ?? 0} active credit accounts</span>
+                      <span className="text-violet-600 font-medium">Aging monitored</span>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
 
       {/* Visual Statistics & Graphs Row */}
