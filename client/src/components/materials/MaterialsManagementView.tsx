@@ -20,6 +20,7 @@ import {
   createVarietySchema,
   createSupplierSchema,
   createPurchaseSchema,
+  createUnitSchema,
   adjustLotSchema,
   paymentStatusOptions,
   lotAdjustmentTypeOptions,
@@ -28,8 +29,10 @@ import {
   type CreateVarietyInput,
   type CreateSupplierInput,
   type CreatePurchaseInput,
+  type CreateUnitInput,
   type AdjustLotInput,
 } from '@/schemas/materials.schema'
+import { Switch } from '@/components/ui/switch'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -90,6 +93,7 @@ export function MaterialsManagementView() {
 
   // Dialog controls
   const [isCatOpen, setIsCatOpen] = useState(false)
+  const [isUnitOpen, setIsUnitOpen] = useState(false)
   const [isMatOpen, setIsMatOpen] = useState(false)
   const [isVarietyOpen, setIsVarietyOpen] = useState(false)
   const [selectedMaterialForVariety, setSelectedMaterialForVariety] = useState<MaterialEntity | null>(null)
@@ -107,6 +111,14 @@ export function MaterialsManagementView() {
     defaultValues: { name: '', description: '' },
     mode: 'onTouched',
   })
+
+  // Unit of Measure Form
+  const unitForm = useForm<CreateUnitInput>({
+    resolver: zodResolver(createUnitSchema),
+    defaultValues: { name: '', symbol: '', dimension: 'MASS', isBaseUnit: false },
+    mode: 'onTouched',
+  })
+  const unitIsBaseUnit = useWatch({ control: unitForm.control, name: 'isBaseUnit' })
 
   // Material Form
   const matForm = useForm<CreateMaterialInput>({
@@ -274,6 +286,21 @@ export function MaterialsManagementView() {
     } catch (err: unknown) {
       console.error('Failed to create category:', err)
       toast.error(extractErrorMessage(err, 'Failed to create category'))
+    }
+  }
+
+  const onUnitSubmit = async (data: CreateUnitInput) => {
+    try {
+      const created = await materialsApi.createUnit(data)
+      toast.success('Unit of measure created', {
+        description: `Added "${created.name} (${created.symbol})" [${created.dimension}].`,
+      })
+      setIsUnitOpen(false)
+      unitForm.reset({ name: '', symbol: '', dimension: 'MASS', isBaseUnit: false })
+      await loadAllData()
+    } catch (err: unknown) {
+      console.error('Failed to create unit:', err)
+      toast.error(extractErrorMessage(err, 'Failed to create unit of measure'))
     }
   }
 
@@ -546,6 +573,149 @@ export function MaterialsManagementView() {
             </div>
 
             <div className="flex items-center gap-2">
+              {/* Units of Measure Dialog */}
+              <Dialog open={isUnitOpen} onOpenChange={setIsUnitOpen}>
+                <DialogTrigger render={<Button variant="outline" className="gap-2 text-xs" />}>
+                  <Scale className="h-3.5 w-3.5" />
+                  Units of Measure
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-xl max-h-[85vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Units of Measure (UoM)</DialogTitle>
+                    <DialogDescription className="text-xs">
+                      Define standardized metric or traditional units (e.g. Kilogram, Quintal, Kunna, Liter) used for grain procurement, recipes, and inventory tracking.
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <div className="space-y-6 pt-2">
+                    {/* Existing Units List */}
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Active Units ({units.length})
+                      </h4>
+                      <div className="rounded-md border border-border/70 overflow-hidden">
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="hover:bg-transparent">
+                              <TableHead className="text-xs">Name</TableHead>
+                              <TableHead className="text-xs">Symbol</TableHead>
+                              <TableHead className="text-xs">Dimension</TableHead>
+                              <TableHead className="text-right text-xs">Base Unit</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {units.length === 0 ? (
+                              <TableRow>
+                                <TableCell colSpan={4} className="text-center text-xs text-muted-foreground py-4">
+                                  No custom units configured yet.
+                                </TableCell>
+                              </TableRow>
+                            ) : (
+                              units.map((u) => (
+                                <TableRow key={u.id}>
+                                  <TableCell className="text-xs font-medium">{u.name}</TableCell>
+                                  <TableCell className="text-xs font-mono font-bold text-foreground">
+                                    {u.symbol}
+                                  </TableCell>
+                                  <TableCell className="text-xs">
+                                    <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                                      {u.dimension}
+                                    </span>
+                                  </TableCell>
+                                  <TableCell className="text-right text-xs">
+                                    {u.isBaseUnit ? (
+                                      <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                                        Base
+                                      </span>
+                                    ) : (
+                                      <span className="text-[10px] text-muted-foreground">—</span>
+                                    )}
+                                  </TableCell>
+                                </TableRow>
+                              ))
+                            )}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </div>
+
+                    {/* Add Unit Form */}
+                    <div className="rounded-lg border border-border/80 bg-muted/20 p-4 space-y-3">
+                      <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                        <Plus className="h-3.5 w-3.5" />
+                        Add New Unit
+                      </h4>
+                      <form onSubmit={unitForm.handleSubmit(onUnitSubmit)} className="space-y-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-medium text-foreground">Unit Name *</label>
+                            <Input
+                              placeholder="e.g. Quintal, Kunna, Kilogram"
+                              {...unitForm.register('name')}
+                              aria-invalid={!!unitForm.formState.errors.name}
+                            />
+                            {unitForm.formState.errors.name && (
+                              <p className="text-[11px] text-destructive">
+                                {unitForm.formState.errors.name.message}
+                              </p>
+                            )}
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-medium text-foreground">Unit Symbol *</label>
+                            <Input
+                              placeholder="e.g. q, kunna, kg"
+                              {...unitForm.register('symbol')}
+                              aria-invalid={!!unitForm.formState.errors.symbol}
+                            />
+                            {unitForm.formState.errors.symbol && (
+                              <p className="text-[11px] text-destructive">
+                                {unitForm.formState.errors.symbol.message}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-medium text-foreground">Dimension *</label>
+                            <select
+                              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                              {...unitForm.register('dimension')}
+                            >
+                              <option value="MASS">Mass (Weight - kg, q, g)</option>
+                              <option value="VOLUME">Volume (L, mL)</option>
+                              <option value="COUNT">Count (Pieces, Packs)</option>
+                              <option value="OTHER">Other</option>
+                            </select>
+                          </div>
+                          <div className="flex items-center justify-between pt-4 sm:pt-0">
+                            <div className="space-y-0.5">
+                              <label className="text-xs font-medium text-foreground">Standard Base Unit</label>
+                              <p className="text-[10px] text-muted-foreground">Primary reference for dimension</p>
+                            </div>
+                            <Switch
+                              checked={unitIsBaseUnit}
+                              onCheckedChange={(checked) => unitForm.setValue('isBaseUnit', checked)}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex justify-end gap-2 pt-2">
+                          <Button
+                            type="submit"
+                            disabled={unitForm.formState.isSubmitting}
+                            className="text-xs gap-1.5"
+                          >
+                            <Plus className="h-3.5 w-3.5" />
+                            Create Unit
+                          </Button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
               {/* Add Category Dialog */}
               <Dialog open={isCatOpen} onOpenChange={setIsCatOpen}>
                 <DialogTrigger render={<Button variant="outline" className="gap-2 text-xs" />}>

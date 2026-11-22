@@ -32,7 +32,7 @@ export const createUnitSchema = z.object({
   name: z.string().trim().min(1, 'Unit name is required').max(50),
   symbol: z.string().trim().min(1, 'Unit symbol is required').max(20),
   dimension: z.enum(['MASS', 'VOLUME', 'COUNT', 'OTHER']),
-  isBaseUnit: z.boolean().default(false),
+  isBaseUnit: z.boolean(),
 })
 
 export type CreateUnitInput = z.infer<typeof createUnitSchema>
