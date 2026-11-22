@@ -476,7 +476,7 @@ export function OnboardingDashboardWidget({
       return false
     }
   })
-  const [completedSteps, setCompletedSteps] = useState<string[]>(() => {
+  const [completedSteps] = useState<string[]>(() => {
     try {
       const stored = localStorage.getItem('injera_onboarding_completed')
       return stored ? JSON.parse(stored) : []
@@ -493,18 +493,6 @@ export function OnboardingDashboardWidget({
     } catch {
       // ignore
     }
-  }
-
-  const toggleStep = (id: string) => {
-    setCompletedSteps((prev) => {
-      const next = prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
-      try {
-        localStorage.setItem('injera_onboarding_completed', JSON.stringify(next))
-      } catch {
-        // ignore
-      }
-      return next
-    })
   }
 
   if (dismissed) {
@@ -539,196 +527,62 @@ export function OnboardingDashboardWidget({
 
   return (
     <>
-      <div className="rounded-2xl border border-forest/30 bg-gradient-to-br from-card via-card to-[#EEE5D4]/25 dark:to-emerald-950/20 p-5 shadow-xs">
-        {/* Header with Title & Progress Badge */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-border/60">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-forest text-oat shadow-xs shrink-0">
-              <BookOpen className="h-4 w-4" />
+      <div className="rounded-xl border border-border/80 bg-card p-3 shadow-2xs">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-forest/10 text-forest dark:bg-oat/15 dark:text-oat shrink-0">
+              <BookOpen className="h-3.5 w-3.5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold text-foreground">
-                  Bakery Setup & Onboarding Roadmap
-                </h3>
-                <span className="text-[10px] font-bold text-forest dark:text-oat uppercase bg-forest/10 dark:bg-oat/15 px-2 py-0.2 rounded-full">
-                  {completedSteps.length}/{ONBOARDING_STEPS.length} Completed ({progressPercent}%)
+                <span className="text-xs font-semibold text-foreground">
+                  {allComplete
+                    ? 'Setup Complete'
+                    : nextIncomplete
+                      ? `Step 0${nextIncompleteIndex + 1}: ${nextIncomplete.title}`
+                      : 'Bakery Setup'}
+                </span>
+                <span className="text-[10px] font-mono font-medium text-muted-foreground bg-muted px-1.5 py-0.2 rounded">
+                  {completedSteps.length}/{ONBOARDING_STEPS.length}
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Follow this 8-step chronological flow to calibrate mitad stations, formulas, workforce, and sales.
-              </p>
+              <div className="h-1 w-36 sm:w-48 bg-muted rounded-full overflow-hidden mt-1">
+                <div
+                  className="h-full bg-forest dark:bg-oat transition-all duration-300 rounded-full"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 self-start sm:self-auto">
+          <div className="flex items-center gap-1.5 self-end sm:self-auto">
+            {!allComplete && nextIncomplete && (
+              <Button
+                size="sm"
+                onClick={() => onNavigateTab(nextIncomplete.tab)}
+                className="h-7 text-xs bg-forest text-oat hover:bg-forest/90 dark:bg-oat dark:text-forest cursor-pointer gap-1 px-2.5"
+              >
+                <span>{nextIncomplete.actionLabel}</span>
+                <ChevronRight className="h-3 w-3" />
+              </Button>
+            )}
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={() => setModalOpen(true)}
-              className="text-xs h-8 gap-1.5 border-border/80 cursor-pointer"
+              className="h-7 text-xs text-muted-foreground hover:text-foreground cursor-pointer px-2"
             >
-              <Sparkles className="h-3.5 w-3.5 text-forest dark:text-oat" />
-              <span>Full Guide & Roles</span>
+              <span>View Guide</span>
             </Button>
             <button
               type="button"
               onClick={handleDismiss}
-              className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
-              title="Dismiss checklist banner"
+              className="h-7 w-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
+              title="Dismiss"
             >
-              <X className="h-4 w-4" />
+              <X className="h-3.5 w-3.5" />
             </button>
           </div>
-        </div>
-
-        {/* Global Progress Bar */}
-        <div className="mt-3.5 space-y-1">
-          <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-            <div
-              className="h-full bg-forest dark:bg-oat transition-all duration-300 rounded-full"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Highlighted Next Step or Celebration Card */}
-        {allComplete ? (
-          <div className="mt-4 p-4 rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-950 dark:text-emerald-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
-                <CheckCircle2 className="h-5 w-5" />
-              </div>
-              <div>
-                <h4 className="text-xs font-bold text-foreground">
-                  Bakery Operating System Fully Configured!
-                </h4>
-                <p className="text-[11px] text-muted-foreground">
-                  All 8 setup milestones are verified. Stations, recipes, workforce, and POS sales are operational.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => onNavigateTab('production')}
-                className="text-xs h-8 cursor-pointer"
-              >
-                <Flame className="h-3.5 w-3.5 text-amber-500 mr-1" />
-                <span>Baking Sessions</span>
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => onNavigateTab('sales')}
-                className="text-xs h-8 cursor-pointer"
-              >
-                <ShoppingCart className="h-3.5 w-3.5 text-emerald-600 mr-1" />
-                <span>POS Sales</span>
-              </Button>
-            </div>
-          </div>
-        ) : nextIncomplete ? (
-          <div className="mt-4 p-4 rounded-xl border border-forest/30 bg-forest/5 dark:bg-oat/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="flex items-start gap-3">
-              <div className="h-8 w-8 rounded-lg bg-forest text-oat dark:bg-oat dark:text-forest flex items-center justify-center shrink-0 mt-0.5 font-bold text-xs">
-                0{nextIncompleteIndex + 1}
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-forest dark:text-oat">
-                    Recommended Next Focus
-                  </span>
-                  <span className="text-[9px] uppercase font-bold text-muted-foreground font-mono bg-muted px-1.5 py-0.2 rounded">
-                    {nextIncomplete.category}
-                  </span>
-                </div>
-                <h4 className="text-xs font-bold text-foreground mt-0.5">
-                  {nextIncomplete.title}
-                </h4>
-                <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">
-                  {nextIncomplete.description}
-                </p>
-              </div>
-            </div>
-
-            <Button
-              size="sm"
-              onClick={() => onNavigateTab(nextIncomplete.tab)}
-              className="text-xs h-8 shrink-0 bg-forest text-oat hover:bg-forest/90 dark:bg-oat dark:text-forest cursor-pointer gap-1.5 self-end sm:self-center"
-            >
-              <span>{nextIncomplete.actionLabel}</span>
-              <ChevronRight className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-        ) : null}
-
-        {/* Progressive 8-Step Grid */}
-        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
-          {ONBOARDING_STEPS.map((step, idx) => {
-            const isDone = completedSteps.includes(step.id)
-            const isCurrent = idx === nextIncompleteIndex
-            const Icon = step.icon
-
-            return (
-              <div
-                key={step.id}
-                className={`p-3 rounded-xl border text-xs flex flex-col justify-between transition-all ${
-                  isDone
-                    ? 'border-emerald-500/20 bg-emerald-500/5 dark:bg-emerald-950/10'
-                    : isCurrent
-                      ? 'border-forest/50 bg-background shadow-xs ring-1 ring-forest/20'
-                      : 'border-border/80 bg-background/80 hover:border-forest/30'
-                }`}
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span
-                      className={`text-[10px] font-mono font-bold ${
-                        isCurrent
-                          ? 'text-forest dark:text-oat'
-                          : 'text-muted-foreground'
-                      }`}
-                    >
-                      Step 0{idx + 1}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => toggleStep(step.id)}
-                      className="cursor-pointer"
-                      title={isDone ? 'Mark as incomplete' : 'Mark as complete'}
-                    >
-                      {isDone ? (
-                        <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 fill-emerald-100 dark:fill-emerald-950" />
-                      ) : (
-                        <Circle className="h-4 w-4 text-muted-foreground/50 hover:text-foreground" />
-                      )}
-                    </button>
-                  </div>
-                  <span
-                    className={`font-semibold block ${
-                      isDone ? 'line-through text-muted-foreground' : 'text-foreground'
-                    }`}
-                  >
-                    {step.title}
-                  </span>
-                </div>
-
-                <div className="pt-2.5 mt-2 border-t border-border/50 flex items-center justify-between">
-                  <span className="text-[10px] text-muted-foreground">{step.category}</span>
-                  <button
-                    type="button"
-                    onClick={() => onNavigateTab(step.tab)}
-                    className="inline-flex items-center gap-1 font-semibold text-forest dark:text-oat text-[11px] hover:underline cursor-pointer"
-                  >
-                    <Icon className="h-3 w-3" />
-                    <span>Open</span>
-                  </button>
-                </div>
-              </div>
-            )
-          })}
         </div>
       </div>
 
