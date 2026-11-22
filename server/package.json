@@ -17,6 +17,7 @@
     "db:pull": "prisma db pull && pnpm run db:format && pnpm run db:generate",
     "db:reset": "prisma migrate reset && pnpm run db:generate",
     "db:seed": "prisma db seed",
+    "seed:superadmin": "tsx prisma/seed-superadmin.ts",
     "db:studio": "prisma studio",
     "test": "tsx --test tests/**/*.test.ts"
   },

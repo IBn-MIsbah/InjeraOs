@@ -58,6 +58,29 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 
+const VALID_TABS = new Set<TabType>([
+  'workspace',
+  'landing',
+  'branches',
+  'workforce',
+  'materials',
+  'recipes',
+  'production',
+  'costing',
+  'inventory',
+  'sales',
+  'expenses',
+  'reports',
+  'sync',
+  'team',
+  'roles',
+  'profile',
+  'settings',
+  'system',
+])
+
+const ADMIN_ONLY_TABS = new Set<TabType>(['roles', 'system'])
+
 export function App() {
   const [auth, setAuth] = useState<AuthContextResponse | null>(null)
   const [authView, setAuthView] = useState<'landing' | 'login' | 'register'>('landing')
@@ -71,6 +94,86 @@ export function App() {
   const [mobileQuickActionsOpen, setMobileQuickActionsOpen] = useState(false)
   const [onboardingOpen, setOnboardingOpen] = useState(false)
   const [pendingSyncCount, setPendingSyncCount] = useState(0)
+
+  // Navigate with URL Hash synchronization
+  const navigateToTab = (tab: TabType) => {
+    if (auth && ADMIN_ONLY_TABS.has(tab) && auth.role !== 'OWNER' && auth.role !== 'ADMIN') {
+      toast.error('Access Restricted', {
+        description: 'Roles, security and enterprise system settings require Administrator privileges.',
+      })
+      return
+    }
+    setActiveTab(tab)
+    if (window.location.hash !== `#/${tab}`) {
+      window.location.hash = `#/${tab}`
+    }
+  }
+
+  const navigateToAuthView = (view: 'landing' | 'login' | 'register') => {
+    setAuthView(view)
+    if (window.location.hash !== `#/${view}`) {
+      window.location.hash = `#/${view}`
+    }
+  }
+
+  // URL Hash synchronization and browser Back/Forward navigation listener
+  useEffect(() => {
+    if (isInitializing) return
+
+    const syncFromHash = () => {
+      const raw = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase()
+      if (!raw) {
+        if (auth) {
+          if (activeTab !== 'workspace') setActiveTab('workspace')
+        } else {
+          if (authView !== 'landing') setAuthView('landing')
+        }
+        return
+      }
+
+      if (raw === 'login' || raw === 'register' || raw === 'landing') {
+        if (auth) {
+          window.location.hash = '#/workspace'
+          setActiveTab('workspace')
+        } else {
+          setAuthView(raw as 'landing' | 'login' | 'register')
+        }
+        return
+      }
+
+      if (raw === 'onboarding') {
+        setOnboardingOpen(true)
+        return
+      }
+
+      if (VALID_TABS.has(raw as TabType)) {
+        const target = raw as TabType
+        if (!auth) {
+          toast.info('Authentication Required', {
+            description: 'Please sign in to access bakery workspaces.',
+          })
+          setAuthView('login')
+          window.location.hash = '#/login'
+          return
+        }
+
+        if (ADMIN_ONLY_TABS.has(target) && auth.role !== 'OWNER' && auth.role !== 'ADMIN') {
+          toast.error('Access Restricted', {
+            description: 'Roles, security and system settings require Administrator privileges.',
+          })
+          window.location.hash = '#/workspace'
+          setActiveTab('workspace')
+          return
+        }
+
+        setActiveTab(target)
+      }
+    }
+
+    syncFromHash()
+    window.addEventListener('hashchange', syncFromHash)
+    return () => window.removeEventListener('hashchange', syncFromHash)
+  }, [isInitializing, auth, activeTab, authView])
 
   // Track pending offline queue items
   useEffect(() => {
@@ -177,18 +280,16 @@ export function App() {
         <LandingPage
           onEnterWorkspace={() => {
             if (auth) {
-              setActiveTab('workspace')
+              navigateToTab('workspace')
             } else {
-              setAuthView('login')
+              navigateToAuthView('login')
             }
           }}
           onOpenLogin={() => {
-            setActiveTab('workspace')
-            setAuthView('login')
+            navigateToAuthView('login')
           }}
           onOpenRegister={() => {
-            setActiveTab('workspace')
-            setAuthView('register')
+            navigateToAuthView('register')
           }}
           isAuthenticated={!!auth}
         />
@@ -205,19 +306,19 @@ export function App() {
           <LoginForm
             onSuccess={(data: AuthContextResponse) => {
               setAuth(data)
-              setActiveTab('workspace')
+              navigateToTab('workspace')
             }}
-            onSwitchToRegister={() => setAuthView('register')}
-            onBackToLanding={() => setAuthView('landing')}
+            onSwitchToRegister={() => navigateToAuthView('register')}
+            onBackToLanding={() => navigateToAuthView('landing')}
           />
         ) : (
           <RegisterForm
             onSuccess={(data: AuthContextResponse) => {
               setAuth(data)
-              setActiveTab('workspace')
+              navigateToTab('workspace')
             }}
-            onSwitchToLogin={() => setAuthView('login')}
-            onBackToLanding={() => setAuthView('landing')}
+            onSwitchToLogin={() => navigateToAuthView('login')}
+            onBackToLanding={() => navigateToAuthView('landing')}
           />
         )}
         <Toaster />
@@ -230,10 +331,10 @@ export function App() {
     <SidebarProvider defaultOpen={true}>
       <AppSidebar
         activeTab={activeTab}
-        onSelectTab={setActiveTab}
+        onSelectTab={navigateToTab}
         auth={auth}
         authView={authView}
-        onSelectAuthView={setAuthView}
+        onSelectAuthView={navigateToAuthView}
         onOpenOnboarding={() => setOnboardingOpen(true)}
       />
 
@@ -336,8 +437,8 @@ export function App() {
                       <button
                         type="button"
                         onClick={() => {
-                          setActiveTab('profile')
                           setUserDropdownOpen(false)
+                          navigateToTab('profile')
                         }}
                         className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-colors cursor-pointer ${
                           activeTab === 'profile'
@@ -354,8 +455,8 @@ export function App() {
                           <button
                             type="button"
                             onClick={() => {
-                              setActiveTab('roles')
                               setUserDropdownOpen(false)
+                              navigateToTab('roles')
                             }}
                             className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-colors cursor-pointer ${
                               activeTab === 'roles'
@@ -370,8 +471,8 @@ export function App() {
                           <button
                             type="button"
                             onClick={() => {
-                              setActiveTab('system')
                               setUserDropdownOpen(false)
+                              navigateToTab('system')
                             }}
                             className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-colors cursor-pointer ${
                               activeTab === 'system'
@@ -386,8 +487,8 @@ export function App() {
                           <button
                             type="button"
                             onClick={() => {
-                              setActiveTab('system')
                               setUserDropdownOpen(false)
+                              navigateToTab('system')
                             }}
                             className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-colors hover:bg-muted text-foreground cursor-pointer"
                           >
@@ -441,7 +542,7 @@ export function App() {
               </span>
             </div>
             <button
-              onClick={() => setActiveTab('sync')}
+              onClick={() => navigateToTab('sync')}
               className="cursor-pointer font-medium underline hover:no-underline ml-2"
             >
               View Offline Queue
@@ -487,7 +588,7 @@ export function App() {
             <DemoDashboard
               auth={auth}
               onLogout={handleLogout}
-              onNavigateTab={(tab) => setActiveTab(tab as TabType)}
+              onNavigateTab={(tab) => navigateToTab(tab as TabType)}
             />
           )}
         </main>
@@ -505,7 +606,7 @@ export function App() {
             {/* Overview / Home */}
             <button
               type="button"
-              onClick={() => setActiveTab('workspace')}
+              onClick={() => navigateToTab('workspace')}
               className={`flex flex-col items-center justify-center flex-1 py-1 text-[10px] font-medium transition-colors cursor-pointer ${
                 activeTab === 'workspace'
                   ? 'text-forest dark:text-oat font-bold'
@@ -519,7 +620,7 @@ export function App() {
             {/* Mitad Baking */}
             <button
               type="button"
-              onClick={() => setActiveTab('production')}
+              onClick={() => navigateToTab('production')}
               className={`flex flex-col items-center justify-center flex-1 py-1 text-[10px] font-medium transition-colors cursor-pointer ${
                 activeTab === 'production'
                   ? 'text-forest dark:text-oat font-bold'
@@ -549,7 +650,7 @@ export function App() {
             {/* Sales / POS */}
             <button
               type="button"
-              onClick={() => setActiveTab('sales')}
+              onClick={() => navigateToTab('sales')}
               className={`flex flex-col items-center justify-center flex-1 py-1 text-[10px] font-medium transition-colors cursor-pointer ${
                 activeTab === 'sales'
                   ? 'text-forest dark:text-oat font-bold'
@@ -563,7 +664,7 @@ export function App() {
             {/* My Profile */}
             <button
               type="button"
-              onClick={() => setActiveTab('profile')}
+              onClick={() => navigateToTab('profile')}
               className={`flex flex-col items-center justify-center flex-1 py-1 text-[10px] font-medium transition-colors cursor-pointer ${
                 activeTab === 'profile'
                   ? 'text-forest dark:text-oat font-bold'
@@ -601,8 +702,8 @@ export function App() {
               <button
                 type="button"
                 onClick={() => {
-                  setActiveTab('production')
                   setMobileQuickActionsOpen(false)
+                  navigateToTab('production')
                 }}
                 className="flex flex-col items-start p-3 rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/15 text-left transition-colors cursor-pointer"
               >
@@ -616,8 +717,8 @@ export function App() {
               <button
                 type="button"
                 onClick={() => {
-                  setActiveTab('sales')
                   setMobileQuickActionsOpen(false)
+                  navigateToTab('sales')
                 }}
                 className="flex flex-col items-start p-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/15 text-left transition-colors cursor-pointer"
               >
@@ -631,8 +732,8 @@ export function App() {
               <button
                 type="button"
                 onClick={() => {
-                  setActiveTab('materials')
                   setMobileQuickActionsOpen(false)
+                  navigateToTab('materials')
                 }}
                 className="flex flex-col items-start p-3 rounded-xl border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/15 text-left transition-colors cursor-pointer"
               >
@@ -646,8 +747,8 @@ export function App() {
               <button
                 type="button"
                 onClick={() => {
-                  setActiveTab('sync')
                   setMobileQuickActionsOpen(false)
+                  navigateToTab('sync')
                 }}
                 className="flex flex-col items-start p-3 rounded-xl border border-border/80 bg-muted/40 hover:bg-muted/70 text-left transition-colors cursor-pointer relative"
               >
@@ -666,8 +767,8 @@ export function App() {
               <button
                 type="button"
                 onClick={() => {
-                  setActiveTab('expenses')
                   setMobileQuickActionsOpen(false)
+                  navigateToTab('expenses')
                 }}
                 className="flex flex-col items-start p-3 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/15 text-left transition-colors cursor-pointer"
               >
@@ -681,8 +782,8 @@ export function App() {
               <button
                 type="button"
                 onClick={() => {
-                  setActiveTab('profile')
                   setMobileQuickActionsOpen(false)
+                  navigateToTab('profile')
                 }}
                 className="flex flex-col items-start p-3 rounded-xl border border-forest/30 bg-forest/10 hover:bg-forest/15 dark:bg-oat/15 text-left transition-colors cursor-pointer"
               >
@@ -716,7 +817,7 @@ export function App() {
       <OnboardingGuideModal
         open={onboardingOpen}
         onOpenChange={setOnboardingOpen}
-        onNavigateTab={setActiveTab}
+        onNavigateTab={navigateToTab}
       />
 
       {/* Shadcn Sonner Toaster */}

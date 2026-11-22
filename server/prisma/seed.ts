@@ -6,6 +6,7 @@ import {
   PERMISSION_DEFINITIONS,
   ROLE_DEFINITIONS,
 } from '../src/modules/auth/roles.constants.js'
+import { seedSuperAdmin } from './seed-superadmin.js'
 
 export async function seed() {
   console.log('🌱 Starting InjeraOS RBAC seeding...')
@@ -80,6 +81,9 @@ export async function seed() {
 
   console.log('✓ Seeded system roles and role-permission associations.')
   console.log('✅ RBAC Seeding completed successfully.')
+
+  // 3. Provision Flagship Super Administrator & Workspace
+  await seedSuperAdmin()
 }
 
 seed()
