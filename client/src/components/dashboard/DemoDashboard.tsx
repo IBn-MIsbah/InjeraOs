@@ -162,11 +162,11 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
         />
       )}
 
-      {/* 4 Minimal Top Status / KPI Cards - Adaptive by Perspective */}
-      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
+      {/* 4 Minimal Top Status / KPI Cards - Adaptive by Perspective (12-Grid System) */}
+      <div className="grid grid-cols-12 gap-3.5">
         {perspective === 'BAKER' ? (
           <>
-            <Card className="border-border/80 shadow-2xs">
+            <Card className="col-span-12 sm:col-span-6 lg:col-span-3 border-border/80 shadow-2xs">
               <CardHeader className="flex flex-row items-center justify-between pb-1.5 pt-4 px-4">
                 <CardTitle className="text-xs font-medium text-muted-foreground">
                   Today's Mitad Output
@@ -178,7 +178,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
                   <Skeleton className="h-7 w-28" />
                 ) : (
                   <>
-                    <div className="text-2xl font-bold font-mono text-foreground">
+                    <div className="text-2xl font-bold font-mono tabular-nums tracking-tight text-foreground">
                       {(summary?.qualityBreakdown?.totalProduced ?? 0).toLocaleString()} <span className="text-xs font-normal text-muted-foreground">pcs</span>
                     </div>
                     <span className="text-[11px] text-muted-foreground">
@@ -189,7 +189,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
               </CardContent>
             </Card>
 
-            <Card className="border-border/80 shadow-2xs">
+            <Card className="col-span-12 sm:col-span-6 lg:col-span-3 border-border/80 shadow-2xs">
               <CardHeader className="flex flex-row items-center justify-between pb-1.5 pt-4 px-4">
                 <CardTitle className="text-xs font-medium text-muted-foreground">
                   Baking Yield %
@@ -201,7 +201,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
                   <Skeleton className="h-7 w-20" />
                 ) : (
                   <>
-                    <div className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
+                    <div className="text-2xl font-bold font-mono tabular-nums tracking-tight text-emerald-600 dark:text-emerald-400">
                       {summary?.qualityBreakdown?.yieldPercent ?? 96.4}%
                     </div>
                     <span className="text-[11px] text-muted-foreground">Quality in-spec</span>
@@ -210,7 +210,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
               </CardContent>
             </Card>
 
-            <Card className="border-border/80 shadow-2xs">
+            <Card className="col-span-12 sm:col-span-6 lg:col-span-3 border-border/80 shadow-2xs">
               <CardHeader className="flex flex-row items-center justify-between pb-1.5 pt-4 px-4">
                 <CardTitle className="text-xs font-medium text-muted-foreground">
                   Defects & Rejections
@@ -222,7 +222,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
                   <Skeleton className="h-7 w-24" />
                 ) : (
                   <>
-                    <div className="text-2xl font-bold font-mono text-rose-600">
+                    <div className="text-2xl font-bold font-mono tabular-nums tracking-tight text-rose-600">
                       {(summary?.qualityBreakdown?.rejectedProduced ?? 0).toLocaleString()} <span className="text-xs font-normal text-muted-foreground">pcs</span>
                     </div>
                     <span className="text-[11px] text-muted-foreground">Torn or burnt</span>
@@ -231,7 +231,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
               </CardContent>
             </Card>
 
-            <Card className="border-border/80 shadow-2xs">
+            <Card className="col-span-12 sm:col-span-6 lg:col-span-3 border-border/80 shadow-2xs">
               <CardHeader className="flex flex-row items-center justify-between pb-1.5 pt-4 px-4">
                 <CardTitle className="text-xs font-medium text-muted-foreground">
                   Active Mitad Batches
@@ -243,7 +243,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
                   <Skeleton className="h-7 w-20" />
                 ) : (
                   <>
-                    <div className="text-2xl font-bold font-mono text-foreground">
+                    <div className="text-2xl font-bold font-mono tabular-nums tracking-tight text-foreground">
                       {summary?.operations.activeBatchesCount ?? 1}
                     </div>
                     <span className="text-[11px] text-sky-600 font-medium">Baking underway</span>
@@ -254,7 +254,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
           </>
         ) : perspective === 'CASHIER' ? (
           <>
-            <Card className="border-border/80 shadow-2xs">
+            <Card className="col-span-12 sm:col-span-6 lg:col-span-3 border-border/80 shadow-2xs">
               <CardHeader className="flex flex-row items-center justify-between pb-1.5 pt-4 px-4">
                 <CardTitle className="text-xs font-medium text-muted-foreground">
                   Today's POS Collections
@@ -266,7 +266,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
                   <Skeleton className="h-7 w-32" />
                 ) : (
                   <>
-                    <div className="text-2xl font-bold font-mono text-foreground">
+                    <div className="text-2xl font-bold font-mono tabular-nums tracking-tight text-foreground">
                       {formatCurrency(summary?.today.revenue)}
                     </div>
                     <span className="text-[11px] text-emerald-600 font-medium">Cash & Telebirr</span>
@@ -275,7 +275,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
               </CardContent>
             </Card>
 
-            <Card className="border-border/80 shadow-2xs">
+            <Card className="col-span-12 sm:col-span-6 lg:col-span-3 border-border/80 shadow-2xs">
               <CardHeader className="flex flex-row items-center justify-between pb-1.5 pt-4 px-4">
                 <CardTitle className="text-xs font-medium text-muted-foreground">
                   Orders Closed
@@ -287,7 +287,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
                   <Skeleton className="h-7 w-20" />
                 ) : (
                   <>
-                    <div className="text-2xl font-bold font-mono text-foreground">
+                    <div className="text-2xl font-bold font-mono tabular-nums tracking-tight text-foreground">
                       {summary?.today.orderCount ?? 0}
                     </div>
                     <span className="text-[11px] text-muted-foreground">Walk-in & wholesale</span>
@@ -296,7 +296,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
               </CardContent>
             </Card>
 
-            <Card className="border-border/80 shadow-2xs">
+            <Card className="col-span-12 sm:col-span-6 lg:col-span-3 border-border/80 shadow-2xs">
               <CardHeader className="flex flex-row items-center justify-between pb-1.5 pt-4 px-4">
                 <CardTitle className="text-xs font-medium text-muted-foreground">
                   Credit Receivables
@@ -308,7 +308,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
                   <Skeleton className="h-7 w-32" />
                 ) : (
                   <>
-                    <div className="text-2xl font-bold font-mono text-foreground">
+                    <div className="text-2xl font-bold font-mono tabular-nums tracking-tight text-foreground">
                       {formatCurrency(summary?.operations.totalReceivables)}
                     </div>
                     <span className="text-[11px] text-muted-foreground">
@@ -319,7 +319,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
               </CardContent>
             </Card>
 
-            <Card className="border-border/80 shadow-2xs">
+            <Card className="col-span-12 sm:col-span-6 lg:col-span-3 border-border/80 shadow-2xs">
               <CardHeader className="flex flex-row items-center justify-between pb-1.5 pt-4 px-4">
                 <CardTitle className="text-xs font-medium text-muted-foreground">
                   Pending Deliveries
@@ -331,7 +331,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
                   <Skeleton className="h-7 w-20" />
                 ) : (
                   <>
-                    <div className="text-2xl font-bold font-mono text-foreground">
+                    <div className="text-2xl font-bold font-mono tabular-nums tracking-tight text-foreground">
                       {summary?.operations.pendingDeliveriesCount ?? 0}
                     </div>
                     <span className="text-[11px] text-sky-600 font-medium">Hotel dispatches</span>
@@ -342,7 +342,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
           </>
         ) : perspective === 'STOREKEEPER' ? (
           <>
-            <Card className="border-border/80 shadow-2xs">
+            <Card className="col-span-12 sm:col-span-6 lg:col-span-3 border-border/80 shadow-2xs">
               <CardHeader className="flex flex-row items-center justify-between pb-1.5 pt-4 px-4">
                 <CardTitle className="text-xs font-medium text-muted-foreground">
                   Grain in Silos
@@ -354,7 +354,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
                   <Skeleton className="h-7 w-28" />
                 ) : (
                   <>
-                    <div className="text-2xl font-bold font-mono text-foreground">
+                    <div className="text-2xl font-bold font-mono tabular-nums tracking-tight text-foreground">
                       {(summary?.grainStock?.totalStockKg ?? 4250).toLocaleString()} <span className="text-xs font-normal text-muted-foreground">KG</span>
                     </div>
                     <span className="text-[11px] text-muted-foreground">Magna & Sergegna</span>
@@ -363,7 +363,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
               </CardContent>
             </Card>
 
-            <Card className="border-border/80 shadow-2xs">
+            <Card className="col-span-12 sm:col-span-6 lg:col-span-3 border-border/80 shadow-2xs">
               <CardHeader className="flex flex-row items-center justify-between pb-1.5 pt-4 px-4">
                 <CardTitle className="text-xs font-medium text-muted-foreground">
                   Prepared Flour
@@ -375,7 +375,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
                   <Skeleton className="h-7 w-24" />
                 ) : (
                   <>
-                    <div className="text-2xl font-bold font-mono text-foreground">
+                    <div className="text-2xl font-bold font-mono tabular-nums tracking-tight text-foreground">
                       840 <span className="text-xs font-normal text-muted-foreground">KG</span>
                     </div>
                     <span className="text-[11px] text-amber-600 font-medium">In hopper for mitad</span>
@@ -384,7 +384,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
               </CardContent>
             </Card>
 
-            <Card className="border-border/80 shadow-2xs">
+            <Card className="col-span-12 sm:col-span-6 lg:col-span-3 border-border/80 shadow-2xs">
               <CardHeader className="flex flex-row items-center justify-between pb-1.5 pt-4 px-4">
                 <CardTitle className="text-xs font-medium text-muted-foreground">
                   Active Batches
@@ -396,7 +396,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
                   <Skeleton className="h-7 w-20" />
                 ) : (
                   <>
-                    <div className="text-2xl font-bold font-mono text-foreground">
+                    <div className="text-2xl font-bold font-mono tabular-nums tracking-tight text-foreground">
                       {summary?.operations.activeBatchesCount ?? 1}
                     </div>
                     <span className="text-[11px] text-muted-foreground">Consuming raw stock</span>
@@ -405,7 +405,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
               </CardContent>
             </Card>
 
-            <Card className="border-border/80 shadow-2xs">
+            <Card className="col-span-12 sm:col-span-6 lg:col-span-3 border-border/80 shadow-2xs">
               <CardHeader className="flex flex-row items-center justify-between pb-1.5 pt-4 px-4">
                 <CardTitle className="text-xs font-medium text-muted-foreground">
                   Finished Depot Stock
@@ -417,7 +417,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
                   <Skeleton className="h-7 w-28" />
                 ) : (
                   <>
-                    <div className="text-2xl font-bold font-mono text-foreground">
+                    <div className="text-2xl font-bold font-mono tabular-nums tracking-tight text-foreground">
                       3,200 <span className="text-xs font-normal text-muted-foreground">pcs</span>
                     </div>
                     <span className="text-[11px] text-emerald-600 font-medium">FIFO ready</span>
@@ -429,7 +429,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
         ) : (
           /* Executive Perspective */
           <>
-            <Card className="border-border/80 shadow-2xs">
+            <Card className="col-span-12 sm:col-span-6 lg:col-span-3 border-border/80 shadow-2xs">
               <CardHeader className="flex flex-row items-center justify-between pb-1.5 pt-4 px-4">
                 <CardTitle className="text-xs font-medium text-muted-foreground">
                   Today's Revenue
@@ -441,7 +441,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
                   <Skeleton className="h-7 w-32" />
                 ) : (
                   <>
-                    <div className="text-2xl font-bold font-mono text-foreground">
+                    <div className="text-2xl font-bold font-mono tabular-nums tracking-tight text-foreground">
                       {formatCurrency(summary?.today.revenue)}
                     </div>
                     <span className="text-[11px] text-muted-foreground">
@@ -452,7 +452,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
               </CardContent>
             </Card>
 
-            <Card className="border-border/80 shadow-2xs">
+            <Card className="col-span-12 sm:col-span-6 lg:col-span-3 border-border/80 shadow-2xs">
               <CardHeader className="flex flex-row items-center justify-between pb-1.5 pt-4 px-4">
                 <CardTitle className="text-xs font-medium text-muted-foreground">
                   Mitad Output
@@ -464,7 +464,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
                   <Skeleton className="h-7 w-28" />
                 ) : (
                   <>
-                    <div className="text-2xl font-bold font-mono text-foreground">
+                    <div className="text-2xl font-bold font-mono tabular-nums tracking-tight text-foreground">
                       {(summary?.qualityBreakdown?.totalProduced ?? 0).toLocaleString()} <span className="text-xs font-normal text-muted-foreground">pcs</span>
                     </div>
                     <span className="text-[11px] text-amber-600 font-medium">
@@ -475,7 +475,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
               </CardContent>
             </Card>
 
-            <Card className="border-border/80 shadow-2xs">
+            <Card className="col-span-12 sm:col-span-6 lg:col-span-3 border-border/80 shadow-2xs">
               <CardHeader className="flex flex-row items-center justify-between pb-1.5 pt-4 px-4">
                 <CardTitle className="text-xs font-medium text-muted-foreground">
                   Quality Yield %
@@ -487,7 +487,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
                   <Skeleton className="h-7 w-20" />
                 ) : (
                   <>
-                    <div className="text-2xl font-bold font-mono text-forest dark:text-oat">
+                    <div className="text-2xl font-bold font-mono tabular-nums tracking-tight text-forest dark:text-oat">
                       {summary?.qualityBreakdown?.yieldPercent ?? 96.4}%
                     </div>
                     <span className="text-[11px] text-emerald-600 font-medium">In spec (&ge;85%)</span>
@@ -496,7 +496,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
               </CardContent>
             </Card>
 
-            <Card className="border-border/80 shadow-2xs">
+            <Card className="col-span-12 sm:col-span-6 lg:col-span-3 border-border/80 shadow-2xs">
               <CardHeader className="flex flex-row items-center justify-between pb-1.5 pt-4 px-4">
                 <CardTitle className="text-xs font-medium text-muted-foreground">
                   Credit Receivables
@@ -508,7 +508,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
                   <Skeleton className="h-7 w-32" />
                 ) : (
                   <>
-                    <div className="text-2xl font-bold font-mono text-foreground">
+                    <div className="text-2xl font-bold font-mono tabular-nums tracking-tight text-foreground">
                       {formatCurrency(summary?.operations.totalReceivables)}
                     </div>
                     <span className="text-[11px] text-muted-foreground">
@@ -522,17 +522,17 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
         )}
       </div>
 
-      {/* Row 1: 7-Day Revenue Velocity (for Financial/Admin roles) & Quality Yield Breakdown */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+      {/* Row 1: 7-Day Revenue Velocity (for Financial/Admin roles) & Quality Yield Breakdown (12-Grid System) */}
+      <div className="grid grid-cols-12 gap-4">
         {/* 7-Day Revenue Bar Chart - Only visible to financial / admin perspectives */}
         {isFinancial && (
-          <Card className="lg:col-span-7 border-border/80 shadow-2xs">
+          <Card className="col-span-12 lg:col-span-7 border-border/80 shadow-2xs">
             <CardHeader className="pb-2 pt-4 px-4 flex flex-row items-center justify-between">
               <CardTitle className="text-xs font-bold flex items-center gap-2 text-foreground">
                 <BarChart3 className="h-4 w-4 text-forest dark:text-oat" />
                 7-Day Revenue Trend
               </CardTitle>
-              <span className="text-xs font-mono font-semibold text-muted-foreground">
+              <span className="text-xs font-mono tabular-nums font-semibold text-muted-foreground">
                 {summary?.sevenDayRevenue && summary.sevenDayRevenue.length > 0
                   ? formatCurrency(summary.sevenDayRevenue.reduce((s, d) => s + d.revenue, 0))
                   : ''}
@@ -557,7 +557,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
 
                     return (
                       <div key={idx} className="flex-1 flex flex-col items-center gap-1 h-full justify-end group">
-                        <span className="text-[10px] font-mono text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="text-[10px] font-mono tabular-nums text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
                           {item.revenue > 0 ? `${(item.revenue / 1000).toFixed(1)}k` : '0'}
                         </span>
                         <div
@@ -582,7 +582,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
         )}
 
         {/* Quality Yield & Rejection Breakdown */}
-        <Card className={`${isFinancial ? 'lg:col-span-5' : 'lg:col-span-12'} border-border/80 shadow-2xs`}>
+        <Card className={`${isFinancial ? 'col-span-12 lg:col-span-5' : 'col-span-12'} border-border/80 shadow-2xs`}>
           <CardHeader className="pb-2 pt-4 px-4">
             <CardTitle className="text-xs font-bold flex items-center gap-2 text-foreground">
               <ChefHat className="h-4 w-4 text-amber-500" />
@@ -640,10 +640,10 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
         </Card>
       </div>
 
-      {/* Row 2: Grain Inventory Mix & Baker Output Leaderboard */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+      {/* Row 2: Grain Inventory Mix & Baker Output Leaderboard (12-Grid System) */}
+      <div className="grid grid-cols-12 gap-4">
         {/* Teff Grain Formulation Mix */}
-        <Card className="lg:col-span-6 border-border/80 shadow-2xs">
+        <Card className="col-span-12 lg:col-span-6 border-border/80 shadow-2xs">
           <CardHeader className="pb-2 pt-4 px-4">
             <CardTitle className="text-xs font-bold flex items-center gap-2 text-foreground">
               <Boxes className="h-4 w-4 text-sky-600" />
@@ -663,7 +663,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
                   className="flex items-center justify-between text-xs bg-muted/30 px-3 py-2 rounded-lg border border-border/60"
                 >
                   <div className="font-semibold text-foreground">{mat.materialName}</div>
-                  <div className="text-right font-mono">
+                  <div className="text-right font-mono tabular-nums">
                     <span className="font-bold">{mat.percentage}%</span>{' '}
                     <span className="text-[11px] text-muted-foreground">
                       ({mat.remainingKg.toLocaleString()} kg)
@@ -680,7 +680,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
         </Card>
 
         {/* Baker Output Leaderboard */}
-        <Card className="lg:col-span-6 border-border/80 shadow-2xs">
+        <Card className="col-span-12 lg:col-span-6 border-border/80 shadow-2xs">
           <CardHeader className="pb-2 pt-4 px-4">
             <CardTitle className="text-xs font-bold flex items-center gap-2 text-foreground">
               <Award className="h-4 w-4 text-emerald-600" />
@@ -703,7 +703,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
                       </span>
                       <span className="font-semibold text-foreground">{baker.name}</span>
                     </div>
-                    <div className="text-right font-mono">
+                    <div className="text-right font-mono tabular-nums">
                       <span className="font-bold text-foreground">{baker.acceptedCount} pcs</span>{' '}
                       <span className="text-[11px] text-emerald-600 font-medium">({baker.yieldPercent}%)</span>
                     </div>

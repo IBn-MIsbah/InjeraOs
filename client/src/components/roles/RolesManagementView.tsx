@@ -263,10 +263,10 @@ export function RolesManagementView() {
         </div>
       </div>
 
-      {/* Main Content Layout */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+      {/* Main Content Layout (12-Grid System) */}
+      <div className="grid grid-cols-12 gap-6">
         {/* Left Column: Roles List */}
-        <div className="lg:col-span-4 space-y-4">
+        <div className="col-span-12 lg:col-span-4 space-y-4">
           <Card className="border-border">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -363,7 +363,7 @@ export function RolesManagementView() {
         </div>
 
         {/* Right Column: Role Details & Permission Editor */}
-        <div className="lg:col-span-8 space-y-4">
+        <div className="col-span-12 lg:col-span-8 space-y-4">
           {selectedRole ? (
             <Card className="border-border">
               <CardHeader className="pb-4 border-b border-border/80">

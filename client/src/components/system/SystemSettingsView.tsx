@@ -343,15 +343,15 @@ export function SystemSettingsView({ initialTab = 'status' }: { initialTab?: 'st
           </div>
 
           {loadingStatus ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-12 gap-5">
               {[...Array(6)].map((_, i) => (
-                <Card key={i} className="animate-pulse bg-muted/30 h-40 border-border/60" />
+                <Card key={i} className="col-span-12 md:col-span-6 lg:col-span-4 animate-pulse bg-muted/30 h-40 border-border/60" />
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-12 gap-5">
               {/* PostgreSQL Engine */}
-              <Card className="border-border/80 shadow-xs">
+              <Card className="col-span-12 md:col-span-6 lg:col-span-4 border-border/80 shadow-xs">
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -367,7 +367,7 @@ export function SystemSettingsView({ initialTab = 'status' }: { initialTab?: 'st
                 <CardContent className="space-y-3 pt-1">
                   <div className="flex items-baseline justify-between">
                     <span className="text-xs text-muted-foreground">Ping Latency</span>
-                    <span className="text-xl font-bold font-mono text-foreground">
+                    <span className="text-xl font-bold font-mono tabular-nums text-foreground">
                       {status?.database.latencyMs} <span className="text-xs font-normal text-muted-foreground">ms</span>
                     </span>
                   </div>
@@ -383,14 +383,14 @@ export function SystemSettingsView({ initialTab = 'status' }: { initialTab?: 'st
               </Card>
 
               {/* Memory Footprint */}
-              <Card className="border-border/80 shadow-xs">
+              <Card className="col-span-12 md:col-span-6 lg:col-span-4 border-border/80 shadow-xs">
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-sm font-semibold flex items-center gap-2">
                       <Cpu className="h-4 w-4 text-forest dark:text-oat" />
                       Node.js Memory Footprint
                     </CardTitle>
-                    <span className="text-xs font-mono font-semibold text-muted-foreground">
+                    <span className="text-xs font-mono tabular-nums font-semibold text-muted-foreground">
                       {status?.memory.usagePercent}%
                     </span>
                   </div>
@@ -399,7 +399,7 @@ export function SystemSettingsView({ initialTab = 'status' }: { initialTab?: 'st
                 <CardContent className="space-y-3 pt-1">
                   <div className="flex items-baseline justify-between">
                     <span className="text-xs text-muted-foreground">Heap Used / Total</span>
-                    <span className="text-base font-bold font-mono text-foreground">
+                    <span className="text-base font-bold font-mono tabular-nums text-foreground">
                       {status?.memory.heapUsedMb} <span className="text-xs font-normal text-muted-foreground">/ {status?.memory.heapTotalMb} MB</span>
                     </span>
                   </div>
@@ -412,13 +412,13 @@ export function SystemSettingsView({ initialTab = 'status' }: { initialTab?: 'st
                   </div>
                   <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t">
                     <span>Resident Set (RSS)</span>
-                    <span className="font-mono text-foreground">{status?.memory.rssMb} MB</span>
+                    <span className="font-mono tabular-nums text-foreground">{status?.memory.rssMb} MB</span>
                   </div>
                 </CardContent>
               </Card>
 
               {/* Process Uptime & Runtime */}
-              <Card className="border-border/80 shadow-xs">
+              <Card className="col-span-12 md:col-span-6 lg:col-span-4 border-border/80 shadow-xs">
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -434,7 +434,7 @@ export function SystemSettingsView({ initialTab = 'status' }: { initialTab?: 'st
                 <CardContent className="space-y-3 pt-1">
                   <div className="flex items-baseline justify-between">
                     <span className="text-xs text-muted-foreground">Uptime</span>
-                    <span className="text-xl font-bold font-mono text-foreground">
+                    <span className="text-xl font-bold font-mono tabular-nums text-foreground">
                       {status?.runtime.uptimeFormatted}
                     </span>
                   </div>
@@ -450,7 +450,7 @@ export function SystemSettingsView({ initialTab = 'status' }: { initialTab?: 'st
               </Card>
 
               {/* Offline Sync Engine */}
-              <Card className="border-border/80 shadow-xs">
+              <Card className="col-span-12 md:col-span-6 lg:col-span-4 border-border/80 shadow-xs">
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -473,7 +473,7 @@ export function SystemSettingsView({ initialTab = 'status' }: { initialTab?: 'st
                 <CardContent className="space-y-3 pt-1">
                   <div className="flex items-baseline justify-between">
                     <span className="text-xs text-muted-foreground">Pending Queue</span>
-                    <span className="text-xl font-bold font-mono text-foreground">
+                    <span className="text-xl font-bold font-mono tabular-nums text-foreground">
                       {status?.syncEngine.pendingOperations} <span className="text-xs font-normal text-muted-foreground">ops</span>
                     </span>
                   </div>
@@ -491,7 +491,7 @@ export function SystemSettingsView({ initialTab = 'status' }: { initialTab?: 'st
               </Card>
 
               {/* Security & Sessions */}
-              <Card className="border-border/80 shadow-xs">
+              <Card className="col-span-12 md:col-span-6 lg:col-span-4 border-border/80 shadow-xs">
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -507,7 +507,7 @@ export function SystemSettingsView({ initialTab = 'status' }: { initialTab?: 'st
                 <CardContent className="space-y-3 pt-1">
                   <div className="flex items-baseline justify-between">
                     <span className="text-xs text-muted-foreground">Active Sessions</span>
-                    <span className="text-xl font-bold font-mono text-foreground">
+                    <span className="text-xl font-bold font-mono tabular-nums text-foreground">
                       {status?.security.activeUserSessions}
                     </span>
                   </div>
@@ -523,7 +523,7 @@ export function SystemSettingsView({ initialTab = 'status' }: { initialTab?: 'st
               </Card>
 
               {/* Organization Tenant */}
-              <Card className="border-border/80 shadow-xs">
+              <Card className="col-span-12 md:col-span-6 lg:col-span-4 border-border/80 shadow-xs">
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -596,9 +596,9 @@ export function SystemSettingsView({ initialTab = 'status' }: { initialTab?: 'st
               </div>
             ) : (
               <form onSubmit={handleSaveTweaks} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-12 gap-6">
                   {/* Employee Number Prefix */}
-                  <div className="space-y-2">
+                  <div className="col-span-12 md:col-span-6 space-y-2">
                     <Label htmlFor="employeeNumberPrefix" className="text-xs font-semibold">
                       Employee ID Auto-Assignment Prefix
                     </Label>
@@ -610,7 +610,7 @@ export function SystemSettingsView({ initialTab = 'status' }: { initialTab?: 'st
                       }
                       maxLength={8}
                       placeholder="e.g. EMP or KD"
-                      className="font-mono text-xs uppercase"
+                      className="font-mono tabular-nums text-xs uppercase"
                     />
                     <p className="text-[11px] text-muted-foreground">
                       Used when registering new employees automatically: e.g. <span className="font-mono font-semibold">{tweaksForm.employeeNumberPrefix || 'EMP'}-0001</span>.
@@ -618,7 +618,7 @@ export function SystemSettingsView({ initialTab = 'status' }: { initialTab?: 'st
                   </div>
 
                   {/* Minimum Quality Yield % */}
-                  <div className="space-y-2">
+                  <div className="col-span-12 md:col-span-6 space-y-2">
                     <Label htmlFor="minQualityYieldPercent" className="text-xs font-semibold">
                       Minimum Baking Quality Yield Threshold (%)
                     </Label>
@@ -631,7 +631,7 @@ export function SystemSettingsView({ initialTab = 'status' }: { initialTab?: 'st
                       onChange={(e) =>
                         setTweaksForm({ ...tweaksForm, minQualityYieldPercent: Number(e.target.value) })
                       }
-                      className="font-mono text-xs"
+                      className="font-mono tabular-nums text-xs"
                     />
                     <p className="text-[11px] text-muted-foreground">
                       Mitad production batches with yield below this threshold trigger manager defect reviews.
@@ -639,7 +639,7 @@ export function SystemSettingsView({ initialTab = 'status' }: { initialTab?: 'st
                   </div>
 
                   {/* Token Session Duration */}
-                  <div className="space-y-2">
+                  <div className="col-span-12 md:col-span-6 space-y-2">
                     <Label htmlFor="tokenSessionDurationMinutes" className="text-xs font-semibold">
                       User Token Session Lifespan (Minutes)
                     </Label>
@@ -652,7 +652,7 @@ export function SystemSettingsView({ initialTab = 'status' }: { initialTab?: 'st
                       onChange={(e) =>
                         setTweaksForm({ ...tweaksForm, tokenSessionDurationMinutes: Number(e.target.value) })
                       }
-                      className="font-mono text-xs"
+                      className="font-mono tabular-nums text-xs"
                     />
                     <p className="text-[11px] text-muted-foreground">
                       Standard work shift: 480 min (8h), extended: 720 min (12h).
@@ -660,7 +660,7 @@ export function SystemSettingsView({ initialTab = 'status' }: { initialTab?: 'st
                   </div>
 
                   {/* Auto-Sync Interval */}
-                  <div className="space-y-2">
+                  <div className="col-span-12 md:col-span-6 space-y-2">
                     <Label htmlFor="autoSyncIntervalSeconds" className="text-xs font-semibold">
                       Background Auto-Sync Interval (Seconds)
                     </Label>
@@ -673,7 +673,7 @@ export function SystemSettingsView({ initialTab = 'status' }: { initialTab?: 'st
                       onChange={(e) =>
                         setTweaksForm({ ...tweaksForm, autoSyncIntervalSeconds: Number(e.target.value) })
                       }
-                      className="font-mono text-xs"
+                      className="font-mono tabular-nums text-xs"
                     />
                     <p className="text-[11px] text-muted-foreground">
                       Frequency at which offline POS & attendance actions flush to the server.
@@ -681,7 +681,7 @@ export function SystemSettingsView({ initialTab = 'status' }: { initialTab?: 'st
                   </div>
 
                   {/* Shift Grace Period */}
-                  <div className="space-y-2">
+                  <div className="col-span-12 md:col-span-6 space-y-2">
                     <Label htmlFor="enforceShiftClockInGraceMinutes" className="text-xs font-semibold">
                       Clock-In Attendance Grace Period (Minutes)
                     </Label>
@@ -697,7 +697,7 @@ export function SystemSettingsView({ initialTab = 'status' }: { initialTab?: 'st
                           enforceShiftClockInGraceMinutes: Number(e.target.value),
                         })
                       }
-                      className="font-mono text-xs"
+                      className="font-mono tabular-nums text-xs"
                     />
                     <p className="text-[11px] text-muted-foreground">
                       Minutes past shift start before an employee clock-in is flagged as LATE.

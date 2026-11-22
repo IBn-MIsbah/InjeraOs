@@ -427,8 +427,8 @@ export function UserProfileView({ auth, onLogout }: UserProfileViewProps) {
               </div>
             ) : (
               <form onSubmit={handleUpdateProfile} className="space-y-5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
+                <div className="grid grid-cols-12 gap-4">
+                  <div className="col-span-12 sm:col-span-6 space-y-1.5">
                     <label className="text-xs font-semibold text-foreground">
                       Full Name *
                     </label>
@@ -444,7 +444,7 @@ export function UserProfileView({ auth, onLogout }: UserProfileViewProps) {
                     </p>
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="col-span-12 sm:col-span-6 space-y-1.5">
                     <label className="text-xs font-semibold text-foreground">
                       Phone Number
                     </label>
@@ -452,7 +452,7 @@ export function UserProfileView({ auth, onLogout }: UserProfileViewProps) {
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="+251 9..."
-                      className="text-xs font-mono"
+                      className="text-xs font-mono tabular-nums"
                     />
                     <p className="text-[11px] text-muted-foreground">
                       For dispatch calls and shift notifications.
@@ -763,9 +763,9 @@ export function UserProfileView({ auth, onLogout }: UserProfileViewProps) {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="p-3.5 rounded-xl border bg-muted/30 space-y-1">
-                <span className="text-[10px] uppercase font-semibold text-muted-foreground">Assigned Role</span>
+            <div className="grid grid-cols-12 gap-3">
+              <div className="col-span-12 sm:col-span-4 p-3.5 rounded-xl border bg-muted/30 space-y-1">
+                <span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wider">Assigned Role</span>
                 <span className="text-sm font-bold text-foreground block">{userRole}</span>
                 <span className="text-[11px] text-muted-foreground">
                   {userRole === 'OWNER' && 'Full executive authority across all baking operations and financials.'}
@@ -777,8 +777,8 @@ export function UserProfileView({ auth, onLogout }: UserProfileViewProps) {
                 </span>
               </div>
 
-              <div className="p-3.5 rounded-xl border bg-muted/30 space-y-1">
-                <span className="text-[10px] uppercase font-semibold text-muted-foreground">Bakery Enterprise</span>
+              <div className="col-span-12 sm:col-span-4 p-3.5 rounded-xl border bg-muted/30 space-y-1">
+                <span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wider">Bakery Enterprise</span>
                 <span className="text-sm font-bold text-foreground block truncate">
                   {auth.business?.name ?? 'KD PLC'}
                 </span>
@@ -787,8 +787,8 @@ export function UserProfileView({ auth, onLogout }: UserProfileViewProps) {
                 </span>
               </div>
 
-              <div className="p-3.5 rounded-xl border bg-muted/30 space-y-1">
-                <span className="text-[10px] uppercase font-semibold text-muted-foreground">Station Assignment</span>
+              <div className="col-span-12 sm:col-span-4 p-3.5 rounded-xl border bg-muted/30 space-y-1">
+                <span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wider">Station Assignment</span>
                 <span className="text-sm font-bold text-foreground block">Main Baking Plant</span>
                 <span className="text-[11px] text-muted-foreground">
                   Mitad Clay & Electric lines, Flour Silo #1

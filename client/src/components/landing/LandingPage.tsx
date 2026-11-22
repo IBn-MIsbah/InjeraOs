@@ -167,29 +167,29 @@ export function LandingPage({
               )}
             </div>
 
-            {/* Quick Metrics Ticker */}
-            <div className="pt-8 grid grid-cols-2 gap-3 sm:grid-cols-4 max-w-4xl mx-auto text-left">
-              <div className="rounded-xl border border-border bg-card/70 p-3.5 backdrop-blur-sm shadow-xs">
+            {/* Quick Metrics Ticker (12-Grid System) */}
+            <div className="pt-8 grid grid-cols-12 gap-3 max-w-4xl mx-auto text-left">
+              <div className="col-span-6 sm:col-span-3 rounded-xl border border-border bg-card/70 p-3.5 backdrop-blur-sm shadow-xs">
                 <div className="text-xs font-medium text-muted-foreground">Production Costing</div>
-                <div className="text-lg font-bold text-forest dark:text-oat">100% Traceable</div>
+                <div className="text-lg font-bold font-mono tabular-nums text-forest dark:text-oat">100% Traceable</div>
                 <div className="text-[11px] text-muted-foreground">Every accepted injera accounted</div>
               </div>
 
-              <div className="rounded-xl border border-border bg-card/70 p-3.5 backdrop-blur-sm shadow-xs">
+              <div className="col-span-6 sm:col-span-3 rounded-xl border border-border bg-card/70 p-3.5 backdrop-blur-sm shadow-xs">
                 <div className="text-xs font-medium text-muted-foreground">Mitad Efficiency</div>
-                <div className="text-lg font-bold text-forest dark:text-oat">94.8% Average Yield</div>
+                <div className="text-lg font-bold font-mono tabular-nums text-forest dark:text-oat">94.8% Average Yield</div>
                 <div className="text-[11px] text-muted-foreground">Burnt/torn rejection logging</div>
               </div>
 
-              <div className="rounded-xl border border-border bg-card/70 p-3.5 backdrop-blur-sm shadow-xs">
+              <div className="col-span-6 sm:col-span-3 rounded-xl border border-border bg-card/70 p-3.5 backdrop-blur-sm shadow-xs">
                 <div className="text-xs font-medium text-muted-foreground">Stock Integrity</div>
-                <div className="text-lg font-bold text-forest dark:text-oat">Strict FIFO Rotation</div>
+                <div className="text-lg font-bold font-mono tabular-nums text-forest dark:text-oat">Strict FIFO Rotation</div>
                 <div className="text-[11px] text-muted-foreground">Freshness countdown & alerts</div>
               </div>
 
-              <div className="rounded-xl border border-border bg-card/70 p-3.5 backdrop-blur-sm shadow-xs">
+              <div className="col-span-6 sm:col-span-3 rounded-xl border border-border bg-card/70 p-3.5 backdrop-blur-sm shadow-xs">
                 <div className="text-xs font-medium text-muted-foreground">Offline Reliability</div>
-                <div className="text-lg font-bold text-forest dark:text-oat">Zero Data Loss</div>
+                <div className="text-lg font-bold font-mono tabular-nums text-forest dark:text-oat">Zero Data Loss</div>
                 <div className="text-[11px] text-muted-foreground">IndexedDB queued operations</div>
               </div>
             </div>
@@ -212,9 +212,9 @@ export function LandingPage({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-12 gap-6">
             {/* Pillar 1 */}
-            <Card className="border-border hover:border-forest/40 transition-all hover:shadow-md bg-card">
+            <Card className="col-span-12 sm:col-span-6 lg:col-span-4 border-border hover:border-forest/40 transition-all hover:shadow-md bg-card">
               <CardHeader className="pb-3">
                 <div className="h-10 w-10 rounded-lg bg-forest/10 flex items-center justify-center text-forest dark:bg-oat/15 dark:text-oat mb-2">
                   <Flame className="h-5 w-5" />
@@ -236,7 +236,7 @@ export function LandingPage({
             </Card>
 
             {/* Pillar 2 */}
-            <Card className="border-border hover:border-forest/40 transition-all hover:shadow-md bg-card">
+            <Card className="col-span-12 sm:col-span-6 lg:col-span-4 border-border hover:border-forest/40 transition-all hover:shadow-md bg-card">
               <CardHeader className="pb-3">
                 <div className="h-10 w-10 rounded-lg bg-forest/10 flex items-center justify-center text-forest dark:bg-oat/15 dark:text-oat mb-2">
                   <Layers className="h-5 w-5" />
@@ -258,7 +258,7 @@ export function LandingPage({
             </Card>
 
             {/* Pillar 3 */}
-            <Card className="border-border hover:border-forest/40 transition-all hover:shadow-md bg-card">
+            <Card className="col-span-12 sm:col-span-6 lg:col-span-4 border-border hover:border-forest/40 transition-all hover:shadow-md bg-card">
               <CardHeader className="pb-3">
                 <div className="h-10 w-10 rounded-lg bg-forest/10 flex items-center justify-center text-forest dark:bg-oat/15 dark:text-oat mb-2">
                   <Warehouse className="h-5 w-5" />
@@ -280,7 +280,7 @@ export function LandingPage({
             </Card>
 
             {/* Pillar 4 */}
-            <Card className="border-border hover:border-forest/40 transition-all hover:shadow-md bg-card">
+            <Card className="col-span-12 sm:col-span-6 lg:col-span-4 border-border hover:border-forest/40 transition-all hover:shadow-md bg-card">
               <CardHeader className="pb-3">
                 <div className="h-10 w-10 rounded-lg bg-forest/10 flex items-center justify-center text-forest dark:bg-oat/15 dark:text-oat mb-2">
                   <ShoppingCart className="h-5 w-5" />
@@ -302,7 +302,7 @@ export function LandingPage({
             </Card>
 
             {/* Pillar 5 */}
-            <Card className="border-border hover:border-forest/40 transition-all hover:shadow-md bg-card">
+            <Card className="col-span-12 sm:col-span-6 lg:col-span-4 border-border hover:border-forest/40 transition-all hover:shadow-md bg-card">
               <CardHeader className="pb-3">
                 <div className="h-10 w-10 rounded-lg bg-forest/10 flex items-center justify-center text-forest dark:bg-oat/15 dark:text-oat mb-2">
                   <Coins className="h-5 w-5" />
@@ -324,7 +324,7 @@ export function LandingPage({
             </Card>
 
             {/* Pillar 6 */}
-            <Card className="border-border hover:border-forest/40 transition-all hover:shadow-md bg-card">
+            <Card className="col-span-12 sm:col-span-6 lg:col-span-4 border-border hover:border-forest/40 transition-all hover:shadow-md bg-card">
               <CardHeader className="pb-3">
                 <div className="h-10 w-10 rounded-lg bg-forest/10 flex items-center justify-center text-forest dark:bg-oat/15 dark:text-oat mb-2">
                   <Cpu className="h-5 w-5" />
@@ -440,32 +440,32 @@ export function LandingPage({
                     </div>
                   </div>
 
-                  {/* Simulator Outputs */}
-                  <div className="rounded-xl border border-border bg-muted/40 p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-                    <div>
+                  {/* Simulator Outputs (12-Grid System) */}
+                  <div className="rounded-xl border border-border bg-muted/40 p-4 grid grid-cols-12 gap-3 text-center">
+                    <div className="col-span-6 sm:col-span-3">
                       <div className="text-[11px] text-muted-foreground">Total Batch Cost</div>
-                      <div className="text-base font-bold font-mono text-foreground mt-0.5">
+                      <div className="text-base font-bold font-mono tabular-nums text-foreground mt-0.5">
                         {totalBatchCost.toLocaleString()} ETB
                       </div>
                     </div>
 
-                    <div>
+                    <div className="col-span-6 sm:col-span-3">
                       <div className="text-[11px] text-muted-foreground">Cost per Injera</div>
-                      <div className="text-base font-bold font-mono text-forest dark:text-oat mt-0.5">
+                      <div className="text-base font-bold font-mono tabular-nums text-forest dark:text-oat mt-0.5">
                         {costPerInjera.toFixed(2)} ETB
                       </div>
                     </div>
 
-                    <div>
+                    <div className="col-span-6 sm:col-span-3">
                       <div className="text-[11px] text-muted-foreground">Suggested Price</div>
-                      <div className="text-base font-bold font-mono text-foreground mt-0.5">
+                      <div className="text-base font-bold font-mono tabular-nums text-foreground mt-0.5">
                         {suggestedSellingPrice.toFixed(2)} ETB
                       </div>
                     </div>
 
-                    <div>
+                    <div className="col-span-6 sm:col-span-3">
                       <div className="text-[11px] text-muted-foreground">Projected Margin</div>
-                      <div className="text-base font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-0.5">
+                      <div className="text-base font-bold font-mono tabular-nums text-emerald-600 dark:text-emerald-400 mt-0.5">
                         +{projectedGrossMargin}%
                       </div>
                     </div>
@@ -492,8 +492,8 @@ export function LandingPage({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="rounded-xl bg-forest-dark/80 p-6 border border-oat/15 space-y-3">
+          <div className="grid grid-cols-12 gap-6">
+            <div className="col-span-12 md:col-span-4 rounded-xl bg-forest-dark/80 p-6 border border-oat/15 space-y-3">
               <div className="h-10 w-10 rounded-lg bg-oat/15 flex items-center justify-center text-oat mb-2">
                 <ShieldCheck className="h-5 w-5" />
               </div>
@@ -504,7 +504,7 @@ export function LandingPage({
               </p>
             </div>
 
-            <div className="rounded-xl bg-forest-dark/80 p-6 border border-oat/15 space-y-3">
+            <div className="col-span-12 md:col-span-4 rounded-xl bg-forest-dark/80 p-6 border border-oat/15 space-y-3">
               <div className="h-10 w-10 rounded-lg bg-oat/15 flex items-center justify-center text-oat mb-2">
                 <Lock className="h-5 w-5" />
               </div>
@@ -515,7 +515,7 @@ export function LandingPage({
               </p>
             </div>
 
-            <div className="rounded-xl bg-forest-dark/80 p-6 border border-oat/15 space-y-3">
+            <div className="col-span-12 md:col-span-4 rounded-xl bg-forest-dark/80 p-6 border border-oat/15 space-y-3">
               <div className="h-10 w-10 rounded-lg bg-oat/15 flex items-center justify-center text-oat mb-2">
                 <HardDrive className="h-5 w-5" />
               </div>

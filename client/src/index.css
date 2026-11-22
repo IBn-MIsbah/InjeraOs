@@ -128,10 +128,24 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground antialiased selection:bg-forest selection:text-oat;
-  }
   html {
     @apply font-sans;
+  }
+  body {
+    @apply bg-background text-foreground antialiased selection:bg-forest selection:text-oat;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    text-rendering: optimizeLegibility;
+    letter-spacing: -0.011em;
+    line-height: 1.5;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    text-wrap: balance;
+    letter-spacing: -0.025em;
+  }
+  p, blockquote {
+    text-wrap: pretty;
+  }
+  .tabular-nums, [data-tabular-nums] {
+    font-variant-numeric: tabular-nums;
   }
 }
