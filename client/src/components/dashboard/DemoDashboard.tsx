@@ -20,8 +20,13 @@ import {
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
+  OnboardingDashboardWidget,
+  OnboardingGuideModal,
+} from '@/components/onboarding/OnboardingGuide'
+import {
   Award,
   BarChart3,
+  BookOpen,
   Boxes,
   CheckCircle2,
   ChefHat,
@@ -95,6 +100,7 @@ export function DemoDashboard({ auth, onLogout, onNavigateTab }: DemoDashboardPr
   const [perspective, setPerspective] = useState<'EXECUTIVE' | 'BAKER' | 'CASHIER' | 'STOREKEEPER'>(
     defaultPerspective
   )
+  const [guideOpen, setGuideOpen] = useState(false)
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true)
@@ -377,6 +383,17 @@ export function DemoDashboard({ auth, onLogout, onNavigateTab }: DemoDashboardPr
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setGuideOpen(true)}
+              className="border-border text-xs gap-1.5 cursor-pointer bg-forest/5 hover:bg-forest/10 border-forest/30 text-forest dark:text-oat"
+              title="Open step-by-step bakery setup checklist"
+            >
+              <BookOpen className="h-3.5 w-3.5 text-forest dark:text-oat" />
+              <span>Onboarding Guide</span>
+            </Button>
+
             <Button
               variant="outline"
               size="sm"
@@ -678,6 +695,11 @@ export function DemoDashboard({ auth, onLogout, onNavigateTab }: DemoDashboardPr
           </div>
         </div>
       )}
+
+      {/* Bakery Setup & Onboarding Interactive Checklist */}
+      <OnboardingDashboardWidget
+        onNavigateTab={(tab) => onNavigateTab?.(tab)}
+      />
 
       {/* Top Status & KPI Cards Grid - Role Adaptive */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -1585,6 +1607,13 @@ export function DemoDashboard({ auth, onLogout, onNavigateTab }: DemoDashboardPr
           </div>
         </div>
       )}
+
+      {/* Full Onboarding Guide Modal */}
+      <OnboardingGuideModal
+        open={guideOpen}
+        onOpenChange={setGuideOpen}
+        onNavigateTab={(tab) => onNavigateTab?.(tab)}
+      />
     </div>
   )
 }

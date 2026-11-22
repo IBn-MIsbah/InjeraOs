@@ -20,6 +20,7 @@ import { ExpensesManagementView } from '@/components/expenses/ExpensesManagement
 import { FinancialReportsView } from '@/components/reports/FinancialReportsView'
 import { SyncManagementView } from '@/components/sync/SyncManagementView'
 import { SystemSettingsView } from '@/components/system/SystemSettingsView'
+import { OnboardingGuideModal } from '@/components/onboarding/OnboardingGuide'
 import { Toaster } from '@/components/ui/sonner'
 import { AppSidebar, type TabType } from '@/components/layout/AppSidebar'
 import {
@@ -37,6 +38,7 @@ import {
 } from '@/components/ui/dialog'
 import { syncEngine } from '@/lib/sync-engine'
 import {
+  BookOpen,
   Boxes,
   ChevronDown,
   Coins,
@@ -67,6 +69,7 @@ export function App() {
   const [userDropdownOpen, setUserDropdownOpen] = useState(false)
   const userDropdownRef = useRef<HTMLDivElement>(null)
   const [mobileQuickActionsOpen, setMobileQuickActionsOpen] = useState(false)
+  const [onboardingOpen, setOnboardingOpen] = useState(false)
   const [pendingSyncCount, setPendingSyncCount] = useState(0)
 
   // Track pending offline queue items
@@ -231,6 +234,7 @@ export function App() {
         auth={auth}
         authView={authView}
         onSelectAuthView={setAuthView}
+        onOpenOnboarding={() => setOnboardingOpen(true)}
       />
 
       <SidebarInset className="min-h-screen flex flex-col bg-background">
@@ -392,6 +396,18 @@ export function App() {
                           </button>
                         </>
                       )}
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUserDropdownOpen(false)
+                          setOnboardingOpen(true)
+                        }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-colors hover:bg-muted text-foreground cursor-pointer text-xs"
+                      >
+                        <BookOpen className="h-4 w-4 text-forest dark:text-oat shrink-0" />
+                        <span>Onboarding Guide</span>
+                      </button>
                     </div>
 
                     {/* Sign Out Action */}
@@ -676,10 +692,32 @@ export function App() {
                 <span className="font-bold text-xs text-foreground">My Profile</span>
                 <span className="text-[10px] text-muted-foreground">Settings & security</span>
               </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileQuickActionsOpen(false)
+                  setOnboardingOpen(true)
+                }}
+                className="flex flex-col items-start p-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/15 text-left transition-colors cursor-pointer"
+              >
+                <div className="h-8 w-8 rounded-lg bg-emerald-500/20 text-emerald-600 flex items-center justify-center mb-1.5">
+                  <BookOpen className="h-4 w-4" />
+                </div>
+                <span className="font-bold text-xs text-foreground">Onboarding Guide</span>
+                <span className="text-[10px] text-muted-foreground">Checklist & guides</span>
+              </button>
             </div>
           </DialogContent>
         </Dialog>
       </SidebarInset>
+
+      {/* Bakery Onboarding Guide Modal */}
+      <OnboardingGuideModal
+        open={onboardingOpen}
+        onOpenChange={setOnboardingOpen}
+        onNavigateTab={setActiveTab}
+      />
 
       {/* Shadcn Sonner Toaster */}
       <Toaster />

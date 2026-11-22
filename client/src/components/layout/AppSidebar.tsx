@@ -15,6 +15,7 @@ import {
 import type { AuthContextResponse } from '@/lib/api'
 import { syncEngine } from '@/lib/sync-engine'
 import {
+  BookOpen,
   Boxes,
   Building2,
   ChefHat,
@@ -63,6 +64,7 @@ interface AppSidebarProps {
   auth: AuthContextResponse | null
   authView: 'landing' | 'login' | 'register'
   onSelectAuthView: (view: 'landing' | 'login' | 'register') => void
+  onOpenOnboarding?: () => void
 }
 
 export function AppSidebar({
@@ -71,6 +73,7 @@ export function AppSidebar({
   auth,
   authView,
   onSelectAuthView,
+  onOpenOnboarding,
 }: AppSidebarProps) {
   const [isOnline, setIsOnline] = useState(
     typeof navigator !== 'undefined' ? navigator.onLine : true
@@ -402,6 +405,19 @@ export function AppSidebar({
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
+              {onOpenOnboarding && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={onOpenOnboarding}
+                    tooltip="Bakery Onboarding Checklist & Operating Guides"
+                    className="cursor-pointer gap-2.5 text-xs text-forest dark:text-oat font-medium hover:bg-forest/10 dark:hover:bg-oat/10"
+                  >
+                    <BookOpen className="h-4 w-4 text-forest dark:text-oat" />
+                    <span>Onboarding Guide</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
+
               <SidebarMenuItem>
                 <SidebarMenuButton
                   isActive={activeTab === 'landing'}
