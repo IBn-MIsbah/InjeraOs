@@ -54,9 +54,17 @@ export const updateSystemSettings = async (
   }
 
   const updated: SystemSettings = {
-    ...current,
-    ...input,
     businessId,
+    employeeNumberPrefix: input.employeeNumberPrefix ?? current.employeeNumberPrefix,
+    minQualityYieldPercent: input.minQualityYieldPercent ?? current.minQualityYieldPercent,
+    tokenSessionDurationMinutes: input.tokenSessionDurationMinutes ?? current.tokenSessionDurationMinutes,
+    maintenanceMode: input.maintenanceMode ?? current.maintenanceMode,
+    autoSyncIntervalSeconds: input.autoSyncIntervalSeconds ?? current.autoSyncIntervalSeconds,
+    enforceShiftClockInGraceMinutes: input.enforceShiftClockInGraceMinutes ?? current.enforceShiftClockInGraceMinutes,
+    allowOfflineTransactions: input.allowOfflineTransactions ?? current.allowOfflineTransactions,
+    currency: input.currency ?? current.currency,
+    timezone: input.timezone ?? current.timezone,
+    dateCalendar: input.dateCalendar ?? current.dateCalendar,
     updatedAt: new Date().toISOString(),
   }
 

@@ -1,4 +1,7 @@
 import express, { type Express } from 'express'
+import path from 'path'
+import fs from 'fs'
+import { prisma } from './lib/prisma.js'
 import { errorHandler } from './middleware/error-handler.js'
 import { requestLogger } from './middleware/request-logger.js'
 import { authRouter } from './modules/auth/index.js'
@@ -23,6 +26,21 @@ export const createApp = (): Express => {
   const app = express()
 
   app.disable('x-powered-by')
+
+  // Trust upstream reverse proxies (Nginx, Caddy, Cloudflare, AWS ALB)
+  app.set('trust proxy', 1)
+
+  // Security headers middleware
+  app.use((_req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff')
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN')
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+    if (process.env.NODE_ENV === 'production') {
+      res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+    }
+    next()
+  })
 
   // Structured HTTP request logging
   app.use(requestLogger)
@@ -49,8 +67,36 @@ export const createApp = (): Express => {
     next()
   })
 
-  // Health check endpoint
-  app.get('/health', (_req, res) => res.status(200).json({ status: 'ok' }))
+  // Health check endpoint with deep database reachability probing
+  app.get(['/health', '/healthz'], async (_req, res) => {
+    try {
+      await prisma.$queryRaw`SELECT 1`
+      res.status(200).json({
+        status: 'ok',
+        uptime: Math.floor(process.uptime()),
+        timestamp: new Date().toISOString(),
+        services: {
+          database: 'connected',
+        },
+      })
+    } catch (err: unknown) {
+      res.status(503).json({
+        status: 'degraded',
+        uptime: Math.floor(process.uptime()),
+        timestamp: new Date().toISOString(),
+        services: {
+          database: 'disconnected',
+        },
+        error: err instanceof Error ? err.message : 'Database ping failed',
+      })
+    }
+  })
+
+  // Client Static Files (in Production if present)
+  const clientDistPath = process.env.CLIENT_DIST_PATH ?? path.resolve(process.cwd(), '../client/dist')
+  if (fs.existsSync(clientDistPath)) {
+    app.use(express.static(clientDistPath, { index: false }))
+  }
 
   // API Modules
   app.use('/api/auth', authRouter)
@@ -72,7 +118,17 @@ export const createApp = (): Express => {
   app.use('/api/system', systemRouter)
   app.use('/api/audit-logs', auditRouter)
 
-  // 404 Route Not Found
+  // SPA Fallback for client routes in Production
+  if (fs.existsSync(clientDistPath)) {
+    app.use((req, res, next) => {
+      if (req.method === 'GET' && !req.path.startsWith('/api') && !req.path.startsWith('/health')) {
+        return res.sendFile(path.join(clientDistPath, 'index.html'))
+      }
+      next()
+    })
+  }
+
+  // 404 Route Not Found for unmatched API calls
   app.use((req, res) => {
     res.status(404).json({
       error: 'NOT_FOUND',

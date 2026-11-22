@@ -1,4 +1,5 @@
 import axios, { type InternalAxiosRequestConfig } from 'axios'
+import { updateNetworkStatus } from './network'
 import type {
   ActiveSession,
   AuthContextResponse,
@@ -221,38 +222,71 @@ export const api = axios.create({
   },
 })
 
-// Auto-refresh token rotation interceptor
+// Auto-refresh token rotation & network resiliency interceptor
 let refreshPromise: Promise<void> | undefined
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    updateNetworkStatus({ isServerReachable: true })
+    return response
+  },
   async (error) => {
     const originalRequest = error.config as
-      | (InternalAxiosRequestConfig & { _retried?: boolean })
+      | (InternalAxiosRequestConfig & { _retried?: boolean; _networkRetried?: boolean })
       | undefined
 
-    if (
-      !originalRequest ||
-      originalRequest._retried ||
-      error.response?.status !== 401 ||
-      originalRequest.url?.includes('/auth/refresh') ||
-      originalRequest.url?.includes('/auth/login') ||
-      originalRequest.url?.includes('/auth/register')
-    ) {
+    // 1. Detect Network Down / Disconnection / Timeout
+    const isNetworkError =
+      !error.response ||
+      error.code === 'ERR_NETWORK' ||
+      error.code === 'ECONNABORTED' ||
+      error.message === 'Network Error'
+
+    if (isNetworkError) {
+      updateNetworkStatus({ isServerReachable: false })
+
+      // Auto-retry idempotent GET requests once after brief delay
+      if (
+        originalRequest &&
+        !originalRequest._networkRetried &&
+        (originalRequest.method?.toLowerCase() === 'get' || !originalRequest.method)
+      ) {
+        originalRequest._networkRetried = true
+        await new Promise((resolve) => setTimeout(resolve, 800))
+        return api(originalRequest)
+      }
+
       throw error
     }
 
-    originalRequest._retried = true
+    // 2. Handle 401 Unauthorized token rotation
+    if (
+      originalRequest &&
+      !originalRequest._retried &&
+      error.response?.status === 401 &&
+      !originalRequest.url?.includes('/auth/refresh') &&
+      !originalRequest.url?.includes('/auth/login') &&
+      !originalRequest.url?.includes('/auth/register')
+    ) {
+      originalRequest._retried = true
 
-    refreshPromise ??= api
-      .post('/auth/refresh')
-      .then(() => undefined)
-      .finally(() => {
-        refreshPromise = undefined
-      })
+      refreshPromise ??= api
+        .post('/auth/refresh')
+        .then(() => undefined)
+        .finally(() => {
+          refreshPromise = undefined
+        })
 
-    await refreshPromise
-    return api(originalRequest)
+      await refreshPromise
+      return api(originalRequest)
+    }
+
+    // 3. Mark server reachable if we received an HTTP response status
+    if (error.response?.status) {
+      updateNetworkStatus({ isServerReachable: true })
+    }
+
+    throw error
   }
 )
 

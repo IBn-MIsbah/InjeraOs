@@ -1,6 +1,7 @@
 import 'dotenv/config'
 import { app } from './app.js'
 import { logger } from './lib/logger.js'
+import { prisma } from './lib/prisma.js'
 
 const port = Number(process.env.PORT ?? 3000)
 const server = app.listen(port, () => {
@@ -20,7 +21,22 @@ process.on('uncaughtException', (error: Error) => {
 
 const shutdown = (signal: string) => {
   logger.info({ signal }, `${signal} received; starting graceful shutdown`)
-  server.close((error) => {
+
+  // Force exit after 10 seconds if hanging
+  const forceTimer = setTimeout(() => {
+    logger.error('Graceful shutdown timed out after 10s; forcing exit')
+    process.exit(1)
+  }, 10000)
+  forceTimer.unref()
+
+  server.close(async (error) => {
+    try {
+      await prisma.$disconnect()
+      logger.info('Database disconnected cleanly')
+    } catch (dbErr) {
+      logger.error({ err: dbErr }, 'Error disconnecting database')
+    }
+
     if (error) {
       logger.error({ err: error }, 'Error during server shutdown')
       process.exitCode = 1

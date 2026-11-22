@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.tsx";
 import { TooltipProvider } from "./components/ui/tooltip.tsx";
+import { ErrorBoundary } from "./components/common/ErrorBoundary.tsx";
 
 if ("serviceWorker" in navigator && !import.meta.env.DEV) {
   window.addEventListener("load", () => {
@@ -14,8 +15,10 @@ if ("serviceWorker" in navigator && !import.meta.env.DEV) {
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <TooltipProvider>
-      <App />
-    </TooltipProvider>
+    <ErrorBoundary>
+      <TooltipProvider>
+        <App />
+      </TooltipProvider>
+    </ErrorBoundary>
   </StrictMode>,
 );

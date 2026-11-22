@@ -21,6 +21,8 @@ import { FinancialReportsView } from '@/components/reports/FinancialReportsView'
 import { SyncManagementView } from '@/components/sync/SyncManagementView'
 import { SystemSettingsView } from '@/components/system/SystemSettingsView'
 import { OnboardingGuideModal, SetupProgressionBanner } from '@/components/onboarding/OnboardingGuide'
+import { NetworkStatusBar } from '@/components/common/NetworkStatusBar'
+import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { Toaster } from '@/components/ui/sonner'
 import { AppSidebar, type TabType } from '@/components/layout/AppSidebar'
 import {
@@ -54,7 +56,6 @@ import {
   Sliders,
   Sparkles,
   User,
-  WifiOff,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -124,9 +125,6 @@ export function App() {
   const [authView, setAuthView] = useState<'landing' | 'login' | 'register'>('landing')
   const [activeTab, setActiveTab] = useState<TabType>('workspace')
   const [isInitializing, setIsInitializing] = useState(true)
-  const [isOnline, setIsOnline] = useState(
-    typeof navigator !== 'undefined' ? navigator.onLine : true
-  )
   const [userDropdownOpen, setUserDropdownOpen] = useState(false)
   const userDropdownRef = useRef<HTMLDivElement>(null)
   const [mobileQuickActionsOpen, setMobileQuickActionsOpen] = useState(false)
@@ -248,20 +246,6 @@ export function App() {
       document.removeEventListener('keydown', handleKeyDown)
     }
   }, [userDropdownOpen])
-
-  // Listen to connectivity changes
-  useEffect(() => {
-    const handleOnline = () => setIsOnline(true)
-    const handleOffline = () => setIsOnline(false)
-
-    window.addEventListener('online', handleOnline)
-    window.addEventListener('offline', handleOffline)
-
-    return () => {
-      window.removeEventListener('online', handleOnline)
-      window.removeEventListener('offline', handleOffline)
-    }
-  }, [])
 
   // Verify session on page load using secure httpOnly cookies
   useEffect(() => {
@@ -572,23 +556,8 @@ export function App() {
           </div>
         </header>
 
-        {/* Global Offline Banner */}
-        {!isOnline && (
-          <div className="flex items-center justify-between border-b border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs text-amber-800 dark:text-amber-200">
-            <div className="flex items-center gap-2">
-              <WifiOff className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-              <span>
-                <strong>Working in Offline Mode.</strong> Operations will queue in IndexedDB and synchronize automatically upon reconnection.
-              </span>
-            </div>
-            <button
-              onClick={() => navigateToTab('sync')}
-              className="cursor-pointer font-medium underline hover:no-underline ml-2"
-            >
-              View Offline Queue
-            </button>
-          </div>
-        )}
+        {/* Real-time Network & Offline Connectivity Status Bar */}
+        <NetworkStatusBar />
 
         {/* Persistent Setup Order Progression Banner (Admin & Owner) */}
         {auth && (auth.role === 'OWNER' || auth.role === 'ADMIN') && (
@@ -599,53 +568,55 @@ export function App() {
           />
         )}
 
-        {/* Main Workspace Area */}
+        {/* Main Workspace Area protected by Error Boundary */}
         <main className="flex-1 p-4 md:p-8 pb-24 md:pb-8">
-          {!canAccessTab(auth?.role, activeTab) ? (
-            <DemoDashboard
-              auth={auth}
-              onLogout={handleLogout}
-              onNavigateTab={(tab) => navigateToTab(tab as TabType)}
-            />
-          ) : activeTab === 'branches' ? (
-            <BranchManagementView />
-          ) : activeTab === 'workforce' ? (
-            <WorkforceManagementView />
-          ) : activeTab === 'materials' ? (
-            <MaterialsManagementView />
-          ) : activeTab === 'recipes' ? (
-            <RecipesManagementView />
-          ) : activeTab === 'production' ? (
-            <ProductionManagementView />
-          ) : activeTab === 'costing' ? (
-            <CostingManagementView />
-          ) : activeTab === 'inventory' ? (
-            <InventoryManagementView />
-          ) : activeTab === 'sales' ? (
-            <SalesManagementView />
-          ) : activeTab === 'expenses' ? (
-            <ExpensesManagementView />
-          ) : activeTab === 'reports' ? (
-            <FinancialReportsView />
-          ) : activeTab === 'sync' ? (
-            <SyncManagementView />
-          ) : activeTab === 'team' ? (
-            <TeamMembersView />
-          ) : activeTab === 'roles' ? (
-            <RolesManagementView />
-          ) : activeTab === 'profile' ? (
-            <UserProfileView auth={auth} onLogout={handleLogout} />
-          ) : activeTab === 'settings' ? (
-            <BusinessSettingsView />
-          ) : activeTab === 'system' ? (
-            <SystemSettingsView />
-          ) : (
-            <DemoDashboard
-              auth={auth}
-              onLogout={handleLogout}
-              onNavigateTab={(tab) => navigateToTab(tab as TabType)}
-            />
-          )}
+          <ErrorBoundary>
+            {!canAccessTab(auth?.role, activeTab) ? (
+              <DemoDashboard
+                auth={auth}
+                onLogout={handleLogout}
+                onNavigateTab={(tab) => navigateToTab(tab as TabType)}
+              />
+            ) : activeTab === 'branches' ? (
+              <BranchManagementView />
+            ) : activeTab === 'workforce' ? (
+              <WorkforceManagementView />
+            ) : activeTab === 'materials' ? (
+              <MaterialsManagementView />
+            ) : activeTab === 'recipes' ? (
+              <RecipesManagementView />
+            ) : activeTab === 'production' ? (
+              <ProductionManagementView />
+            ) : activeTab === 'costing' ? (
+              <CostingManagementView />
+            ) : activeTab === 'inventory' ? (
+              <InventoryManagementView />
+            ) : activeTab === 'sales' ? (
+              <SalesManagementView />
+            ) : activeTab === 'expenses' ? (
+              <ExpensesManagementView />
+            ) : activeTab === 'reports' ? (
+              <FinancialReportsView />
+            ) : activeTab === 'sync' ? (
+              <SyncManagementView />
+            ) : activeTab === 'team' ? (
+              <TeamMembersView />
+            ) : activeTab === 'roles' ? (
+              <RolesManagementView />
+            ) : activeTab === 'profile' ? (
+              <UserProfileView auth={auth} onLogout={handleLogout} />
+            ) : activeTab === 'settings' ? (
+              <BusinessSettingsView />
+            ) : activeTab === 'system' ? (
+              <SystemSettingsView />
+            ) : (
+              <DemoDashboard
+                auth={auth}
+                onLogout={handleLogout}
+                onNavigateTab={(tab) => navigateToTab(tab as TabType)}
+              />
+            )}
+          </ErrorBoundary>
         </main>
 
         <footer className="border-t border-border/60 py-4 text-center text-xs text-muted-foreground mb-16 md:mb-0">

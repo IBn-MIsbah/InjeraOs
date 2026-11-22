@@ -1,7 +1,7 @@
 import { Router, type Request, type Response, type Router as ExpressRouter } from 'express'
 import { prisma } from '../../lib/prisma.js'
 import { authenticate, requireRole } from '../auth/index.js'
-import type { AuditSource } from '../../generated/prisma/index.js'
+import type { AuditSource } from '../../generated/prisma/enums.js'
 
 export const auditRouter: ExpressRouter = Router()
 
@@ -97,7 +97,7 @@ auditRouter.post('/', async (req: Request, res: Response) => {
       entityId: entityId || businessId,
       beforeData: beforeData ?? undefined,
       afterData: afterData ?? undefined,
-      reason: reason ? String(reason) : undefined,
+      reason: reason ? String(reason) : null,
       source: (source && ['WEB', 'MOBILE', 'OFFLINE_SYNC', 'SYSTEM'].includes(source))
         ? source as AuditSource
         : 'WEB',
