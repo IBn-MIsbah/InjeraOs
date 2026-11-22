@@ -13,7 +13,6 @@ import {
   ShieldCheck,
   ShoppingCart,
   Store,
-  UserPlus,
   Warehouse,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -53,9 +52,9 @@ export function LandingPage({
     <div className="relative min-h-screen bg-background text-foreground antialiased selection:bg-forest selection:text-oat">
       {/* Floating Island Navigation Bar */}
       <header className="fixed top-5 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-5xl">
-        <nav className="flex items-center justify-between rounded-full border border-forest/20 bg-background/85 px-4 sm:px-6 py-2.5 shadow-xl backdrop-blur-xl transition-all">
+        <nav className="flex items-center justify-between rounded-full border border-border/80 bg-background/85 px-4 sm:px-6 py-2.5 shadow-xl backdrop-blur-xl transition-all">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-forest text-oat shadow-xs">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full border border-border/70 bg-muted/50 text-[#1D4A35] dark:text-[#EEE5D4] shadow-xs">
               <Store className="h-4 w-4" />
             </div>
             <div className="flex items-center gap-1.5">
@@ -80,36 +79,28 @@ export function LandingPage({
             </a>
           </div>
 
-          {/* Floating Island CTA */}
+          {/* Slimmer Top-Right Utility Area (Secondary Actions) */}
           <div className="flex items-center gap-2">
             {isAuthenticated ? (
               <Button
+                variant="ghost"
+                size="sm"
                 onClick={onEnterWorkspace}
-                className="bg-forest text-oat hover:bg-forest-light rounded-full text-xs font-semibold gap-1.5 px-4 h-8 shadow-sm cursor-pointer"
+                className="rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 h-8 px-3 gap-1.5 transition-colors cursor-pointer border border-border/60"
               >
-                <span>Launch Workspace</span>
+                <span>Workspace</span>
                 <ChevronRight className="h-3.5 w-3.5" />
               </Button>
             ) : (
-              <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onOpenLogin}
-                  className="rounded-full text-xs font-semibold text-forest dark:text-oat hover:bg-forest/10 h-8 px-3 gap-1 cursor-pointer"
-                >
-                  <LogIn className="h-3.5 w-3.5" />
-                  <span>Sign In</span>
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={onOpenRegister}
-                  className="bg-forest text-oat hover:bg-forest-light rounded-full text-xs font-semibold h-8 px-3.5 gap-1 shadow-sm cursor-pointer"
-                >
-                  <UserPlus className="h-3.5 w-3.5" />
-                  <span>Get Started</span>
-                </Button>
-              </>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onOpenLogin}
+                className="rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 h-8 px-3.5 gap-1.5 transition-colors cursor-pointer border border-border/60"
+              >
+                <LogIn className="h-3.5 w-3.5" />
+                <span>Sign In</span>
+              </Button>
             )}
           </div>
         </nav>
@@ -135,36 +126,24 @@ export function LandingPage({
               FIFO freshness dispatching, customer credit ledgers, and zero-downtime offline synchronization.
             </p>
 
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-              {isAuthenticated ? (
-                <Button
-                  size="lg"
-                  onClick={onEnterWorkspace}
-                  className="bg-forest text-oat hover:bg-forest-light rounded-xl gap-2 px-6 font-semibold shadow-md cursor-pointer"
-                >
-                  <span>Go to Management Dashboard</span>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              ) : (
-                <>
-                  <Button
-                    size="lg"
-                    onClick={onOpenRegister}
-                    className="bg-forest text-oat hover:bg-forest-light rounded-xl gap-2 px-6 font-semibold shadow-md cursor-pointer"
-                  >
-                    <span>Register Business</span>
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    onClick={onOpenLogin}
-                    className="rounded-xl border-border hover:bg-muted text-xs font-semibold px-5 cursor-pointer"
-                  >
-                    Sign in to Workspace
-                  </Button>
-                </>
-              )}
+            {/* Single Visually Dominant Hero Action Above the Fold */}
+            <div className="flex items-center justify-center pt-2">
+              <button
+                type="button"
+                onClick={onOpenRegister}
+                style={{
+                  backgroundColor: '#1D4A35',
+                  color: '#EEE5D4',
+                  fontSize: '16px',
+                  fontWeight: 600,
+                  padding: '14px 28px',
+                  borderRadius: '12px',
+                }}
+                className="inline-flex items-center justify-center gap-2.5 shadow-lg shadow-[#1D4A35]/25 hover:opacity-95 active:scale-[0.99] transition-all cursor-pointer border-0 leading-none"
+              >
+                <span>Register Business</span>
+                <ChevronRight className="h-4 w-4" />
+              </button>
             </div>
 
             {/* Quick Metrics Ticker (12-Grid System) */}
