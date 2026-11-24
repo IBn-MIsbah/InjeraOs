@@ -51,8 +51,14 @@ export const createApp = (): Express => {
   // CORS headers
   app.use((req, res, next) => {
     const origin = req.header('origin')
-    const clientOrigin = process.env.CLIENT_ORIGIN ?? 'http://localhost:5173'
-    if (origin === clientOrigin || !origin) {
+    const configuredOrigins = (process.env.CLIENT_ORIGIN ?? 'http://localhost:5173')
+      .split(',')
+      .map((o) => o.trim())
+      .filter(Boolean)
+
+    const isAllowed = !origin || configuredOrigins.includes('*') || configuredOrigins.includes(origin)
+
+    if (isAllowed) {
       if (origin) {
         res.setHeader('Access-Control-Allow-Origin', origin)
       }

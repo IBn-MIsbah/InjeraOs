@@ -1,170 +1,86 @@
-# InjeraOS Production & Deployment Guide
+# InjeraOS Production Deployment Guide (Vercel + Render)
 
-This guide details production deployment, containerization, reverse proxying, and the system's fault-tolerant error handling and offline operational mechanisms.
+This architecture separates the **Frontend (Client)** on **Vercel** and the **Backend (Server)** on **Render**.
 
----
-
-## 1. Resilience & Network Fault-Tolerance Architecture
-
-### Client-Side Error & Offline Handling
-The client is architected to operate safely during network blackouts, server restarts, and component exceptions:
-1. **Global React Error Boundary (`ErrorBoundary.tsx`)**:
-   - Catches uncaught render crashes in the component tree.
-   - Prevents blank white screens by displaying a clear recovery screen with options to *Reload Application*, *Try Again*, or *Return to Dashboard*.
-   - Safeguards the user's unsynced local changes and offline ledger.
-2. **Persistent Network & Offline Status Banner (`NetworkStatusBar.tsx`)**:
-   - Continuously monitors browser connectivity (`online` / `offline` window events) and active backend server reachability (`/health` / `/healthz`).
-   - If the device loses internet or the backend server drops, an amber status banner alerts the operator:
-     - Operations automatically route to the **IndexedDB offline queue**.
-     - Displays real-time pending queue counts.
-     - Provides a **Check Connectivity** button to test the connection.
-     - Auto-triggers queue synchronization the moment connectivity is restored.
-3. **Axios Network Interceptor & Retries (`api.ts`)**:
-   - Intercepts network failure (`ERR_NETWORK`, `ECONNABORTED`, timeouts).
-   - Marks server reachability as false to trigger the offline ledger.
-   - Automatically retries idempotent `GET` requests once after an 800ms backoff before propagating errors.
-   - Transparently handles JWT token rotation upon `401 Unauthorized`.
-
----
-
-## 2. Server Production Hardening
-
-1. **Security Headers & Reverse Proxy Trust**:
-   - `X-Content-Type-Options: nosniff`
-   - `X-Frame-Options: SAMEORIGIN`
-   - `Referrer-Policy: strict-origin-when-cross-origin`
-   - `Strict-Transport-Security` (HSTS enabled in production)
-   - `app.set('trust proxy', 1)` for SSL-terminating proxies (Nginx, Traefik, AWS ALB, Cloudflare).
-2. **Graceful Shutdown & Signal Trapping**:
-   - Traps `SIGTERM` and `SIGINT`.
-   - Closes HTTP server connections, cleans up database connections via `prisma.$disconnect()`, and enforces a 10s timeout to prevent hanging zombie containers.
-3. **Deep Health & Readiness Probes**:
-   - `/health` and `/healthz`: Executes a live `SELECT 1` database query to verify DB availability, returning `200 OK` or `503 Service Unavailable`.
-4. **Single-Port Unified SPA Serving**:
-   - In production, Express automatically serves compiled frontend assets from `CLIENT_DIST_PATH` (`client/dist`) with SPA fallback for browser routing (`/*splat` fallback to `index.html`), allowing single-container deployment.
-
----
-
-## 3. Deployment with Docker & Docker Compose (Recommended)
-
-### Step 1: Prepare Environment File
-Copy the production template:
-```bash
-cp .env.production.example .env
 ```
-Ensure you set strong secrets:
-- `JWT_SECRET` (at least 32 random characters)
-- `JWT_REFRESH_SECRET` (at least 32 random characters)
-- `POSTGRES_PASSWORD`
-
-### Step 2: Build and Run Containerized Services
-```bash
-docker compose up -d --build
-```
-This launches:
-- `injera_db`: PostgreSQL 16 Alpine with persistent volume `injera_pgdata` and internal healthcheck.
-- `injera_app`: Multi-stage built Node 22 Alpine container running compiled backend and frontend on port `3000`.
-
-### Step 3: Verify Container Health
-```bash
-docker compose ps
-curl http://localhost:3000/healthz
-```
-Expected output:
-```json
-{
-  "status": "ok",
-  "uptime": 12,
-  "timestamp": "2026-11-22T14:40:00.000Z",
-  "services": {
-    "database": "connected"
-  }
-}
+┌─────────────────────────────────┐       ┌─────────────────────────────────┐
+│         Vercel (Client)         │       │          Render (Server)        │
+│  React 19 + Vite + Tailwind v4  │ ───►  │  Express 5 + Prisma + Node.js   │
+│  SPA Routing via vercel.json    │ CORS  │  Dockerfile / Web Service       │
+└─────────────────────────────────┘       └──────────────┬──────────────────┘
+                                                         │
+                                                         ▼
+                                          ┌─────────────────────────────────┐
+                                          │      PostgreSQL Database        │
+                                          │   Render Postgres / Managed DB  │
+                                          └─────────────────────────────────┘
 ```
 
 ---
 
-## 4. Standalone Deployment (Linux VPS with Systemd & Nginx)
+## 1. Backend Deployment on Render
 
-### Step 1: Install Dependencies & Build
+### Method A: Deploy via Docker (Recommended)
+1. Go to the [Render Dashboard](https://dashboard.render.com/) and click **New + > Web Service**.
+2. Connect your Git repository.
+3. Configure the service settings:
+   - **Name**: `injera-api` (or your preferred name)
+   - **Region**: Select your preferred region (e.g., Frankfurt, Oregon)
+   - **Root Directory**: `server`
+   - **Runtime**: **Docker**
+   - **Dockerfile Path**: `./Dockerfile`
+   - **Docker Build Context**: `.`
+4. Set the **Health Check Path** to `/healthz`.
+
+### Method B: Deploy via Node Runtime
+If you prefer running directly with Node on Render instead of Docker:
+- **Root Directory**: `server`
+- **Runtime**: **Node**
+- **Build Command**: `corepack enable && pnpm install --frozen-lockfile && pnpm run db:generate && pnpm run build`
+- **Start Command**: `pnpm run db:deploy && pnpm start`
+- **Health Check Path**: `/healthz`
+
+### Environment Variables on Render
+Add the following in your Render Web Service **Environment** tab:
+
+| Variable | Example Value | Description |
+|---|---|---|
+| `NODE_ENV` | `production` | Production environment flag |
+| `DATABASE_URL` | `postgresql://...` | Connection string to PostgreSQL (use Internal URL if hosted on Render) |
+| `CLIENT_ORIGIN` | `https://your-app.vercel.app` | Vercel domain (supports comma-separated origins) |
+| `JWT_SECRET` | `(32+ random characters)` | Cryptographic secret for access tokens |
+| `JWT_REFRESH_SECRET` | `(32+ random characters)` | Cryptographic secret for refresh tokens |
+| `RUN_MIGRATIONS` | `true` | Automatically executes `prisma migrate deploy` on startup |
+| `SEED_SUPERADMIN` | `false` | Set `true` on first boot if you want initial superadmin created |
+| `SUPERADMIN_EMAIL` | `admin@bakery.et` | Initial superadmin email (if seeding) |
+| `SUPERADMIN_PASSWORD` | `YourSecurePassword!` | Initial superadmin password (if seeding) |
+
+---
+
+## 2. Frontend Deployment on Vercel
+
+1. Go to the [Vercel Dashboard](https://vercel.com/new) and import your Git repository.
+2. In the project configuration:
+   - **Root Directory**: Click "Edit" and choose `client`.
+   - **Framework Preset**: `Vite` (automatically detected).
+   - **Build Command**: `pnpm run build` (or Vite default).
+   - **Output Directory**: `dist`.
+3. In **Environment Variables**, add:
+   - **`VITE_API_URL`**: `https://injera-api.onrender.com/api` (Replace with your actual Render service URL).
+4. Deploy the project.
+5. Vercel automatically reads `client/vercel.json` to route all SPA routes to `index.html`.
+6. Once deployed, copy your Vercel production URL (e.g., `https://your-app.vercel.app`) and ensure it matches the `CLIENT_ORIGIN` environment variable in your Render backend.
+
+---
+
+## 3. Local Development with Docker in `server/`
+
+To run the database and server locally using Docker:
+
 ```bash
-# Build Client
-cd client
-pnpm install --frozen-lockfile
-pnpm run build
-
-# Build Server
-cd ../server
-pnpm install --frozen-lockfile
-pnpm run db:generate
-pnpm run db:deploy
-pnpm run build
+cd server
+docker compose up --build -d
 ```
 
-### Step 2: Configure Systemd Service
-Create `/etc/systemd/system/injera.service`:
-```ini
-[Unit]
-Description=Injera Commercial Bakery OS
-After=network.target postgresql.service
-
-[Service]
-Type=simple
-User=deploy
-WorkingDirectory=/var/www/injera/server
-ExecStart=/usr/bin/node dist/server.js
-Restart=always
-RestartSec=10
-EnvironmentFile=/var/www/injera/.env
-
-[Install]
-WantedBy=multi-user.target
-```
-Enable and start the service:
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable injera
-sudo systemctl start injera
-```
-
-### Step 3: Nginx Reverse Proxy Configuration
-Create `/etc/nginx/sites-available/injera.conf`:
-```nginx
-server {
-    listen 80;
-    server_name bakery.yourdomain.com;
-    return 301 https://$host$request_uri;
-}
-
-server {
-    listen 443 ssl http2;
-    server_name bakery.yourdomain.com;
-
-    ssl_certificate /etc/letsencrypt/live/bakery.yourdomain.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/bakery.yourdomain.com/privkey.pem;
-
-    # Security Headers
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-
-    # Proxy to Node.js backend & SPA
-    location / {
-        proxy_pass http://127.0.0.1:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-        proxy_read_timeout 60s;
-    }
-}
-```
-Enable the site and reload Nginx:
-```bash
-sudo ln -s /etc/nginx/sites-available/injera.conf /etc/nginx/sites-enabled/
-sudo nginx -t && sudo systemctl reload nginx
-```
+- API health probe: `http://localhost:3000/healthz`
+- Database runs on port `5432` with volume `injera_pgdata`.

@@ -17,11 +17,11 @@ services:
     networks:
       - injera_network
 
-  app:
+  api:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: injera_app
+    container_name: injera_api
     restart: unless-stopped
     ports:
       - "${PORT:-3000}:3000"
@@ -29,7 +29,7 @@ services:
       NODE_ENV: production
       PORT: 3000
       DATABASE_URL: postgresql://${POSTGRES_USER:-injera_user}:${POSTGRES_PASSWORD:-injera_secure_pass_2026}@db:5432/${POSTGRES_DB:-injera_prod}?schema=public
-      CLIENT_ORIGIN: ${CLIENT_ORIGIN:-http://localhost:3000}
+      CLIENT_ORIGIN: ${CLIENT_ORIGIN:-http://localhost:5173}
       JWT_SECRET: ${JWT_SECRET:-generate_a_very_long_random_jwt_secret_in_prod_min_32_chars}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-generate_a_very_long_random_refresh_secret_in_prod_min_32_chars}
       RUN_MIGRATIONS: "true"
