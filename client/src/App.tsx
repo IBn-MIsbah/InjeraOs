@@ -22,7 +22,6 @@ import {
 } from '@/components/ui/dialog'
 import { syncEngine } from '@/lib/sync-engine'
 import {
-  BookOpen,
   Boxes,
   ChevronDown,
   Coins,
@@ -647,8 +646,8 @@ export function App() {
                       }}
                       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left hover:bg-muted text-foreground transition-colors cursor-pointer"
                     >
-                      <BookOpen className="h-4 w-4 text-blue-500 shrink-0" />
-                      <span>Setup Progression Guide</span>
+                      <Sparkles className="h-4 w-4 text-amber-500 shrink-0" />
+                      <span>Bakery Setup Wizard</span>
                     </button>
 
                     <div className="border-t border-border/60 my-1 pt-1">

@@ -19,13 +19,13 @@ import {
 import {
   Award,
   BarChart3,
-  BookOpen,
   Boxes,
   ChefHat,
   Coins,
   DollarSign,
   Flame,
   PackageCheck,
+  Sparkles,
   TrendingUp,
 } from 'lucide-react'
 
@@ -146,10 +146,10 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
               variant="outline"
               size="sm"
               onClick={() => setGuideOpen(true)}
-              className="h-8 text-xs gap-1.5 border-border/80 cursor-pointer text-forest dark:text-oat"
+              className="h-8 text-xs gap-1.5 border-forest/30 cursor-pointer text-forest dark:text-oat font-semibold"
             >
-              <BookOpen className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Onboarding Guide</span>
+              <Sparkles className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Setup Wizard</span>
             </Button>
           </div>
         )}

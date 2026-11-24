@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
   ChevronUp,
+  Sparkles,
+  X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { TabType } from '@/components/layout/AppSidebar'
@@ -14,7 +16,7 @@ import {
 
 /**
  * Persistent Setup Order Progression Banner
- * Keeps administrators on track without having to navigate back to the overview to find out what's next.
+ * Keeps administrators on track. Can be minimized or permanently dismissed across all pages.
  */
 export function SetupProgressionBanner({
   activeTab,
@@ -35,6 +37,14 @@ export function SetupProgressionBanner({
     progressPercent,
   } = useOnboardingProgress()
 
+  const [dismissed, setDismissed] = useState(() => {
+    try {
+      return localStorage.getItem('injera_setup_banner_dismissed') === 'true'
+    } catch {
+      return false
+    }
+  })
+
   const [minimized, setMinimized] = useState(() => {
     try {
       const stored = localStorage.getItem('injera_setup_banner_minimized')
@@ -45,6 +55,22 @@ export function SetupProgressionBanner({
       return false
     }
   })
+
+  // Listen for custom event to bring banner back if requested
+  useEffect(() => {
+    const handleReset = () => setDismissed(false)
+    window.addEventListener('injera_setup_banner_reset', handleReset)
+    return () => window.removeEventListener('injera_setup_banner_reset', handleReset)
+  }, [])
+
+  const handleDismiss = () => {
+    setDismissed(true)
+    try {
+      localStorage.setItem('injera_setup_banner_dismissed', 'true')
+    } catch {
+      // ignore
+    }
+  }
 
   const toggleMinimized = () => {
     setMinimized((prev) => {
@@ -58,8 +84,8 @@ export function SetupProgressionBanner({
     })
   }
 
-  // If all completed, hide the setup progression banner
-  if (isAllComplete) {
+  // If dismissed or all completed, do not render banner across pages
+  if (dismissed || isAllComplete) {
     return null
   }
 
@@ -74,17 +100,27 @@ export function SetupProgressionBanner({
   // If minimized, render sleek, non-intrusive strip
   if (minimized) {
     return (
-      <aside aria-label="Bakery Setup Tracker" className="border-b border-border/80 bg-muted/40 px-4 py-1.5 flex items-center justify-between text-xs backdrop-blur-sm">
+      <aside aria-label="Bakery Setup Tracker" className="border-b border-border/80 bg-muted/40 px-3 sm:px-4 py-1.5 flex items-center justify-between text-xs backdrop-blur-sm">
         <div className="flex items-center gap-2 overflow-hidden">
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-forest text-oat text-[10px] font-bold font-mono">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-forest text-oat text-[10px] font-bold font-mono shrink-0">
             {completedSteps.length}
           </span>
           <span className="font-semibold text-foreground truncate">
-            Setup Order ({completedSteps.length}/8):{' '}
+            Setup ({completedSteps.length}/8):{' '}
             {currentStep ? currentStep.title : `Next: Step 0${nextIncompleteIndex + 1} • ${nextIncomplete?.title}`}
           </span>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={onOpenFullGuide}
+            className="h-6 text-[11px] px-2 text-forest dark:text-oat font-semibold cursor-pointer gap-1"
+          >
+            <Sparkles className="h-3 w-3" />
+            <span className="hidden sm:inline">Setup Wizard</span>
+          </Button>
+
           {currentStep && nextStep && (
             <Button
               size="sm"
@@ -95,21 +131,11 @@ export function SetupProgressionBanner({
               }}
               className="h-6 text-[11px] px-2 gap-1 border-forest/30 text-forest dark:text-oat cursor-pointer"
             >
-              <span>Next: {nextStep.shortTitle}</span>
+              <span>Next</span>
               <ChevronRight className="h-3 w-3" />
             </Button>
           )}
-          {!currentStep && nextIncomplete && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => onNavigateTab(nextIncomplete.tab)}
-              className="h-6 text-[11px] px-2 gap-1 border-forest/30 text-forest dark:text-oat cursor-pointer"
-            >
-              <span>Go to Step 0${nextIncompleteIndex + 1}</span>
-              <ChevronRight className="h-3 w-3" />
-            </Button>
-          )}
+
           <Button
             size="sm"
             variant="ghost"
@@ -117,6 +143,17 @@ export function SetupProgressionBanner({
             className="h-6 text-[11px] px-1.5 text-muted-foreground hover:text-foreground cursor-pointer"
           >
             <span>Expand</span>
+          </Button>
+
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={handleDismiss}
+            className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive cursor-pointer rounded-full"
+            title="Dismiss banner across pages"
+            aria-label="Dismiss setup banner"
+          >
+            <X className="h-3.5 w-3.5" />
           </Button>
         </div>
       </aside>
@@ -151,7 +188,7 @@ export function SetupProgressionBanner({
           </p>
           <div className="flex items-center gap-1.5 text-[11px] text-amber-800 dark:text-amber-200 font-medium pt-0.5">
             <span className="font-bold uppercase tracking-wide text-[10px] bg-amber-500/15 px-1.5 py-0.2 rounded">
-              Requirement / Missing:
+              Requirement:
             </span>
             <span>
               {currentStep
@@ -220,9 +257,10 @@ export function SetupProgressionBanner({
             size="sm"
             variant="ghost"
             onClick={onOpenFullGuide}
-            className="h-8 text-xs text-muted-foreground hover:text-foreground cursor-pointer px-2"
+            className="h-8 text-xs text-forest dark:text-oat hover:bg-forest/10 dark:hover:bg-oat/15 font-semibold cursor-pointer px-2 gap-1.5"
           >
-            <span>All Steps</span>
+            <Sparkles className="h-3.5 w-3.5" />
+            <span>Setup Wizard</span>
           </Button>
 
           <Button
@@ -233,6 +271,17 @@ export function SetupProgressionBanner({
             title="Minimize setup guide bar"
           >
             <ChevronUp className="h-4 w-4" />
+          </Button>
+
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={handleDismiss}
+            className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive cursor-pointer rounded-full"
+            title="Permanently dismiss banner across pages"
+            aria-label="Dismiss banner"
+          >
+            <X className="h-4 w-4" />
           </Button>
         </div>
       </div>

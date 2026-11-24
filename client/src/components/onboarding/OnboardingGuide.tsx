@@ -5,7 +5,6 @@ import {
   CheckCircle2,
   ChevronRight,
   Circle,
-  ExternalLink,
   RotateCcw,
   Sparkles,
   WifiOff,
@@ -25,8 +24,10 @@ import {
   ROLE_GUIDES,
   useOnboardingProgress,
 } from './onboardingData'
+import { BakerySetupWizard } from './BakerySetupWizard'
 
 export { SetupProgressionBanner } from './SetupProgressionBanner'
+export { BakerySetupWizard } from './BakerySetupWizard'
 
 export function OnboardingGuideModal({
   open,
@@ -43,15 +44,28 @@ export function OnboardingGuideModal({
     markStepComplete,
     resetAll,
     nextIncomplete,
-    nextIncompleteIndex,
     progressPercent,
   } = useOnboardingProgress()
 
-  const [activeTab, setActiveTab] = useState<'checklist' | 'roles' | 'offline'>('checklist')
+  const [activeTab, setActiveTab] = useState<'wizard' | 'checklist' | 'roles' | 'offline'>('wizard')
+
+  // If in wizard mode, display the step-by-step Bakery Setup Wizard
+  if (activeTab === 'wizard') {
+    return (
+      <BakerySetupWizard
+        open={open}
+        onOpenChange={(isOpen) => {
+          onOpenChange(isOpen)
+          if (!isOpen) setActiveTab('wizard')
+        }}
+        onNavigateTab={onNavigateTab}
+      />
+    )
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-0 rounded-2xl gap-0">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-0 rounded-2xl gap-0 border-border/80 shadow-2xl">
         {/* Modal Header */}
         <div className="p-6 bg-gradient-to-br from-card via-card to-[#EEE5D4]/30 dark:to-emerald-950/20 border-b border-border/80">
           <div className="flex items-center justify-between">
@@ -61,9 +75,9 @@ export function OnboardingGuideModal({
               </div>
               <div>
                 <DialogTitle className="text-lg font-bold text-foreground flex items-center gap-2">
-                  InjeraOS Bakery Onboarding Guide
+                  InjeraOS Bakery Onboarding Reference
                   <span className="text-[10px] font-semibold uppercase bg-forest/10 text-forest dark:bg-oat/15 dark:text-oat px-2 py-0.5 rounded-full">
-                    Sequential Setup
+                    Setup Directory
                   </span>
                 </DialogTitle>
                 <DialogDescription className="text-xs text-muted-foreground mt-0.5">
@@ -71,6 +85,16 @@ export function OnboardingGuideModal({
                 </DialogDescription>
               </div>
             </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setActiveTab('wizard')}
+              className="text-xs h-8 border-forest/30 text-forest dark:text-oat gap-1.5 cursor-pointer font-semibold"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>Open Guided Wizard</span>
+            </Button>
           </div>
 
           {/* Progress Bar & Next Step Indicator */}
@@ -90,37 +114,18 @@ export function OnboardingGuideModal({
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
-
-            {nextIncomplete && (
-              <div className="flex items-center justify-between p-2.5 rounded-lg border border-forest/20 bg-forest/5 dark:bg-oat/5 text-xs mt-2">
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-1.5 font-bold text-foreground">
-                    <span className="text-[10px] bg-forest text-oat px-1.5 py-0.2 rounded font-mono">
-                      UP NEXT: STEP 0{nextIncompleteIndex + 1}
-                    </span>
-                    <span>{nextIncomplete.title}</span>
-                  </div>
-                  <span className="text-[11px] text-amber-800 dark:text-amber-200 block">
-                    {nextIncomplete.missingRequirement}
-                  </span>
-                </div>
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    onNavigateTab(nextIncomplete.tab)
-                    onOpenChange(false)
-                  }}
-                  className="h-7 text-xs bg-forest text-oat hover:bg-forest/90 dark:bg-oat dark:text-forest font-semibold gap-1 shrink-0 ml-2 cursor-pointer"
-                >
-                  <span>Continue Step 0{nextIncompleteIndex + 1}</span>
-                  <ChevronRight className="h-3 w-3" />
-                </Button>
-              </div>
-            )}
           </div>
 
           {/* Sub Navigation */}
           <div className="flex items-center gap-1 mt-4 pt-3 border-t border-border/50">
+            <button
+              type="button"
+              onClick={() => setActiveTab('wizard')}
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold text-forest dark:text-oat hover:bg-forest/10 dark:hover:bg-oat/15 flex items-center gap-1 cursor-pointer"
+            >
+              <Sparkles className="h-3 w-3" />
+              <span>Step-by-Step Wizard</span>
+            </button>
             <button
               type="button"
               onClick={() => setActiveTab('checklist')}
@@ -130,7 +135,7 @@ export function OnboardingGuideModal({
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              Setup Order ({completedSteps.length}/{ONBOARDING_STEPS.length})
+              All Tasks ({completedSteps.length}/{ONBOARDING_STEPS.length})
             </button>
             <button
               type="button"
@@ -346,22 +351,6 @@ export function OnboardingGuideModal({
                   </p>
                 </div>
               </div>
-
-              <div className="flex justify-end pt-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    onNavigateTab('sync')
-                    onOpenChange(false)
-                  }}
-                  className="text-xs gap-1.5 cursor-pointer"
-                >
-                  <WifiOff className="h-3.5 w-3.5 text-primary" />
-                  <span>Inspect Offline Sync Console</span>
-                  <ExternalLink className="h-3 w-3 text-muted-foreground" />
-                </Button>
-              </div>
             </div>
           )}
         </div>
@@ -371,7 +360,7 @@ export function OnboardingGuideModal({
 }
 
 /**
- * Collapsible Onboarding Checklist Card displayed directly on the Dashboard Overview
+ * Onboarding Card for the Executive Dashboard
  */
 export function OnboardingDashboardWidget({
   onNavigateTab,
@@ -393,7 +382,7 @@ export function OnboardingDashboardWidget({
       return false
     }
   })
-  const [modalOpen, setModalOpen] = useState(false)
+  const [wizardOpen, setWizardOpen] = useState(false)
 
   const handleDismiss = () => {
     setDismissed(true)
@@ -404,58 +393,58 @@ export function OnboardingDashboardWidget({
     }
   }
 
-  if (dismissed) {
+  if (dismissed && !isAllComplete) {
     return (
       <div className="flex items-center justify-between p-3 rounded-xl border border-dashed border-border/80 bg-muted/20 text-xs">
         <div className="flex items-center gap-2 text-muted-foreground">
-          <BookOpen className="h-4 w-4 text-forest dark:text-oat" />
-          <span>Need help setting up your bakery? Open the setup roadmap anytime.</span>
+          <Sparkles className="h-4 w-4 text-forest dark:text-oat" />
+          <span>Need to configure your bakery stations, teff silos, or staff? Launch setup wizard anytime.</span>
         </div>
         <Button
           variant="outline"
           size="sm"
-          onClick={() => setModalOpen(true)}
-          className="text-xs h-7 gap-1 border-border/80 cursor-pointer"
+          onClick={() => setWizardOpen(true)}
+          className="text-xs h-7 gap-1.5 border-forest/30 text-forest dark:text-oat font-semibold cursor-pointer"
         >
-          <BookOpen className="h-3 w-3" />
-          <span>Open Setup Order</span>
+          <Sparkles className="h-3 w-3" />
+          <span>Launch Setup Wizard</span>
         </Button>
-        <OnboardingGuideModal
-          open={modalOpen}
-          onOpenChange={setModalOpen}
+        <BakerySetupWizard
+          open={wizardOpen}
+          onOpenChange={setWizardOpen}
           onNavigateTab={onNavigateTab}
         />
       </div>
     )
   }
 
+  if (isAllComplete) {
+    return null
+  }
+
   return (
     <>
-      <div className="rounded-xl border border-border/80 bg-card p-3 shadow-2xs">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-forest/10 text-forest dark:bg-oat/15 dark:text-oat shrink-0">
-              <BookOpen className="h-3.5 w-3.5" />
+      <div className="rounded-xl border border-forest/30 bg-gradient-to-r from-card via-card to-forest/5 p-4 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-forest text-oat dark:bg-oat dark:text-forest shadow-xs shrink-0">
+              <Sparkles className="h-5 w-5" />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-semibold text-foreground">
-                  {isAllComplete
-                    ? 'Bakery Setup Complete'
-                    : nextIncomplete
-                      ? `Step 0${nextIncompleteIndex + 1}: ${nextIncomplete.title}`
-                      : 'Bakery Setup'}
+                <span className="text-xs font-bold text-foreground">
+                  Bakery Setup Wizard
                 </span>
-                <span className="text-[10px] font-mono font-medium text-muted-foreground bg-muted px-1.5 py-0.2 rounded">
-                  {completedSteps.length}/{ONBOARDING_STEPS.length}
+                <span className="text-[10px] font-mono font-bold text-forest dark:text-oat bg-forest/10 dark:bg-oat/15 px-1.5 py-0.2 rounded-full">
+                  {completedSteps.length} of {ONBOARDING_STEPS.length} Completed ({progressPercent}%)
                 </span>
               </div>
-              {!isAllComplete && nextIncomplete && (
-                <div className="text-[10px] text-amber-800 dark:text-amber-200 font-medium truncate max-w-sm">
-                  {nextIncomplete.missingRequirement}
-                </div>
-              )}
-              <div className="h-1 w-36 sm:w-48 bg-muted rounded-full overflow-hidden mt-1">
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                {nextIncomplete
+                  ? `Next Step 0${nextIncompleteIndex + 1}: ${nextIncomplete.title} (${nextIncomplete.missingRequirement})`
+                  : 'All primary bakery assets configured.'}
+              </p>
+              <div className="h-1.5 w-44 sm:w-64 bg-muted rounded-full overflow-hidden mt-1.5">
                 <div
                   className="h-full bg-forest dark:bg-oat transition-all duration-300 rounded-full"
                   style={{ width: `${progressPercent}%` }}
@@ -464,30 +453,21 @@ export function OnboardingDashboardWidget({
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 self-end sm:self-auto">
-            {!isAllComplete && nextIncomplete && (
-              <Button
-                size="sm"
-                onClick={() => onNavigateTab(nextIncomplete.tab)}
-                className="h-7 text-xs bg-forest text-oat hover:bg-forest/90 dark:bg-oat dark:text-forest cursor-pointer gap-1 px-2.5 font-semibold"
-              >
-                <span>{nextIncomplete.actionLabel}</span>
-                <ChevronRight className="h-3 w-3" />
-              </Button>
-            )}
+          <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
             <Button
-              variant="ghost"
               size="sm"
-              onClick={() => setModalOpen(true)}
-              className="h-7 text-xs text-muted-foreground hover:text-foreground cursor-pointer px-2"
+              onClick={() => setWizardOpen(true)}
+              className="h-8 text-xs bg-forest text-oat hover:bg-forest/90 dark:bg-oat dark:text-forest font-bold cursor-pointer gap-1.5 px-3.5 shadow-xs"
             >
-              <span>Setup Order</span>
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>Launch Setup Wizard</span>
             </Button>
             <button
               type="button"
               onClick={handleDismiss}
-              className="h-7 w-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
-              title="Dismiss"
+              className="h-7 w-7 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
+              title="Dismiss card"
+              aria-label="Dismiss setup card"
             >
               <X className="h-3.5 w-3.5" />
             </button>
@@ -495,9 +475,9 @@ export function OnboardingDashboardWidget({
         </div>
       </div>
 
-      <OnboardingGuideModal
-        open={modalOpen}
-        onOpenChange={setModalOpen}
+      <BakerySetupWizard
+        open={wizardOpen}
+        onOpenChange={setWizardOpen}
         onNavigateTab={onNavigateTab}
       />
     </>
