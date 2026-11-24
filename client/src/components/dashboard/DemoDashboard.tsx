@@ -117,7 +117,7 @@ export function DemoDashboard({ auth, onNavigateTab }: DemoDashboardProps) {
         </div>
 
         {isOwnerOrAdmin && (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {/* Minimal Perspective Switcher */}
             <div className="inline-flex rounded-lg border border-border/80 bg-muted/40 p-0.5 text-xs">
               {(['EXECUTIVE', 'BAKER', 'CASHIER', 'STOREKEEPER'] as const).map((p) => (

@@ -469,11 +469,11 @@ export function InventoryManagementView() {
       </div>
 
       {/* Navigation Sub-Tabs */}
-      <div className="flex items-center justify-between border-b border-border/80">
+      <div className="flex items-center justify-between border-b border-border/80 overflow-x-auto whitespace-nowrap scrollbar-none">
         <div className="flex gap-2">
           <button
             onClick={() => setActiveSubTab('finished')}
-            className={`flex items-center gap-1.5 border-b-2 px-3 py-2 text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1.5 border-b-2 px-3 py-2 text-xs font-medium transition-colors shrink-0 ${
               activeSubTab === 'finished'
                 ? 'border-cyan-600 text-cyan-600'
                 : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -484,7 +484,7 @@ export function InventoryManagementView() {
           </button>
           <button
             onClick={() => setActiveSubTab('raw')}
-            className={`flex items-center gap-1.5 border-b-2 px-3 py-2 text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1.5 border-b-2 px-3 py-2 text-xs font-medium transition-colors shrink-0 ${
               activeSubTab === 'raw'
                 ? 'border-cyan-600 text-cyan-600'
                 : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -495,7 +495,7 @@ export function InventoryManagementView() {
           </button>
           <button
             onClick={() => setActiveSubTab('locations')}
-            className={`flex items-center gap-1.5 border-b-2 px-3 py-2 text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1.5 border-b-2 px-3 py-2 text-xs font-medium transition-colors shrink-0 ${
               activeSubTab === 'locations'
                 ? 'border-cyan-600 text-cyan-600'
                 : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -506,7 +506,7 @@ export function InventoryManagementView() {
           </button>
           <button
             onClick={() => setActiveSubTab('reconciliation')}
-            className={`flex items-center gap-1.5 border-b-2 px-3 py-2 text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1.5 border-b-2 px-3 py-2 text-xs font-medium transition-colors shrink-0 ${
               activeSubTab === 'reconciliation'
                 ? 'border-cyan-600 text-cyan-600'
                 : 'border-transparent text-muted-foreground hover:text-foreground'

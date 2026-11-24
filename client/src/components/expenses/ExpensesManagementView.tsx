@@ -331,10 +331,10 @@ export function ExpensesManagementView() {
       </div>
 
       {/* Sub-tab Navigation */}
-      <div className="flex border-b border-border/80">
+      <div className="flex border-b border-border/80 overflow-x-auto whitespace-nowrap scrollbar-none gap-1">
         <button
           onClick={() => setActiveSubTab('expenses')}
-          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-medium transition-colors ${
+          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-medium transition-colors shrink-0 ${
             activeSubTab === 'expenses'
               ? 'border-rose-600 text-rose-600 dark:text-rose-400'
               : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -349,7 +349,7 @@ export function ExpensesManagementView() {
 
         <button
           onClick={() => setActiveSubTab('categories')}
-          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-medium transition-colors ${
+          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-medium transition-colors shrink-0 ${
             activeSubTab === 'categories'
               ? 'border-blue-600 text-blue-600 dark:text-blue-400'
               : 'border-transparent text-muted-foreground hover:text-foreground'

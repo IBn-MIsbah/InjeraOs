@@ -485,11 +485,11 @@ export function RecipesManagementView() {
       </div>
 
       {/* Sub-tab Navigation */}
-      <div className="flex border-b border-border/80">
+      <div className="flex border-b border-border/80 overflow-x-auto whitespace-nowrap scrollbar-none gap-1">
         <button
           type="button"
           onClick={() => setSubTab('recipes')}
-          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-medium transition-colors cursor-pointer ${
+          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-medium transition-colors cursor-pointer shrink-0 ${
             subTab === 'recipes'
               ? 'border-primary text-foreground'
               : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -502,7 +502,7 @@ export function RecipesManagementView() {
         <button
           type="button"
           onClick={() => setSubTab('scaling')}
-          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-medium transition-colors cursor-pointer ${
+          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-medium transition-colors cursor-pointer shrink-0 ${
             subTab === 'scaling'
               ? 'border-primary text-foreground'
               : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -515,7 +515,7 @@ export function RecipesManagementView() {
         <button
           type="button"
           onClick={() => setSubTab('blending')}
-          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-medium transition-colors cursor-pointer ${
+          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-medium transition-colors cursor-pointer shrink-0 ${
             subTab === 'blending'
               ? 'border-primary text-foreground'
               : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -528,7 +528,7 @@ export function RecipesManagementView() {
         <button
           type="button"
           onClick={() => setSubTab('products')}
-          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-medium transition-colors cursor-pointer ${
+          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-medium transition-colors cursor-pointer shrink-0 ${
             subTab === 'products'
               ? 'border-primary text-foreground'
               : 'border-transparent text-muted-foreground hover:text-foreground'

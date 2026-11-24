@@ -212,44 +212,44 @@ export function FinancialReportsView() {
       </div>
 
       {/* Sub Tabs */}
-      <div className="flex gap-2 border-b">
+      <div className="flex gap-2 border-b overflow-x-auto whitespace-nowrap scrollbar-none pb-0.5">
         <button
           type="button"
           onClick={() => setActiveSubTab('pnl')}
-          className={`flex items-center gap-2 border-b-2 px-4 py-2 text-xs font-medium transition-colors ${
+          className={`flex items-center gap-2 border-b-2 px-4 py-2 text-xs font-medium transition-colors shrink-0 ${
             activeSubTab === 'pnl'
               ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400'
               : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
           <DollarSign className="h-4 w-4" />
-          Executive P&L Statement
+          <span>Executive P&L Statement</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveSubTab('bakers')}
-          className={`flex items-center gap-2 border-b-2 px-4 py-2 text-xs font-medium transition-colors ${
+          className={`flex items-center gap-2 border-b-2 px-4 py-2 text-xs font-medium transition-colors shrink-0 ${
             activeSubTab === 'bakers'
               ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400'
               : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
           <Users className="h-4 w-4" />
-          Baker Yield & Productivity
+          <span>Baker Yield & Productivity</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveSubTab('inventory')}
-          className={`flex items-center gap-2 border-b-2 px-4 py-2 text-xs font-medium transition-colors ${
+          className={`flex items-center gap-2 border-b-2 px-4 py-2 text-xs font-medium transition-colors shrink-0 ${
             activeSubTab === 'inventory'
               ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400'
               : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
           <Warehouse className="h-4 w-4" />
-          Balance Sheet Inventory Valuation
+          <span>Balance Sheet Inventory Valuation</span>
         </button>
       </div>
 

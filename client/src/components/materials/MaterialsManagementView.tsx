@@ -564,7 +564,7 @@ export function MaterialsManagementView() {
       {/* Sub-Tab 1: Catalog & Varieties */}
       {subTab === 'catalog' && (
         <Card className="border-border/80">
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3">
             <div>
               <CardTitle className="text-base font-medium">Material Catalog</CardTitle>
               <CardDescription className="text-xs">
@@ -572,7 +572,7 @@ export function MaterialsManagementView() {
               </CardDescription>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {/* Units of Measure Dialog */}
               <Dialog open={isUnitOpen} onOpenChange={setIsUnitOpen}>
                 <DialogTrigger render={<Button variant="outline" className="gap-2 text-xs" />}>
@@ -993,7 +993,7 @@ export function MaterialsManagementView() {
       {/* Sub-Tab 2: Suppliers */}
       {subTab === 'suppliers' && (
         <Card className="border-border/80">
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3">
             <div>
               <CardTitle className="text-base font-medium">Supplier Directory</CardTitle>
               <CardDescription className="text-xs">
@@ -1110,7 +1110,7 @@ export function MaterialsManagementView() {
       {/* Sub-Tab 3: Purchases & Receiving */}
       {subTab === 'purchases' && (
         <Card className="border-border/80">
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3">
             <div>
               <CardTitle className="text-base font-medium">Purchasing & Ingestion</CardTitle>
               <CardDescription className="text-xs">

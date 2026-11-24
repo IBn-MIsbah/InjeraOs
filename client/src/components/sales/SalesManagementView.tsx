@@ -768,10 +768,10 @@ export function SalesManagementView() {
       </div>
 
       {/* Sub-tab Navigation */}
-      <div className="flex border-b border-border/80">
+      <div className="flex border-b border-border/80 overflow-x-auto whitespace-nowrap scrollbar-none gap-1">
         <button
           onClick={() => setActiveSubTab('pos')}
-          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-medium transition-colors ${
+          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-medium transition-colors shrink-0 ${
             activeSubTab === 'pos'
               ? 'border-violet-600 text-violet-600 dark:text-violet-400'
               : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -786,7 +786,7 @@ export function SalesManagementView() {
 
         <button
           onClick={() => setActiveSubTab('customers')}
-          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-medium transition-colors ${
+          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-medium transition-colors shrink-0 ${
             activeSubTab === 'customers'
               ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400'
               : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -801,7 +801,7 @@ export function SalesManagementView() {
 
         <button
           onClick={() => setActiveSubTab('deliveries')}
-          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-medium transition-colors ${
+          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-medium transition-colors shrink-0 ${
             activeSubTab === 'deliveries'
               ? 'border-blue-600 text-blue-600 dark:text-blue-400'
               : 'border-transparent text-muted-foreground hover:text-foreground'

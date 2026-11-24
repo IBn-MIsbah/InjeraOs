@@ -476,7 +476,7 @@ export function WorkforceManagementView() {
       {/* SubTab 1: Employees Directory */}
       {subTab === 'employees' && (
         <Card className="border-border/80">
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3">
             <div>
               <CardTitle className="text-base font-medium">Employee Roster</CardTitle>
               <CardDescription className="text-xs">
@@ -744,7 +744,7 @@ export function WorkforceManagementView() {
       {subTab === 'shifts' && (
         <div className="space-y-6">
           <Card className="border-border/80">
-            <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3">
               <div>
                 <CardTitle className="text-base font-medium">Shift Definitions</CardTitle>
                 <CardDescription className="text-xs">
@@ -1025,7 +1025,7 @@ export function WorkforceManagementView() {
       {/* SubTab 3: Attendance & Timesheet */}
       {subTab === 'attendance' && (
         <Card className="border-border/80">
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3">
             <div>
               <CardTitle className="text-base font-medium">Attendance & Working Hours</CardTitle>
               <CardDescription className="text-xs">
