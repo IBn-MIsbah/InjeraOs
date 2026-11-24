@@ -35,7 +35,6 @@ import {
   Eye,
   HardDrive,
   Laptop,
-  Plus,
   RefreshCw,
   Trash2,
   Wifi,
@@ -354,16 +353,6 @@ export function SyncManagementView() {
           </Button>
 
           <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsCreateTestOpen(true)}
-            className="text-xs gap-1.5"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            Queue Test Op
-          </Button>
-
-          <Button
             variant="default"
             size="sm"
             onClick={handleSyncNow}
@@ -432,13 +421,13 @@ export function SyncManagementView() {
         <Card className="border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground">
-              Client Device Identifier
+              Workstation Terminal
             </CardTitle>
             <Laptop className="h-4 w-4 text-sky-500" />
           </CardHeader>
           <CardContent>
-            <div className="truncate text-xs font-mono font-semibold text-foreground">
-              {deviceId || 'Loading…'}
+            <div className="truncate text-xs font-mono font-semibold text-foreground" title={deviceId}>
+              {deviceId ? `Node •••${deviceId.slice(-6)}` : 'Active'}
             </div>
             <p className="text-[11px] text-muted-foreground">
               Hardware/session isolation key

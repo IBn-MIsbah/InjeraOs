@@ -25,6 +25,19 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 
+function deduplicateRoles(rawRoles: RoleEntity[]): RoleEntity[] {
+  const map = new Map<string, RoleEntity>()
+  for (const r of rawRoles) {
+    const existing = map.get(r.name)
+    if (!existing) {
+      map.set(r.name, r)
+    } else if (r.businessId && !existing.businessId) {
+      map.set(r.name, r)
+    }
+  }
+  return Array.from(map.values())
+}
+
 export function RolesManagementView() {
   const [roles, setRoles] = useState<RoleEntity[]>([])
   const [permissions, setPermissions] = useState<PermissionEntity[]>([])
@@ -53,7 +66,7 @@ export function RolesManagementView() {
     setLoading(true)
     try {
       const [rolesData, permsData, membersData] = await Promise.all([
-        rolesApi.getRoles(),
+        rolesApi.getRoles().then(deduplicateRoles),
         rolesApi.getPermissions(),
         businessApi.getMembers().catch(() => []),
       ])
@@ -75,7 +88,7 @@ export function RolesManagementView() {
   useEffect(() => {
     let ignore = false
     void Promise.all([
-      rolesApi.getRoles(),
+      rolesApi.getRoles().then(deduplicateRoles),
       rolesApi.getPermissions(),
       businessApi.getMembers().catch(() => []),
     ]).then(([rolesData, permsData, membersData]) => {
@@ -507,8 +520,8 @@ export function RolesManagementView() {
               No team members registered yet. Invite team members in Team & Staff.
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+            <div className="overflow-x-auto scrollbar-thin">
+              <table className="w-full text-left text-xs min-w-[500px]">
                 <thead>
                   <tr className="border-b border-border/80 text-muted-foreground">
                     <th className="pb-2 font-medium">User</th>

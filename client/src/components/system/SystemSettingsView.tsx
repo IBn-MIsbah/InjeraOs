@@ -544,9 +544,9 @@ export function SystemSettingsView({ initialTab = 'status' }: { initialTab?: 'st
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t">
-                    <span>Business ID</span>
-                    <span className="font-mono text-[10px] text-foreground truncate max-w-[160px]">
-                      {status?.business.id}
+                    <span>Tenant Key</span>
+                    <span className="font-mono text-[11px] font-medium text-foreground" title={status?.business.id}>
+                      {status?.business.id ? `ID •••${status.business.id.slice(-6)}` : '—'}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-xs text-muted-foreground">

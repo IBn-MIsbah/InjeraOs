@@ -43,8 +43,20 @@ roleRouter.get('/', async (req: Request, res: Response) => {
     orderBy: [{ isSystem: 'desc' }, { name: 'asc' }],
   })
 
+  // Deduplicate roles by name: business-specific role overrides the global template
+  const dedupedMap = new Map<string, typeof roles[0]>()
+  for (const role of roles) {
+    const existing = dedupedMap.get(role.name)
+    if (!existing) {
+      dedupedMap.set(role.name, role)
+    } else if (role.businessId && !existing.businessId) {
+      dedupedMap.set(role.name, role)
+    }
+  }
+  const uniqueRoles = Array.from(dedupedMap.values())
+
   // Fetch permissions for all returned roles
-  const roleIds = roles.map((r) => r.id)
+  const roleIds = uniqueRoles.map((r) => r.id)
   const rolePermissions = await prisma.rolePermission.findMany({
     where: { roleId: { in: roleIds } },
   })
@@ -64,7 +76,7 @@ roleRouter.get('/', async (req: Request, res: Response) => {
     rolePermsMap.set(rp.roleId, list)
   }
 
-  const enrichedRoles = roles.map((role) => ({
+  const enrichedRoles = uniqueRoles.map((role) => ({
     id: role.id,
     businessId: role.businessId,
     name: role.name,

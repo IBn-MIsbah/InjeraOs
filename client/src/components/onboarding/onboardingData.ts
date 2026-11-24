@@ -170,6 +170,24 @@ export const ROLE_GUIDES = [
   },
 ]
 
+export function autoSyncCompletedSteps(business?: { name?: string | null }) {
+  try {
+    const stored = localStorage.getItem('injera_onboarding_completed')
+    const current: string[] = stored ? JSON.parse(stored) : []
+    let updated = false
+    if (business?.name && !current.includes('business_calendar')) {
+      current.push('business_calendar')
+      updated = true
+    }
+    if (updated) {
+      localStorage.setItem('injera_onboarding_completed', JSON.stringify(current))
+      window.dispatchEvent(new Event('injera_onboarding_updated'))
+    }
+  } catch {
+    // ignore
+  }
+}
+
 export function useOnboardingProgress() {
   const [completedSteps, setCompletedSteps] = useState<string[]>(() => {
     try {
