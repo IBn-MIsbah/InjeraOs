@@ -3,9 +3,7 @@ import {
   BookOpen,
   Check,
   CheckCircle2,
-  ChevronLeft,
   ChevronRight,
-  ChevronUp,
   Circle,
   ExternalLink,
   RotateCcw,
@@ -28,274 +26,7 @@ import {
   useOnboardingProgress,
 } from './onboardingData'
 
-/**
- * Persistent Setup Order Progression Banner
- * Keeps administrators on track without having to navigate back to the overview to find out what's next.
- */
-export function SetupProgressionBanner({
-  activeTab,
-  onNavigateTab,
-  onOpenFullGuide,
-}: {
-  activeTab: TabType
-  onNavigateTab: (tab: TabType) => void
-  onOpenFullGuide: () => void
-}) {
-  const {
-    completedSteps,
-    isCompleted,
-    markStepComplete,
-    nextIncomplete,
-    nextIncompleteIndex,
-    isAllComplete,
-    progressPercent,
-  } = useOnboardingProgress()
-
-  const [minimized, setMinimized] = useState(() => {
-    try {
-      return localStorage.getItem('injera_setup_banner_minimized') === 'true'
-    } catch {
-      return false
-    }
-  })
-
-  const toggleMinimized = () => {
-    setMinimized((prev) => {
-      const next = !prev
-      try {
-        localStorage.setItem('injera_setup_banner_minimized', String(next))
-      } catch {
-        // ignore
-      }
-      return next
-    })
-  }
-
-  // If all completed, hide the setup progression banner
-  if (isAllComplete) {
-    return null
-  }
-
-  const currentStep = ONBOARDING_STEPS.find((s) => s.tab === activeTab)
-  const currentStepIndex = currentStep ? ONBOARDING_STEPS.indexOf(currentStep) : -1
-  const nextStep =
-    currentStepIndex >= 0 && currentStepIndex < ONBOARDING_STEPS.length - 1
-      ? ONBOARDING_STEPS[currentStepIndex + 1]
-      : null
-  const prevStep = currentStepIndex > 0 ? ONBOARDING_STEPS[currentStepIndex - 1] : null
-
-  // If minimized, render sleek, non-intrusive strip
-  if (minimized) {
-    return (
-      <aside aria-label="Bakery Setup Tracker" className="border-b border-border/80 bg-muted/40 px-4 py-1.5 flex items-center justify-between text-xs backdrop-blur-sm">
-        <div className="flex items-center gap-2 overflow-hidden">
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-forest text-oat text-[10px] font-bold font-mono">
-            {completedSteps.length}
-          </span>
-          <span className="font-semibold text-foreground truncate">
-            Setup Order ({completedSteps.length}/8):{' '}
-            {currentStep ? currentStep.title : `Next: Step 0${nextIncompleteIndex + 1} • ${nextIncomplete?.title}`}
-          </span>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {currentStep && nextStep && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                markStepComplete(currentStep.id)
-                onNavigateTab(nextStep.tab)
-              }}
-              className="h-6 text-[11px] px-2 gap-1 border-forest/30 text-forest dark:text-oat cursor-pointer"
-            >
-              <span>Next: {nextStep.shortTitle}</span>
-              <ChevronRight className="h-3 w-3" />
-            </Button>
-          )}
-          {!currentStep && nextIncomplete && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => onNavigateTab(nextIncomplete.tab)}
-              className="h-6 text-[11px] px-2 gap-1 border-forest/30 text-forest dark:text-oat cursor-pointer"
-            >
-              <span>Go to Step 0${nextIncompleteIndex + 1}</span>
-              <ChevronRight className="h-3 w-3" />
-            </Button>
-          )}
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={toggleMinimized}
-            className="h-6 text-[11px] px-1.5 text-muted-foreground hover:text-foreground cursor-pointer"
-          >
-            <span>Expand</span>
-          </Button>
-        </div>
-      </aside>
-    )
-  }
-
-  return (
-    <aside aria-label="Bakery Setup Progression Tracker" className="border-b border-forest/20 bg-forest/5 dark:bg-oat/5 px-4 py-3 text-xs">
-      {/* Top row: Status, Title, Missing Info, Next CTA */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="inline-flex items-center rounded-md bg-forest text-oat dark:bg-oat dark:text-forest px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
-              {currentStep
-                ? `Setup Order: Step 0${currentStep.order} of 08`
-                : `Setup Order: ${completedSteps.length} of 08 Completed (${progressPercent}%)`}
-            </span>
-            <span className="font-bold text-sm text-foreground">
-              {currentStep ? currentStep.title : `Next Task: Step 0${nextIncompleteIndex + 1} • ${nextIncomplete?.title}`}
-            </span>
-            {currentStep && isCompleted(currentStep.id) && (
-              <span className="inline-flex items-center gap-1 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.2 text-[10px] font-semibold">
-                <CheckCircle2 className="h-3 w-3" />
-                Done
-              </span>
-            )}
-          </div>
-          <p className="text-muted-foreground text-xs text-pretty">
-            {currentStep
-              ? currentStep.description
-              : `Accomplish next: ${nextIncomplete?.description}`}
-          </p>
-          <div className="flex items-center gap-1.5 text-[11px] text-amber-800 dark:text-amber-200 font-medium pt-0.5">
-            <span className="font-bold uppercase tracking-wide text-[10px] bg-amber-500/15 px-1.5 py-0.2 rounded">
-              Requirement / Missing:
-            </span>
-            <span>
-              {currentStep
-                ? isCompleted(currentStep.id)
-                  ? 'Task recorded. Ready to advance to the next setup order.'
-                  : currentStep.missingRequirement
-                : nextIncomplete?.missingRequirement}
-            </span>
-          </div>
-        </div>
-
-        {/* Right CTA Actions: Advance directly without leaving the view */}
-        <div className="flex items-center gap-2 shrink-0 self-start md:self-center">
-          {currentStep ? (
-            <>
-              {prevStep && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onNavigateTab(prevStep.tab)}
-                  className="h-8 text-xs border-border/80 gap-1 cursor-pointer"
-                  title={`Go back to Step 0${prevStep.order}: ${prevStep.shortTitle}`}
-                >
-                  <ChevronLeft className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Step 0{prevStep.order}</span>
-                </Button>
-              )}
-
-              {nextStep ? (
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    markStepComplete(currentStep.id)
-                    onNavigateTab(nextStep.tab)
-                  }}
-                  className="h-8 text-xs bg-forest text-oat hover:bg-forest/90 dark:bg-oat dark:text-forest font-semibold gap-1.5 shadow-xs cursor-pointer"
-                >
-                  <Check className="h-3.5 w-3.5" />
-                  <span>Mark Done & Next: {nextStep.shortTitle}</span>
-                  <ChevronRight className="h-3.5 w-3.5" />
-                </Button>
-              ) : (
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    markStepComplete(currentStep.id)
-                    onNavigateTab('workspace')
-                  }}
-                  className="h-8 text-xs bg-emerald-600 text-white hover:bg-emerald-700 font-semibold gap-1.5 shadow-xs cursor-pointer"
-                >
-                  <Check className="h-3.5 w-3.5" />
-                  <span>Finish Setup & Go to Overview</span>
-                </Button>
-              )}
-            </>
-          ) : (
-            nextIncomplete && (
-              <Button
-                size="sm"
-                onClick={() => onNavigateTab(nextIncomplete.tab)}
-                className="h-8 text-xs bg-forest text-oat hover:bg-forest/90 dark:bg-oat dark:text-forest font-semibold gap-1.5 shadow-xs cursor-pointer"
-              >
-                <span>Continue Setup: Step 0{nextIncompleteIndex + 1} ({nextIncomplete.shortTitle})</span>
-                <ChevronRight className="h-3.5 w-3.5" />
-              </Button>
-            )
-          )}
-
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={onOpenFullGuide}
-            className="h-8 text-xs text-muted-foreground hover:text-foreground cursor-pointer px-2"
-          >
-            <span>All Steps</span>
-          </Button>
-
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={toggleMinimized}
-            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground cursor-pointer"
-            title="Minimize setup guide bar"
-          >
-            <ChevronUp className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
-      {/* Stepper track: All 8 sequential setup steps */}
-      <nav aria-label="Setup Steps Trail" className="mt-3 pt-2.5 border-t border-border/40 flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-        {ONBOARDING_STEPS.map((step, idx) => {
-          const isDone = isCompleted(step.id)
-          const isCurrent = currentStep?.id === step.id
-          const isNextTarget = !currentStep && nextIncomplete?.id === step.id
-
-          return (
-            <button
-              key={step.id}
-              type="button"
-              onClick={() => onNavigateTab(step.tab)}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] transition-all cursor-pointer shrink-0 border select-none ${
-                isCurrent
-                  ? 'bg-forest text-oat border-forest dark:bg-oat dark:text-forest font-semibold shadow-xs'
-                  : isDone
-                    ? 'bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/15'
-                    : isNextTarget
-                      ? 'border-forest/60 bg-forest/10 text-forest dark:border-oat/50 dark:bg-oat/15 dark:text-oat font-medium'
-                      : 'border-border/60 bg-background/50 text-muted-foreground hover:text-foreground hover:bg-muted/50'
-              }`}
-              title={`Step 0${step.order}: ${step.title} • ${step.missingRequirement}`}
-            >
-              {isDone ? (
-                <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              ) : (
-                <span
-                  className={`flex h-3.5 w-3.5 items-center justify-center rounded-full text-[9px] font-mono font-bold ${
-                    isCurrent ? 'bg-oat text-forest dark:bg-forest dark:text-oat' : 'bg-muted text-muted-foreground'
-                  }`}
-                >
-                  {idx + 1}
-                </span>
-              )}
-              <span>{step.shortTitle}</span>
-            </button>
-          )
-        })}
-      </nav>
-    </aside>
-  )
-}
+export { SetupProgressionBanner } from './SetupProgressionBanner'
 
 export function OnboardingGuideModal({
   open,
@@ -454,7 +185,7 @@ export function OnboardingGuideModal({
                   return (
                     <div
                       key={step.id}
-                      className={`flex items-start gap-3.5 p-3.5 rounded-xl border text-xs transition-colors ${
+                      className={`flex flex-col sm:flex-row sm:items-start gap-3 p-3.5 rounded-xl border text-xs transition-colors ${
                         isDone
                           ? 'border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-950/10'
                           : isNext
@@ -462,49 +193,51 @@ export function OnboardingGuideModal({
                             : 'border-border/80 bg-card hover:border-forest/30'
                       }`}
                     >
-                      <button
-                        type="button"
-                        onClick={() => toggleStep(step.id)}
-                        className="mt-0.5 text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
-                        title={isDone ? 'Mark as incomplete' : 'Mark as complete'}
-                      >
-                        {isDone ? (
-                          <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400 fill-emerald-100 dark:fill-emerald-950" />
-                        ) : (
-                          <Circle className="h-5 w-5 text-muted-foreground/50 hover:text-foreground" />
-                        )}
-                      </button>
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                        <button
+                          type="button"
+                          onClick={() => toggleStep(step.id)}
+                          className="mt-0.5 text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
+                          title={isDone ? 'Mark as incomplete' : 'Mark as complete'}
+                        >
+                          {isDone ? (
+                            <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400 fill-emerald-100 dark:fill-emerald-950" />
+                          ) : (
+                            <Circle className="h-5 w-5 text-muted-foreground/50 hover:text-foreground" />
+                          )}
+                        </button>
 
-                      <div className="flex-1 space-y-1">
-                        <div className="flex items-center justify-between gap-2">
-                          <span
-                            className={`font-semibold text-xs flex items-center gap-1.5 ${
-                              isDone ? 'line-through text-muted-foreground' : 'text-foreground'
-                            }`}
-                          >
-                            <span className="text-[10px] font-mono font-bold text-muted-foreground">
-                              Step 0{idx + 1}.
-                            </span>
-                            {step.title}
-                            {isNext && (
-                              <span className="rounded bg-forest text-oat dark:bg-oat dark:text-forest text-[9px] font-bold px-1.5 py-0.2 uppercase">
-                                Next Task
+                        <div className="flex-1 min-w-0 space-y-1">
+                          <div className="flex flex-wrap items-center justify-between gap-1.5">
+                            <span
+                              className={`font-semibold text-xs flex flex-wrap items-center gap-1.5 ${
+                                isDone ? 'line-through text-muted-foreground' : 'text-foreground'
+                              }`}
+                            >
+                              <span className="text-[10px] font-mono font-bold text-muted-foreground">
+                                Step 0{idx + 1}.
                               </span>
-                            )}
-                          </span>
-                          <span className="text-[9px] uppercase font-bold text-muted-foreground font-mono bg-muted px-1.5 py-0.2 rounded">
-                            {step.category}
-                          </span>
+                              <span>{step.title}</span>
+                              {isNext && (
+                                <span className="rounded bg-forest text-oat dark:bg-oat dark:text-forest text-[9px] font-bold px-1.5 py-0.2 uppercase">
+                                  Next Task
+                                </span>
+                              )}
+                            </span>
+                            <span className="text-[9px] uppercase font-bold text-muted-foreground font-mono bg-muted px-1.5 py-0.2 rounded">
+                              {step.category}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-muted-foreground leading-relaxed">
+                            {step.description}
+                          </p>
+                          <p className="text-[10px] text-amber-700 dark:text-amber-300 font-medium">
+                            {step.missingRequirement}
+                          </p>
                         </div>
-                        <p className="text-[11px] text-muted-foreground leading-relaxed">
-                          {step.description}
-                        </p>
-                        <p className="text-[10px] text-amber-700 dark:text-amber-300 font-medium">
-                          {step.missingRequirement}
-                        </p>
                       </div>
 
-                      <div className="flex items-center gap-1.5 shrink-0 self-center">
+                      <div className="flex items-center gap-1.5 sm:shrink-0 sm:self-center pl-8 sm:pl-0">
                         {!isDone && (
                           <Button
                             type="button"
