@@ -6,6 +6,7 @@
 # 1. Base Stage with Corepack & pnpm
 # ------------------------------------------------------------------------------
 FROM node:22-alpine AS base
+RUN apk add --no-cache openssl libc6-compat
 RUN corepack enable && corepack prepare pnpm@12.3.4 --activate
 WORKDIR /app
 
@@ -14,7 +15,7 @@ WORKDIR /app
 # ------------------------------------------------------------------------------
 FROM base AS builder
 WORKDIR /app
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml* ./
 RUN pnpm install --frozen-lockfile
 
 COPY . ./
@@ -26,7 +27,7 @@ RUN pnpm run build
 # ------------------------------------------------------------------------------
 FROM base AS prod-deps
 WORKDIR /app
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml* ./
 RUN pnpm install --prod --frozen-lockfile
 COPY prisma ./prisma
 RUN pnpm run db:generate
@@ -40,7 +41,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# Install OpenSSL for Prisma engine on Alpine
+# Install OpenSSL & libc6-compat for Prisma & native runtime dependencies on Alpine
 RUN apk add --no-cache openssl libc6-compat
 
 # Copy backend dependencies, Prisma, and compiled artifacts
