@@ -29,8 +29,6 @@ FROM base AS prod-deps
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml* ./
 RUN pnpm install --prod --frozen-lockfile
-COPY prisma ./prisma
-RUN pnpm run db:generate
 
 # ------------------------------------------------------------------------------
 # 4. Production Final Runner
@@ -44,9 +42,10 @@ ENV PORT=3000
 # Install OpenSSL & libc6-compat for Prisma & native runtime dependencies on Alpine
 RUN apk add --no-cache openssl libc6-compat
 
-# Copy backend dependencies, Prisma, and compiled artifacts
+# Copy backend dependencies, Prisma schema/migrations, generated Prisma client, and compiled artifacts
 COPY --from=prod-deps --chown=node:node /app/node_modules ./node_modules
-COPY --from=prod-deps --chown=node:node /app/prisma ./prisma
+COPY --from=builder --chown=node:node /app/prisma ./prisma
+COPY --from=builder --chown=node:node /app/src/generated ./src/generated
 COPY --from=builder --chown=node:node /app/dist ./dist
 COPY --from=builder --chown=node:node /app/package.json ./package.json
 
