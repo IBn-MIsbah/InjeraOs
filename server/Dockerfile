@@ -45,6 +45,7 @@ RUN apk add --no-cache openssl libc6-compat
 # Copy backend dependencies, Prisma schema/migrations, generated Prisma client, and compiled artifacts
 COPY --from=prod-deps --chown=node:node /app/node_modules ./node_modules
 COPY --from=builder --chown=node:node /app/prisma ./prisma
+COPY --from=builder --chown=node:node /app/prisma7.config.ts* ./
 COPY --from=builder --chown=node:node /app/src/generated ./src/generated
 COPY --from=builder --chown=node:node /app/dist ./dist
 COPY --from=builder --chown=node:node /app/package.json ./package.json
